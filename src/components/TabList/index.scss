@@ -1,0 +1,14 @@
+.cake-tablist {
+  display: flex;
+  gap: 4px;
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 4px;
+  border-radius: var(--cake-radius-medium);
+  background: var(--cake-hover);
+  overflow-x: auto;
+  &[aria-orientation='vertical'] {
+    flex-direction: column;
+    flex: none;
+  }
+}

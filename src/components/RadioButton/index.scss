@@ -1,0 +1,24 @@
+.cake-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  &:has(:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .cake-radio-input {
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    accent-color: var(--cake-accent);
+    cursor: inherit;
+    &:focus-visible {
+      outline: 2px solid var(--cake-accent);
+      outline-offset: 3px;
+    }
+  }
+  .cake-radio-label {
+    font-size: inherit;
+  }
+}

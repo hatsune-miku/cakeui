@@ -1,0 +1,30 @@
+@use '../../styles/mixins' as *;
+
+.cake-contextmenu {
+  min-width: 0;
+  &[data-interactive='true'] {
+    transition: transform var(--cake-fast) var(--cake-ease);
+    &[data-pressed='true'] {
+      transform: translateY(1px);
+    }
+  }
+  &:focus-visible {
+    outline: 2px solid var(--cake-accent);
+    outline-offset: 3px;
+    border-radius: var(--cake-radius-small);
+  }
+  .cake-contextmenu-popup {
+    @include popup;
+    outline: none;
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    min-width: 190px;
+    &:popover-open {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      animation: cake-tip-enter var(--cake-fast) var(--cake-ease);
+    }
+  }
+}

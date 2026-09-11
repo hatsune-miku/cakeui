@@ -1,0 +1,12 @@
+.cake-tabpanel {
+  &[hidden] {
+    display: none;
+  }
+  min-width: 0;
+  flex: 1;
+  &:focus-visible {
+    outline: 2px solid var(--cake-accent);
+    outline-offset: 5px;
+    border-radius: var(--cake-radius-small);
+  }
+}

@@ -1,0 +1,40 @@
+.cake-menuitem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  background: transparent;
+  color: var(--cake-text);
+  text-align: start;
+  cursor: pointer;
+  &:hover:not(:disabled),
+  &:focus-visible {
+    outline: none;
+    background: var(--cake-accent-soft);
+    color: var(--cake-accent-ink);
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  &[data-danger='true'] {
+    color: var(--cake-danger);
+  }
+  .cake-menuitem-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cake-menuitem-shortcut {
+    font-family: var(--cake-mono);
+    color: var(--cake-muted);
+    font-size: 11px;
+  }
+}

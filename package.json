@@ -1,0 +1,73 @@
+{
+  "name": "cakeui",
+  "version": "0.1.0",
+  "description": "Small, familiar React components for software you use every day.",
+  "type": "module",
+  "author": "miku",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hatsune-miku/cakeui.git"
+  },
+  "homepage": "https://gallery.vanillacake.cn",
+  "bugs": {
+    "url": "https://github.com/hatsune-miku/cakeui/issues"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "docs/design.md",
+    "docs/deployment.md"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./style.css": "./dist/cakeui.css"
+  },
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss"
+  ],
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build && sass --style=compressed --no-source-map src/styles.scss dist/cakeui.css && tsc -p tsconfig.build.json",
+    "build:demo": "vite build --mode demo",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:browser": "playwright test",
+    "test:package": "npm run build && node scripts/package-smoke.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run typecheck && npm test && npm run build && npm run build:demo && npm run format:check",
+    "prepack": "npm run build"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.56.0",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^5.1.0",
+    "jsdom": "^27.0.0",
+    "prettier": "^3.6.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sass": "^1.93.0",
+    "typescript": "^5.9.0",
+    "vite": "^7.3.6",
+    "vitest": "^4.0.0"
+  }
+}

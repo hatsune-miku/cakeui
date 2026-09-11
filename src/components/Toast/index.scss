@@ -1,0 +1,26 @@
+@use '../../styles/mixins' as *;
+.cake-toast {
+  @include tones;
+  position: fixed;
+  z-index: 1000;
+  inset: auto 24px 24px auto;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  max-width: min(400px, calc(100vw - 48px));
+  border-radius: var(--cake-radius-medium);
+  background: var(--cake-surface);
+  color: var(--cake-text);
+  &[data-open='true'] {
+    padding: 10px 12px 10px 18px;
+    box-shadow: var(--cake-shadow);
+    animation: cake-tip-enter var(--cake-normal) var(--cake-ease);
+  }
+  .cake-toast-content {
+    color: var(--cake-tone);
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13px;
+  }
+}

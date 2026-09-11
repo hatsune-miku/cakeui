@@ -1,0 +1,17 @@
+.cake-slider {
+  width: 100%;
+  min-width: 0;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--cake-accent);
+  cursor: pointer;
+  &:focus-visible {
+    outline: 2px solid var(--cake-accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

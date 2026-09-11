@@ -1,0 +1,23 @@
+@use '../../styles/mixins' as *;
+.cake-tab {
+  @include control;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: none;
+  min-height: 32px;
+  padding: 5px 14px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--cake-muted);
+  cursor: pointer;
+  &:hover:not(:disabled) {
+    color: var(--cake-text);
+  }
+  &[aria-selected='true'] {
+    background: var(--cake-surface);
+    color: var(--cake-accent);
+    box-shadow: var(--cake-edge);
+  }
+}

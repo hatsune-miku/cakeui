@@ -1,0 +1,47 @@
+.cake-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  &:has(:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .cake-switch-input {
+    appearance: none;
+    box-sizing: border-box;
+    position: relative;
+    flex: none;
+    margin: 0;
+    width: 34px;
+    height: 20px;
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--cake-muted) 30%, var(--cake-surface));
+    cursor: inherit;
+    transition: background var(--cake-fast) var(--cake-ease);
+    &::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--cake-surface);
+      transition: transform var(--cake-fast) var(--cake-ease);
+    }
+    &:checked {
+      background: var(--cake-accent);
+      &::after {
+        transform: translateX(14px);
+      }
+    }
+    &:focus-visible {
+      outline: 2px solid var(--cake-accent);
+      outline-offset: 3px;
+    }
+  }
+  .cake-switch-label {
+    font-size: inherit;
+  }
+}

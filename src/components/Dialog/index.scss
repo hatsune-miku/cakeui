@@ -1,0 +1,60 @@
+.cake-dialog {
+  box-sizing: border-box;
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  padding: 26px;
+  border: 0;
+  border-radius: var(--cake-radius-dialog);
+  color: var(--cake-text);
+  background: var(--cake-surface);
+  box-shadow: var(--cake-shadow);
+  font: inherit;
+  overflow: auto;
+  overscroll-behavior: contain;
+  &[open] {
+    animation: cake-dialog-enter var(--cake-normal) var(--cake-ease);
+  }
+  &::backdrop {
+    background: var(--cake-backdrop);
+  }
+  .cake-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .cake-dialog-title {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+  .cake-dialog-description {
+    color: var(--cake-muted);
+    margin: 10px 0 0;
+    font-size: 13px;
+  }
+  .cake-dialog-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 22px;
+  }
+  .cake-dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 26px;
+  }
+}
+@keyframes cake-dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

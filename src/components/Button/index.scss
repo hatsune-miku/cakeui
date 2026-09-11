@@ -1,0 +1,60 @@
+@use '../../styles/mixins' as *;
+.cake-button {
+  @include control;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: var(--cake-control-height);
+  padding: 7px 14px;
+  font-weight: 500;
+  cursor: pointer;
+  &:hover:not(:disabled) {
+    background: var(--cake-control-hover);
+  }
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  &[data-variant='default']:active:not(:disabled) {
+    background: var(--cake-accent-soft);
+    color: var(--cake-accent-ink);
+    transform: translateY(1px);
+  }
+  &[data-variant='primary'] {
+    background: var(--cake-accent-soft);
+    color: var(--cake-accent-ink);
+    box-shadow: none;
+    &:hover:not(:disabled) {
+      background: var(--cake-accent-hover);
+    }
+  }
+  &[data-variant='ghost'] {
+    background: transparent;
+    box-shadow: none;
+    color: var(--cake-muted);
+    &:hover:not(:disabled) {
+      background: var(--cake-hover);
+      color: var(--cake-text);
+    }
+  }
+  &[data-variant='danger'] {
+    background: var(--cake-danger-soft);
+    color: var(--cake-danger);
+    box-shadow: none;
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--cake-danger-soft) 85%, var(--cake-danger));
+    }
+  }
+  &[data-size='small'] {
+    min-height: 28px;
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+  &[data-size='large'] {
+    min-height: 44px;
+    padding: 10px 20px;
+  }
+  @media (pointer: coarse) {
+    min-height: 44px;
+  }
+}

@@ -1,0 +1,78 @@
+@use '../../styles/mixins' as *;
+.cake-combobox {
+  @include input;
+  cursor: pointer;
+  padding-right: 12px;
+  user-select: none;
+  -webkit-user-select: none;
+
+  &,
+  &::picker(select) {
+    appearance: base-select;
+  }
+
+  &::picker(select) {
+    @include popup;
+    margin-block: 6px;
+    min-width: anchor-size(width);
+    max-height: min(320px, calc(100dvh - 16px));
+  }
+  &:open::picker(select) {
+    animation: cake-tip-enter var(--cake-fast) var(--cake-ease);
+  }
+  &::picker-icon {
+    width: 7px;
+    height: 7px;
+    margin: 3px 2px 0 auto;
+    content: '';
+    border-right: 1.5px solid var(--cake-muted);
+    border-bottom: 1.5px solid var(--cake-muted);
+    transform: rotate(45deg);
+    transition: transform var(--cake-fast) var(--cake-ease);
+  }
+  &:open::picker-icon {
+    transform: translateY(3px) rotate(225deg);
+  }
+  .cake-combobox-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 34px;
+    box-sizing: border-box;
+    padding: 7px 10px;
+    margin: 1px 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--cake-text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    &:hover:not(:disabled),
+    &:focus:not(:disabled) {
+      outline: none;
+      background: var(--cake-accent-soft);
+      color: var(--cake-accent-ink);
+    }
+    &:checked {
+      color: var(--cake-accent-ink);
+    }
+    &::checkmark {
+      order: 1;
+      margin-inline-start: auto;
+      color: var(--cake-accent);
+    }
+    &:disabled {
+      color: var(--cake-muted);
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  }
+  .cake-combobox-group {
+    padding: 4px 0;
+    color: var(--cake-muted);
+    font: inherit;
+    font-size: 12px;
+  }
+}
