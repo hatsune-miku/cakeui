@@ -1,0 +1,37 @@
+.cake-accordion-item {
+  border-bottom: 1px solid var(--cake-line);
+  .cake-accordion-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 2px;
+    font-weight: 500;
+    cursor: pointer;
+    list-style: none;
+    &::-webkit-details-marker {
+      display: none;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--cake-accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+  }
+  .cake-accordion-arrow {
+    color: var(--cake-muted);
+    font-size: 20px;
+    transition: transform var(--cake-fast) var(--cake-ease);
+  }
+  &[open] {
+    .cake-accordion-arrow {
+      transform: rotate(90deg);
+    }
+  }
+  .cake-accordion-content {
+    padding: 0 2px 16px;
+    color: var(--cake-muted);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+}

@@ -1,0 +1,24 @@
+.cake-whatsthis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--cake-hover);
+  color: var(--cake-muted);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: help;
+  &:hover {
+    background: var(--cake-accent-soft);
+    color: var(--cake-accent-ink);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--cake-accent);
+    outline-offset: 3px;
+  }
+}

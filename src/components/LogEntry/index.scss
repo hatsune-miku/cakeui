@@ -1,0 +1,46 @@
+.cake-logentry {
+  display: grid;
+  grid-template-columns: 62px 56px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 10px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  flex: none;
+  &:hover {
+    background: var(--cake-hover);
+  }
+  .cake-logentry-time {
+    color: var(--cake-muted);
+    font-variant-numeric: tabular-nums;
+    font-size: 11px;
+  }
+  .cake-logentry-level {
+    color: var(--cake-accent);
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+  .cake-logentry-text {
+    overflow-wrap: anywhere;
+  }
+  &[data-level='error'] {
+    .cake-logentry-level {
+      color: var(--cake-danger);
+    }
+  }
+  &[data-level='warning'] {
+    .cake-logentry-level {
+      color: var(--cake-warning);
+    }
+  }
+  &[data-level='success'] {
+    .cake-logentry-level {
+      color: var(--cake-success);
+    }
+  }
+  &[data-level='debug'] {
+    .cake-logentry-level,
+    .cake-logentry-text {
+      color: var(--cake-muted);
+    }
+  }
+}

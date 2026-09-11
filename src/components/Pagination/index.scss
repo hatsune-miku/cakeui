@@ -1,0 +1,15 @@
+.cake-pagination {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
+  .cake-pagination-part {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .cake-pagination-gap {
+    color: var(--cake-muted);
+    padding: 0 4px;
+  }
+}

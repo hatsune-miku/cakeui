@@ -1,0 +1,13 @@
+.cake-breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--cake-muted);
+  &:not(:last-child)::after {
+    content: '/';
+    opacity: 0.5;
+  }
+  &[aria-current='page'] {
+    color: var(--cake-text);
+  }
+}

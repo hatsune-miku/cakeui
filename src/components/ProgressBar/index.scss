@@ -1,0 +1,36 @@
+.cake-progress {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 6px;
+  border: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--cake-hover);
+  accent-color: var(--cake-accent);
+  &::-webkit-progress-bar {
+    background: var(--cake-hover);
+    border-radius: inherit;
+  }
+  &::-webkit-progress-value {
+    background: var(--cake-accent);
+    border-radius: inherit;
+    transition: width var(--cake-normal) var(--cake-ease);
+  }
+  &::-moz-progress-bar {
+    background: var(--cake-accent);
+    border-radius: inherit;
+  }
+  &:indeterminate {
+    background: var(--cake-accent-soft);
+    animation: cake-progress-pulse 1s ease-in-out infinite alternate;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+@keyframes cake-progress-pulse {
+  to {
+    opacity: 0.5;
+  }
+}

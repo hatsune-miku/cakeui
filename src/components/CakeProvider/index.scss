@@ -1,0 +1,149 @@
+@mixin light {
+  color-scheme: light;
+  --cake-bg: #f6f8fb;
+  --cake-surface: #fdfefe;
+  --cake-control: #ffffffb8;
+  --cake-control-hover: #fff;
+  --cake-text: #29313a;
+  --cake-muted: #626d79;
+  --cake-line: #2b38451a;
+  --cake-hover: #2b384509;
+  --cake-backdrop: #30394238;
+  --cake-success: #46654e;
+  --cake-success-soft: #dce9df;
+  --cake-danger: #934a53;
+  --cake-danger-soft: #f3dde0;
+  --cake-warning: #80602d;
+  --cake-warning-soft: #f3e7ce;
+  --cake-shadow: 0 0 0 1px #2b384514, 0 36px 100px #2b38451f;
+}
+@mixin dark {
+  color-scheme: dark;
+  --cake-bg: #202226;
+  --cake-surface: #2d3035;
+  --cake-control: #ffffff12;
+  --cake-control-hover: #ffffff1c;
+  --cake-text: #edf0f3;
+  --cake-muted: #aab1b9;
+  --cake-line: #f4f7fa1a;
+  --cake-hover: #ffffff0b;
+  --cake-backdrop: #0007;
+  --cake-success: #a9c8af;
+  --cake-success-soft: #7b9b8233;
+  --cake-danger: #efb8be;
+  --cake-danger-soft: #9a596133;
+  --cake-warning: #e2c18f;
+  --cake-warning-soft: #b68c4133;
+  --cake-shadow: 0 0 0 1px #ffffff14, 0 36px 100px #0005;
+}
+@mixin blue {
+  --cake-accent: #416b97;
+  --cake-accent-soft: #d6e7f7;
+  --cake-accent-hover: #c7ddf2;
+  --cake-accent-ink: #294866;
+}
+@mixin pink {
+  --cake-bg: #faf7f9;
+  --cake-accent: #93566e;
+  --cake-accent-soft: #f1d8e3;
+  --cake-accent-hover: #ebc9d8;
+  --cake-accent-ink: #653b4b;
+}
+@mixin gold {
+  --cake-bg: #f8f5ef;
+  --cake-accent: #8b654a;
+  --cake-accent-soft: #f3d3b9;
+  --cake-accent-hover: #efc9aa;
+  --cake-accent-ink: #513b2e;
+}
+@mixin blue-dark {
+  --cake-accent: #b5d2ef;
+  --cake-accent-soft: #3e5e7d;
+  --cake-accent-hover: #4a6d90;
+  --cake-accent-ink: #f4f9ff;
+}
+@mixin pink-dark {
+  --cake-bg: #231f22;
+  --cake-surface: #332d32;
+  --cake-accent: #efc3d4;
+  --cake-accent-soft: #71495a;
+  --cake-accent-hover: #825366;
+  --cake-accent-ink: #fff7fa;
+}
+@mixin gold-dark {
+  --cake-bg: #211f1c;
+  --cake-surface: #312e2a;
+  --cake-accent: #e8c8ad;
+  --cake-accent-soft: #715543;
+  --cake-accent-hover: #80614d;
+  --cake-accent-ink: #fff7ef;
+}
+
+:root,
+.cake-theme {
+  user-select: none;
+  -webkit-user-select: none;
+  @include light;
+  @include blue;
+  --cake-radius-small: 10px;
+  --cake-radius-medium: 14px;
+  --cake-radius-large: 20px;
+  --cake-radius-dialog: 26px;
+  --cake-fast: 150ms;
+  --cake-normal: 200ms;
+  --cake-slow: 250ms;
+  --cake-ease: cubic-bezier(0.29, 0, 0, 1);
+  --cake-control-height: 38px;
+  --cake-font:
+    'Inter Variable', 'SF Pro Text', 'Noto Sans SC', 'PingFang SC', 'Segoe UI Variable Text', system-ui, sans-serif;
+  --cake-mono: 'Cascadia Code', 'Consolas', monospace;
+  --cake-edge: inset 0 0 0 1px var(--cake-line);
+}
+.cake-theme {
+  font-family: var(--cake-font);
+  font-size: 14px;
+  line-height: 1.5;
+  font-variant-ligatures: none;
+  color: var(--cake-text);
+  background: var(--cake-bg);
+  &[data-theme='pink'] {
+    @include pink;
+  }
+  &[data-theme='gold'] {
+    @include gold;
+  }
+  &[data-mode='dark'] {
+    @include dark;
+    @include blue-dark;
+    &[data-theme='pink'] {
+      @include pink-dark;
+    }
+    &[data-theme='gold'] {
+      @include gold-dark;
+    }
+  }
+  &[data-density='compact'] {
+    --cake-control-height: 32px;
+    font-size: 13px;
+  }
+  @media (prefers-color-scheme: dark) {
+    &[data-mode='system'] {
+      @include dark;
+      @include blue-dark;
+      &[data-theme='pink'] {
+        @include pink-dark;
+      }
+      &[data-theme='gold'] {
+        @include gold-dark;
+      }
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  .cake-theme {
+    --cake-fast: 0ms;
+    --cake-normal: 0ms;
+    --cake-slow: 0ms;
+  }
+}

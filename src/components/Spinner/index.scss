@@ -1,0 +1,27 @@
+.cake-spinner {
+  display: inline-flex;
+  box-sizing: border-box;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: cake-spin 650ms linear infinite;
+  &[data-size='small'] {
+    width: 13px;
+    height: 13px;
+  }
+  &[data-size='large'] {
+    width: 26px;
+    height: 26px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+@keyframes cake-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

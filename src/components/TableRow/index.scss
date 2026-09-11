@@ -1,0 +1,10 @@
+.cake-table-row {
+  border-bottom: 1px solid var(--cake-line);
+  transition: background var(--cake-fast) var(--cake-ease);
+  &:hover {
+    background: var(--cake-hover);
+  }
+  &:last-child {
+    border-bottom: 0;
+  }
+}

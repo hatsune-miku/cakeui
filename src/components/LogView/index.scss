@@ -1,0 +1,23 @@
+.cake-logview {
+  user-select: text;
+  -webkit-user-select: text;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  height: 220px;
+  min-height: 80px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 12px;
+  border-radius: var(--cake-radius-medium);
+  background: var(--cake-hover);
+  font-family: var(--cake-mono);
+  font-variant-ligatures: none;
+  font-size: 12px;
+  line-height: 1.7;
+  &:focus-visible {
+    outline: 2px solid var(--cake-accent);
+    outline-offset: 3px;
+  }
+}

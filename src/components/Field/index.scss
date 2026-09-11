@@ -1,0 +1,20 @@
+.cake-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  .cake-field-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .cake-field-help {
+    color: var(--cake-muted);
+    font-size: 12px;
+    &[data-error='true'] {
+      color: var(--cake-danger);
+    }
+  }
+}

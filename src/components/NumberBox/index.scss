@@ -1,0 +1,5 @@
+@use '../../styles/mixins' as *;
+.cake-numberbox {
+  @include input;
+  font-variant-numeric: tabular-nums;
+}

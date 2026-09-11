@@ -1,0 +1,12 @@
+node_modules/
+dist/
+demo-dist/
+coverage/
+test-results/
+playwright-report/
+*.log
+*.tgz
+.cache/
+.env
+.env.*
+!.env.example

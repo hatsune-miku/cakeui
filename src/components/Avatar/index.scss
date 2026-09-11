@@ -1,0 +1,29 @@
+.cake-avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: var(--cake-radius-small);
+  color: var(--cake-accent-ink);
+  background: var(--cake-accent-soft);
+  font-size: 12px;
+  font-weight: 600;
+  &[data-size='small'] {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+  &[data-size='large'] {
+    width: 48px;
+    height: 48px;
+    font-size: 16px;
+  }
+  .cake-avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}

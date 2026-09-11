@@ -1,0 +1,6 @@
+@use '../../styles/mixins' as *;
+.cake-textarea {
+  @include input;
+  resize: vertical;
+  line-height: 1.6;
+}

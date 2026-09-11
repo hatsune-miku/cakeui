@@ -1,0 +1,15 @@
+.cake-skeleton {
+  display: block;
+  min-height: 14px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--cake-muted) 14%, transparent);
+  animation: cake-skeleton-pulse 1.4s ease-in-out infinite alternate;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+@keyframes cake-skeleton-pulse {
+  to {
+    opacity: 0.4;
+  }
+}
