@@ -55,7 +55,9 @@ jobs:
           NPM_DIST_TAG: ${{ steps.release.outputs.dist_tag }}
         run: |
           node scripts/release.mjs verify
-          npm publish .cache/release/package.tgz --dry-run --ignore-scripts --access public --tag "$NPM_DIST_TAG"
+          # npm 11 checks existing versions even in dry-run. Allow validating 0.1.0
+          # here; actual publication below never uses --force and checks availability.
+          npm publish .cache/release/package.tgz --dry-run --force --ignore-scripts --access public --tag "$NPM_DIST_TAG"
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: npm-package
