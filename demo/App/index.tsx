@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { ActionsDemo } from './components/ActionsDemo'
+import { AiDocs } from './components/AiDocs'
 import { ChoicesDemo } from './components/ChoicesDemo'
 import { DataDemo } from './components/DataDemo'
 import { DetailsDemo } from './components/DetailsDemo'
@@ -19,13 +20,14 @@ import { Button, type CakeMode, CakeProvider, type CakeTheme, Dot, HoverTips, Ta
 import './components/Icon/index.scss'
 import './index.scss'
 
-type Page = 'components' | 'example' | 'tokens' | 'guide'
+type Page = 'components' | 'example' | 'tokens' | 'guide' | 'docs'
 type Category = 'all' | 'basic' | 'input' | 'navigation' | 'data' | 'feedback'
 const nav: { page: Page; label: string; icon: IconName }[] = [
   { page: 'components', label: '组件总览', icon: 'grid' },
   { page: 'example', label: '应用示例', icon: 'layers' },
   { page: 'tokens', label: '设计变量', icon: 'palette' },
   { page: 'guide', label: '开始使用', icon: 'code' },
+  { page: 'docs', label: 'AI 技术文档', icon: 'file' },
 ]
 const categories: { id: Category; label: string }[] = [
   { id: 'all', label: '全部零件' },
@@ -43,6 +45,11 @@ const descriptions: Record<Page, { title: string; description: string }> = {
     description: '从已有软件中沉淀的配色、圆角和动效，可以直接使用，也可以继续调整。',
   },
   guide: { title: '从一个 import 开始。', description: 'React + TypeScript + SCSS，保持集成过程清楚、简单。' },
+  docs: { title: '让 AI 读懂每一个零件。', description: '与源码一起维护的技术参考，可阅读、复制，也可直接交给 AI。' },
+}
+function readPage(): Page {
+  const page = new URLSearchParams(window.location.search).get('page')
+  return nav.find((item) => item.page === page)?.page ?? 'components'
 }
 function readSettings() {
   try {
@@ -59,7 +66,7 @@ function readSettings() {
 }
 export function App() {
   const [settings, setSettings] = useState(readSettings)
-  const [page, setPage] = useState<Page>('components')
+  const [page, setPage] = useState<Page>(readPage)
   const [category, setCategory] = useState<Category>('all')
   const [query, setQuery] = useState('')
   const [compact, setCompact] = useState(false)
@@ -101,6 +108,10 @@ export function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
   function navigate(next: Page) {
+    const url = new URL(window.location.href)
+    if (next === 'components') url.searchParams.delete('page')
+    else url.searchParams.set('page', next)
+    window.history.replaceState(null, '', url)
     setPage(next)
     setQuery('')
     setSidebar(false)
@@ -273,7 +284,7 @@ export function App() {
                 placeholder="搜索组件…"
                 value={query}
                 onChange={(event) => {
-                  setPage('components')
+                  navigate('components')
                   setCategory('all')
                   setQuery(event.target.value)
                 }}
@@ -302,7 +313,9 @@ export function App() {
                     ? 'EXAMPLE'
                     : page === 'tokens'
                       ? 'FOUNDATIONS'
-                      : 'GETTING STARTED'}
+                      : page === 'docs'
+                        ? 'TECHNICAL REFERENCE'
+                        : 'GETTING STARTED'}
               </span>
               <Tag tone="accent">初版预览</Tag>
             </div>
@@ -383,8 +396,12 @@ export function App() {
           {page === 'example' && <Example />}
           {page === 'tokens' && <Tokens />}
           {page === 'guide' && <Guide />}
+          {page === 'docs' && <AiDocs />}
           <footer className="demo-footer">
             <span>CakeUI · 简单的零件，长久的陪伴。</span>
+            <a className="demo-link" href="/?page=docs">
+              AI 技术文档
+            </a>
             <span>基于 CakeDesign 的设计实践</span>
           </footer>
         </main>

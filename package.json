@@ -15,6 +15,7 @@
   "files": [
     "dist",
     "README.md",
+    "docs/ai.md",
     "docs/design.md",
     "docs/deployment.md"
   ],
@@ -35,15 +36,17 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build && sass --style=compressed --no-source-map src/styles.scss dist/cakeui.css && tsc -p tsconfig.build.json",
-    "build:demo": "vite build --mode demo",
+    "build:demo": "npm run docs:check && vite build --mode demo",
+    "docs:build": "node scripts/docs.mjs",
+    "docs:check": "node scripts/docs.mjs --check",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:browser": "playwright test",
-    "test:package": "npm run build && node scripts/package-smoke.mjs",
+    "test:package": "npm run docs:check && npm run build && node scripts/package-smoke.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run typecheck && npm test && npm run build && npm run build:demo && npm run format:check",
-    "prepack": "npm run build"
+    "check": "npm run docs:check && npm run typecheck && npm test && npm run build && npm run build:demo && npm run format:check",
+    "prepack": "npm run docs:check && npm run build"
   },
   "peerDependencies": {
     "react": ">=19.0.0",

@@ -27,7 +27,7 @@ export function Guide() {
         <pre className="demo-doc-code">
           <code>
             {
-              'import { CakeProvider, Button, TextBox } from \'cakeui\'\nimport \'cakeui/style.css\'\n\nexport function App() {\n  return (\n    <CakeProvider theme="pink" mode="system">\n      <TextBox aria-label="名称" placeholder="输入名称" />\n      <Button variant="primary">保存</Button>\n    </CakeProvider>\n  )\n}'
+              'import { CakeProvider, Button, TextBox } from \'cakeui\'\nimport \'cakeui/style.css\'\n\nexport function App() {\n  return (\n    <CakeProvider theme="blue" mode="system">\n      <TextBox aria-label="名称" placeholder="输入名称" />\n      <Button variant="primary">保存</Button>\n    </CakeProvider>\n  )\n}'
             }
           </code>
         </pre>
@@ -55,6 +55,21 @@ export function Guide() {
             Tailwind、图标库或其他运行时依赖。
           </AccordionItem>
         </Accordion>
+      </Card>
+      <Card padding="large">
+        <div className="demo-row">
+          <Tag tone="accent">04</Tag>
+          <h2 className="demo-card-title">给 AI 的完整技术参考</h2>
+        </div>
+        <p className="demo-panel-text">逐个组件说明 API、默认值和交互边界，并提供完整类型与可验证的组合示例。</p>
+        <div className="demo-row">
+          <a className="demo-link" href="/?page=docs">
+            阅读 AI 技术文档 ↗
+          </a>
+          <a className="demo-link" href="/llms-full.txt">
+            打开完整纯文本 ↗
+          </a>
+        </div>
       </Card>
     </div>
   )

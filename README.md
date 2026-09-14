@@ -8,6 +8,8 @@ TypeScript + SCSS，48 个可组合组件，粉 / 蓝 / 金三套配色及明暗
 
 在线工作台：[gallery.vanillacake.cn](https://gallery.vanillacake.cn)。更新部署与证书续期见 [部署说明](docs/deployment.md)。
 
+详细技术参考：[Gallery 阅读页](https://gallery.vanillacake.cn/?page=docs) · [AI 完整纯文本](https://gallery.vanillacake.cn/llms-full.txt) · [llms.txt 索引](https://gallery.vanillacake.cn/llms.txt)。覆盖全部组件的 API、默认值、交互边界、原生属性与 ref、完整类型、主题变量和可验证示例。正文源文件为 [docs/ai.md](docs/ai.md)，后续修改按 [AGENTS.md](AGENTS.md) 评估并同步文档。
+
 ## 本地开发
 
 需要 Node.js 22.12+（开发环境）和 npm。
@@ -21,6 +23,8 @@ npm run dev
 
 ```sh
 npm run typecheck    # 严格 TypeScript 检查
+npm run docs:build   # 从正文、公开类型和主题源码生成纯文本
+npm run docs:check   # 检查文档生成物及公开组件覆盖
 npm test            # 原生属性、表单、键盘、受控状态、计时与滚动测试
 npm run test:browser # Chrome 真实交互、移动布局、axe 可访问性检查
 npm run test:package # 打包、离线安装到临时消费项目并验证类型 / SSR / 构建
@@ -52,7 +56,7 @@ import 'cakeui/style.css'
 
 export function Settings() {
   return (
-    <CakeProvider theme="pink" mode="system">
+    <CakeProvider theme="blue" mode="system">
       <form onSubmit={save}>
         <Field htmlFor="name" label="名称">
           <TextBox id="name" name="name" defaultValue="工作空间" required />
@@ -102,7 +106,7 @@ ComboBox 的菜单外观使用 `appearance: base-select` 和 `::picker(select)`�
 
 `CheckBox` / `RadioButton` / `Switch` 的 `children` 是标签，`name`、`checked`、`defaultChecked`、`onChange` 和 `ref` 传到内部 input。`className` 传到标签容器。Switch 使用原生 checkbox 实现，参与 FormData。RadioButton 的分组与方向键由相同 `name` 的原生 radio 负责。CheckBox 支持 `indeterminate`。
 
-其余表单控件、Button 与简单容器的原生属性和 React 19 `ref` 直接透传。Dialog、ContextMenu 和 LogView 自行维护内部容器引用；其公开的额外能力如下表。
+其余表单控件、Button 与简单容器的原生属性和 React 19 `ref` 直接透传。Dialog、ContextMenu、LogView 和 Toast 的类型不提供容器 ref；HoverTips / WhatsThis 只支持明确声明的属性。公开的额外能力如下表。
 
 | 组件                   | 主要属性与默认值                                                                                                                        |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
