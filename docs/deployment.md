@@ -35,7 +35,7 @@ Nginx 为 `/llms.txt` 与 `/llms-*.txt` 使用专门的静态文件规则，响�
 
 本地 Vite 开发和 preview 同样通过文档中间件声明 UTF-8 与纯文本类型，避免浏览器在无 JavaScript 页面中猜测错误编码。开发读取 `public`，preview 读取所构建的输出目录；缺失文档也返回 404。
 
-远端安装脚本检查两个文档存在，部署后核对 HTTPS 内容、Content-Type 和缺失文档的 404，失败则回退。对外验证可执行：
+远端安装脚本检查两个文档存在，部署后核对 HTTPS 内容、Content-Type 和缺失文档的 404。Nginx 平滑重载可能短暂由旧 worker 响应，文档就绪检查最多尝试 5 次、间隔 1 秒，核对响应头与内容字节，而不只接受 HTTP 200；持续失败则回退。对外验证可执行：
 
 ```sh
 curl -I https://gallery.vanillacake.cn/llms-full.txt
