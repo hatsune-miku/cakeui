@@ -316,7 +316,7 @@ Tab / Shift+Tab 在可用停靠点间约束；Escape 触发原生 cancel，调�
 
 触发区域默认 tabIndex=0、aria-haspopup='menu'；提供 aria-label 或其他清晰名称以说明用途。将希望一起下陷的完整区域放在 ContextMenu 内，而不是只包裹一小段文字。Popup 通过顶层显示，不会因普通 overflow 容器裁切，不 portal 到 body，因此继承当前主题。
 
-普通模式：在 contextmenu 事件时打开，通常来自右键或系统等价操作；Shift+F10 和 Menu 键可在聚焦区域时打开。鼠标坐标或触发区左上角附近定位，并限制在视口至少 8px 边距内。打开时聚焦首个非 disabled MenuItem；没有项目时聚焦菜单容器。普通模式使用 popover='auto'，具有原生轻关闭行为。
+普通模式：在 contextmenu 事件时打开，通常来自右键或系统等价操作；Shift+F10 和 Menu 键可在聚焦区域时打开。鼠标坐标或触发区左上角附近定位，并限制在视口至少 8px 边距内。打开时聚焦首个非 disabled MenuItem；没有项目时聚焦菜单容器。两种模式均使用 popover='manual'，由组件处理外部 pointerdown、键盘、祖先滚动、resize、窗口失焦与文档隐藏时的关闭，避免 Linux 在 contextmenu 之后的同次右键松开立即触发原生轻关闭。程序化打开其他 Popover / Dialog 不自动关闭此菜单。
 
 Interactive 模式的准确状态规则：
 

@@ -34,6 +34,8 @@ npm 当前要求 CLI 至少 11.5.1、Node 至少 22.14.0，且使用 GitHub 托�
 
 Windows PowerShell 本地使用此带参数命令时，写为 `npm.cmd run test:package -- --artifact-dir .cache/release`，避免 npm.ps1 丢失参数。GitHub runner 使用 Bash，无需此调整。
 
+浏览器测试失败时，工作流另上传 `browser-failure` artifact，保留 7 天，包含错误上下文与 Playwright trace；可使用 `npx playwright show-trace <trace.zip>` 查看事件顺序。
+
 只有 tag push 才会进入独立发布 job，并获得 `id-token: write`。它下载本次运行的 artifact，重新检查包信息、摘要和 npm 版本是否已存在，再执行 `npm publish <tgz> --ignore-scripts`。发布时不重新打包，也不执行包生命周期脚本。稳定版本使用 `latest`，带预发布后缀的版本使用 `next`；例如 `1.2.0-beta.1` 不会成为默认安装版本。版本不接受 `+build` 元数据，避免 npm 规范化后与 tag 产生歧义。
 
 只有官方注册表返回 404 才允许发布；已存在的版本、权限错误、限流和网络异常都会中止。完成后再次比较官方注册表的 dist.integrity 与测试包的 SHA-512。所有 Actions 固定到完整提交 SHA，发布构建禁用包管理器缓存，进行中的发布不被新运行取消。

@@ -23,6 +23,7 @@
 - Provider 只是 CSS 作用域，支持嵌套；所有浮层都保留在所属 DOM 树的浏览器顶层，没有 body portal 的主题复制问题。
 - Dialog 使用原生模态行为；Tooltip 和 ContextMenu 使用原生 Popover。支持 SSR 首屏输出，交互在客户端 effect 中绑定。
 - ContextMenu 的 `interactive` 模式用手动 Popover 保留右键按下到松开的整个手势；在松开坐标进行实际命中检测，只有可用菜单项才执行。独立的按压状态让触发区域下陷，并处理 Escape、窗口失焦和丢失松开事件后的恢复。
+- ContextMenu 普通模式也使用手动 Popover 和同一套外部点击关闭机制，避免 Linux 在 contextmenu 触发后的同次右键松开立即关闭菜单；普通模式仍由 contextmenu 打开，不参与 Interactive 的按压和松开选择。
 - 运行时仅有 React / React DOM peer dependencies；构建和测试工具全部位于 devDependencies。
 
 ## 从参考中作出的调整
