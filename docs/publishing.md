@@ -32,6 +32,8 @@ npm 当前要求 CLI 至少 11.5.1、Node 至少 22.14.0，且使用 GitHub 托�
 
 `npm run test:package -- --artifact-dir .cache/release` 在全部包验证通过后保留同一个 tgz，并写入包名、版本和 SHA-512 integrity。工作流执行发布 dry-run 后上传 `npm-package` artifact，保留 7 天。`package.tgz` 与 `metadata.json` 位于 artifact 内。
 
+npm 11 即使在 dry-run 中也会拒绝已发布的版本，因此验证步骤同时使用 `--dry-run --force`，允许手动验证当前的 `0.1.0`。这一步不会写入 npm；真正发布不使用 `--force`，并在验证和发布两个 job 中检查目标版本尚不存在。
+
 Windows PowerShell 本地使用此带参数命令时，写为 `npm.cmd run test:package -- --artifact-dir .cache/release`，避免 npm.ps1 丢失参数。GitHub runner 使用 Bash，无需此调整。
 
 浏览器测试失败时，工作流另上传 `browser-failure` artifact，保留 7 天，包含错误上下文与 Playwright trace；可使用 `npx playwright show-trace <trace.zip>` 查看事件顺序。
