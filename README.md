@@ -6,7 +6,7 @@ TypeScript + SCSS，48 个可组合组件，粉 / 蓝 / 金三套配色及明暗
 
 当前为 **0.1.0 初版**，npm 包名为 **[@a1knla/cakeui](https://www.npmjs.com/package/@a1knla/cakeui)**。
 
-后续版本发布流程见 [npm 发布说明](docs/publishing.md)。
+后续版本通过 [GitHub Actions](https://github.com/hatsune-miku/cakeui/actions/workflows/publish.yml) 与 npm Trusted Publishing（OIDC）发布，无需 npm token。推送匹配版本的 `v*` tag 发布，手动运行只验证；首次使用需在 npm 配置 Trusted Publisher，见 [npm 发布说明](docs/publishing.md)。
 
 在线工作台：[gallery.vanillacake.cn](https://gallery.vanillacake.cn)。更新部署与证书续期见 [部署说明](docs/deployment.md)。
 
@@ -28,6 +28,7 @@ npm run typecheck    # 严格 TypeScript 检查
 npm run docs:build   # 从正文、公开类型和主题源码生成纯文本
 npm run docs:check   # 检查文档生成物及公开组件覆盖
 npm test            # 原生属性、表单、键盘、受控状态、计时与滚动测试
+npm run test:release # 发布版本、tag、注册表异常及打包摘要保护测试
 npm run test:browser # Chrome 真实交互、移动布局、axe 可访问性检查
 npm run test:package # 打包、离线安装到临时消费项目并验证类型 / SSR / 构建
 npm run build       # dist/index.js、声明文件、cakeui.css

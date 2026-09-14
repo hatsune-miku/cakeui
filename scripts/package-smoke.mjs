@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { parseArgs } from 'node:util'
+
+const { values } = parseArgs({ options: { 'artifact-dir': { type: 'string' } } })
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const npmCli = process.env.npm_execpath
@@ -98,6 +101,16 @@ execFileSync(
 )
 const packaged = JSON.parse(readFileSync(resolve(consumer, 'node_modules/@a1knla/cakeui/package.json'), 'utf8'))
 assert.equal(Object.keys(packaged.dependencies ?? {}).length, 0)
+// Retain the same bytes that were installed and tested, only after every check passes.
+if (values['artifact-dir']) {
+  const artifactDirectory = resolve(root, values['artifact-dir'])
+  mkdirSync(artifactDirectory, { recursive: true })
+  copyFileSync(tarball, resolve(artifactDirectory, 'package.tgz'))
+  writeFileSync(
+    resolve(artifactDirectory, 'metadata.json'),
+    JSON.stringify({ name: packaged.name, version: packaged.version, integrity: result[0].integrity }, null, 2)
+  )
+}
 console.log(
   `Package check passed: declarations, CSS exports, ESM, SSR, ${examples.length} documentation examples, public type appendix and consumer build.\nArchive: ${tarball}`
 )
