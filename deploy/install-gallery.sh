@@ -90,12 +90,26 @@ systemctl reload nginx
 curl --fail --silent --show-error --retry 5 --retry-delay 1 --retry-all-errors \
     --retry-max-time 20 --connect-timeout 5 --max-time 10 --noproxy '*' \
     --resolve "$domain:443:127.0.0.1" "https://$domain/" -o /dev/null
+function verify_document() {
+    local document="$1"
+    local attempt
+    # A successful reload signal can precede the new workers accepting requests.
+    # Wait for the expected headers and bytes, not just an HTTP 200 from old workers.
+    for attempt in {1..5}; do
+        if curl --fail --silent --show-error --connect-timeout 2 --max-time 5 --noproxy '*' \
+            --resolve "$domain:443:127.0.0.1" "https://$domain/$document" \
+            -D "$stage/$document.headers" -o "$stage/$document.response" \
+            && grep -qi '^Content-Type: text/plain; charset=utf-8' "$stage/$document.headers" \
+            && cmp -s "$base/current/$document" "$stage/$document.response"; then
+            return 0
+        fi
+        if [[ "$attempt" -lt 5 ]]; then sleep 1; fi
+    done
+    echo "Document verification failed after reload: $document" >&2
+    return 1
+}
 for document in llms.txt llms-full.txt; do
-    curl --fail --silent --show-error --connect-timeout 5 --max-time 10 --noproxy '*' \
-        --resolve "$domain:443:127.0.0.1" "https://$domain/$document" \
-        -D "$stage/$document.headers" -o "$stage/$document.response"
-    grep -qi '^Content-Type: text/plain; charset=utf-8' "$stage/$document.headers"
-    cmp "$base/current/$document" "$stage/$document.response"
+    verify_document "$document"
 done
 missing_status=$(curl --silent --show-error --connect-timeout 5 --max-time 10 --noproxy '*' \
     --resolve "$domain:443:127.0.0.1" "https://$domain/llms-missing.txt" -o /dev/null -w '%{http_code}')
