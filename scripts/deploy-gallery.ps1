@@ -16,7 +16,19 @@ try {
         npm run build:demo
         Assert-CommandSuccess
     }
+    else {
+        npm run docs:check
+        Assert-CommandSuccess
+    }
     if (-not (Test-Path -LiteralPath 'demo-dist/index.html')) { throw 'Build the demo before deploying.' }
+    foreach ($documentName in @('llms.txt', 'llms-full.txt')) {
+        $builtDocument = Join-Path 'demo-dist' $documentName
+        $sourceDocument = Join-Path 'public' $documentName
+        if (-not (Test-Path -LiteralPath $builtDocument)) { throw "Missing $builtDocument. Rebuild the demo." }
+        if ((Get-FileHash -LiteralPath $builtDocument).Hash -ne (Get-FileHash -LiteralPath $sourceDocument).Hash) {
+            throw "Outdated $builtDocument. Rebuild the demo before deploying."
+        }
+    }
     New-Item -ItemType Directory -Path $stagingDirectory -Force | Out-Null
     tar -czf "$stagingDirectory/site.tar.gz" -C demo-dist .
     Assert-CommandSuccess

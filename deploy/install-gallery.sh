@@ -25,6 +25,8 @@ test ! -e "$base/releases/$release"
 install -d -m 755 "$base/releases/$release"
 tar --extract --gzip --file "$stage/site.tar.gz" --directory "$base/releases/$release" --no-same-owner
 test -s "$base/releases/$release/index.html"
+test -s "$base/releases/$release/llms.txt"
+test -s "$base/releases/$release/llms-full.txt"
 test -d "$base/releases/$release/assets"
 find "$base/releases/$release" -type d -exec chmod 755 {} +
 find "$base/releases/$release" -type f -exec chmod 644 {} +
@@ -88,6 +90,16 @@ systemctl reload nginx
 curl --fail --silent --show-error --retry 5 --retry-delay 1 --retry-all-errors \
     --retry-max-time 20 --connect-timeout 5 --max-time 10 --noproxy '*' \
     --resolve "$domain:443:127.0.0.1" "https://$domain/" -o /dev/null
+for document in llms.txt llms-full.txt; do
+    curl --fail --silent --show-error --connect-timeout 5 --max-time 10 --noproxy '*' \
+        --resolve "$domain:443:127.0.0.1" "https://$domain/$document" \
+        -D "$stage/$document.headers" -o "$stage/$document.response"
+    grep -qi '^Content-Type: text/plain; charset=utf-8' "$stage/$document.headers"
+    cmp "$base/current/$document" "$stage/$document.response"
+done
+missing_status=$(curl --silent --show-error --connect-timeout 5 --max-time 10 --noproxy '*' \
+    --resolve "$domain:443:127.0.0.1" "https://$domain/llms-missing.txt" -o /dev/null -w '%{http_code}')
+[[ "$missing_status" == 404 ]]
 trap - ERR
 echo "Deployed $release to https://$domain"
 openssl x509 -in "/etc/letsencrypt/live/$domain/fullchain.pem" -noout -subject -issuer -dates

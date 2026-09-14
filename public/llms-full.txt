@@ -1,0 +1,1090 @@
+# CakeUI 技术文档 · 面向 AI 与开发者
+
+本文描述当前仓库已经实现的行为，用于让 AI 在不了解项目历史的情况下完成集成、生成界面、修改组件和验证改动。公开版本信息、完整 Props 类型与主题变量附录由源码生成，位于在线全文末尾。本文正文的唯一维护源是 `docs/ai.md`。
+
+在线阅读：https://gallery.vanillacake.cn/?page=docs
+
+完整纯文本：https://gallery.vanillacake.cn/llms-full.txt
+
+简短索引：https://gallery.vanillacake.cn/llms.txt
+
+源码：https://github.com/hatsune-miku/cakeui
+
+维护署名：miku。
+
+## 1. 先建立正确的项目模型
+
+CakeUI 是 React + TypeScript + SCSS 的组件库，面向日常长期使用的软件界面。它提供外观一致、名称熟悉的小零件，保留原生 HTML 结构和事件。数据获取、业务状态、排序、筛选、分页切片、存储、权限判断和异步任务由应用负责。
+
+库的公开入口是 `src/index.ts`，发布产物入口是 `dist/index.js`。所有组件使用具名导出，没有默认导出。对应的 `*Props`、`Size`、`Tone`、`CakeTheme`、`CakeMode` 同时导出。内部 context、hooks、工具函数和 demo 组件不属于公开 API，不从内部路径导入。
+
+优先遵守这些约定：
+
+- 输入控件使用原生 `onChange(event)`，读取 `event.currentTarget.value` 或 `checked`。不要凭其他 UI 库经验发明 `onValueChange`、`onCheckedChange`、`modelValue` 等接口。`Tabs` 是使用 `onValueChange(value)` 的例外。
+- `Button` 默认 `type="button"`，需要提交表单时明确使用 `type="submit"`。
+- 表格、列表、菜单、日志、标签页通过 JSX children 组合。没有 `columns`、`dataSource`、`items`、`renderItem` 或通用 `asChild` / `as` 属性。
+- 不导入 Drawer、SidePanel、Select、Input、Tooltip、Modal、Checkbox 等未导出的名称。实际名称分别是 `ComboBox`、`TextBox`、`HoverTips`、`Dialog`、`CheckBox`；本项目没有 Drawer 或侧边面板组件。
+- 默认配色为蓝；`theme` 使用英文值 `blue` / `pink` / `gold`，面向用户的名称为“蓝 / 粉 / 金”。
+- 必须显式引入 `cakeui/style.css`。无需 Tailwind、CSS-in-JS、全局通知服务、图标包或额外 Provider 服务。
+- 功能是否存在以当前源码和类型为准。不要将工作台的搜索、任务管理、主题持久化、图标或 Toast 调用函数当成库导出。
+
+## 2. 安装、入口与执行环境
+
+组件库目前尚未发布到 npm。不要假设注册表上的同名包就是本仓库。先从本仓库构建并打包，再安装生成的 tgz。开发环境使用 Node.js 22.12+ 和 npm，运行项目时 React 与 React DOM 都应为 19 或更高版本。
+
+```sh
+git clone https://github.com/hatsune-miku/cakeui.git
+cd cakeui
+npm ci
+npm pack
+# npm pack 的 prepack 会构建库；将输出的 cakeui-<版本>.tgz 交给消费项目
+
+# 在已有 React 19 项目内，用实际文件名替换占位符
+npm install /absolute/path/to/cakeui-<版本>.tgz
+```
+
+使用方式：
+
+```tsx example=hello
+import { Button, CakeProvider, TextBox } from 'cakeui'
+import 'cakeui/style.css'
+
+export function HelloCakeUI() {
+  return (
+    <CakeProvider theme="blue" mode="system">
+      <TextBox aria-label="名称" placeholder="输入名称" />
+      <Button onClick={() => console.log('已点击')}>确认</Button>
+    </CakeProvider>
+  )
+}
+```
+
+构建提供 ESM、TypeScript 声明与一份完整 CSS。JS 可以 tree-shake；CSS 不按组件拆包，没有 CommonJS 入口，也没有公开 SCSS 子路径。消费项目不需要安装 Sass。React / React DOM 是 peer dependencies；库不捆绑 React，也没有其他运行时依赖。
+
+库的 JavaScript 构建带有 `'use client'` 指令。支持服务端渲染首屏 HTML，DOM 操作在 effect 或事件内执行；Dialog 和 Popover 等交互需要客户端挂载后才能打开。在使用 Server Components 的框架中，管理事件和状态的消费组件应处于客户端边界，CSS 按框架的全局样式规则引入。SSR 支持不代表服务端输出会自动打开模态框或提示层。
+
+浏览器需要支持原生 dialog、Popover API、`:has()`、`color-mix()` 等当前实现使用的能力。库不捆绑 polyfill。真实浏览器自动测试使用 Chrome；Firefox / Safari 没有完成全面实机验证。ComboBox 的可定制选择器有独立的能力降级，见对应章节，不将“可运行”与“所有浏览器外观完全相同”混为一谈。
+
+## 3. 通用 API 与样式规则
+
+### 原生属性与 ref
+
+多数组件以 `ComponentPropsWithRef<'标签'>` 为基础。可以使用该 HTML 元素支持的 `id`、`className`、`style`、`aria-*`、`data-*`、事件和 React 19 `ref`。请根据具体组件的类型检查属性，不假设每个组件都能传 `disabled`、`size`、`href` 或 `ref`。
+
+`CheckBox` / `RadioButton` / `Switch` 是例外结构：外层为 label，`className` 加到 label；其余原生 input 属性、事件、style、id、name 和 ref 指向内部 input。不要将它们再包在另一个 label 内。
+
+`ContextMenu`、`Dialog`、`LogView`、`Toast` 使用不带 ref 的原生属性类型。`HoverTips` 和 `WhatsThis` 只接受明确列出的 Props，不透传任意 DOM 属性。`Dialog.initialFocus` 用于指定初始焦点，不能当作 Dialog 容器 ref 使用。
+
+组件会设置所需的 role、type、id、hidden、aria 状态或 data 属性；类型允许传入某个原生属性，不意味着可以覆盖组件自身管理的同名语义。例如 Tab 的 id、role、type、tabIndex，MenuItem 的 role、type、tabIndex，以及 Dialog 的 aria-labelledby 都由组件决定。不要靠覆盖这些属性改变交互模型。
+
+### 受控、非受控与表单
+
+原生输入沿用 React 规则：受控使用 `value` / `checked` 加 `onChange`，非受控使用 `defaultValue` / `defaultChecked`；不要在同一生命周期里切换模式。数字输入的 `value` 仍以字符串形式读取，可使用 `valueAsNumber`，为空时结果可能是 NaN。
+
+`FormData` 按原生成功控件规则工作：需要 name，disabled 不提交，未勾选的 checkbox 不提交；checked checkbox 无显式 value 时通常提交 `on`。浏览器验证来自 required、type、min、max、step 等原生约束。CakeUI 不提供校验 schema，也不会将 Field.error 自动写入控件有效性。
+
+原生 reset 对非受控输入恢复默认值；受控输入的状态需要应用配合 reset 更新。MenuItem、Tab 不用作表单提交按钮。Button.loading 会禁用按钮，但不替代应用自己的并发请求处理。
+
+### 样式作用域与全局影响
+
+不包含全局 reset，不修改页面的 margin 或原生 h1 / button / table 的常规样式。导入 CSS 后，会在 `:root` 提供默认主题变量并设置 `user-select: none` 与 `-webkit-user-select: none`，因此页面默认不可选择文字。
+
+TextBox / TextArea / NumberBox 和 LogView 允许选择文字；ComboBox 明确保持不可选择。普通业务正文、原生 pre / code 或 contentEditable 若需要复制，应由应用显式开启选择。Gallery 的代码和 AI 文档阅读区已开启选择。
+
+```scss
+.app-copyable {
+  user-select: text;
+  -webkit-user-select: text;
+}
+```
+
+样式通过完整 `cake-*` className 与 `--cake-*` 变量组成。优先用自己的 className 和主题变量调整外观，避免依赖内部 DOM 深度；内部子类名与布局不作为稳定的跨版本 API。库不替应用安排表单网格或页面布局，使用自己的 flex / grid 容器。
+
+公共类型：`Size = 'small' | 'medium' | 'large'`；`Tone = 'neutral' | 'accent' | 'success' | 'warning' | 'danger'`。Tone 的错误值叫 `danger`，只有 LogEntry 的错误级别叫 `error`。
+
+## 4. 完整组件参考
+
+以下每个三级标题对应一个公开组件。原生类型及扩展属性的精确声明见全文附录；这里说明默认值、DOM 结构、语义和交互边界。
+
+### CakeProvider
+
+原生 div，ref 指向该 div。可选 `theme='blue'`、`mode='system'`、`density='comfortable'`。theme 为 blue / pink / gold；mode 为 light / dark / system；density 为 comfortable / compact。
+
+Provider 是可嵌套的 CSS 容器，产生实际 DOM，设置主题背景、文字色、字体、字号与行高，不创建 React 全局状态或 body portal。嵌套 Provider 按自己的 Props 和默认值重新确定主题，不自动继承外层 Props。system 用 CSS 媒体查询响应系统明暗。不使用 Provider 时默认变量为蓝色浅色，根变量本身不会跟随系统变暗。
+
+默认舒适密度字号 14px、控件高度变量 38px；紧凑密度字号 13px、高度变量 32px。个别组件有固定尺寸、padding、最小高度或触屏规则，不保证所有控件最终测量高度都等于该变量。Provider 不保存用户设置，主题持久化属于应用。
+
+### Button
+
+原生 button，ref 指向按钮。`variant='default'` 可取 default / primary / ghost / danger；`size='medium'` 使用 Size；`loading=false`；默认 `type='button'`。
+
+默认按钮常态为中性背景，按下时染上 accent-soft / accent-ink 并下移 1px，使用 AnyDrop 风格反馈。primary 常态已有主题色；ghost 透明；danger 用危险色。其他 variant 的按压为 scale(0.98)。动画使用 fast / ease 变量，默认 150ms 与 cubic-bezier(0.29, 0, 0, 1)。loading 显示小 Spinner、保留 children、设置 aria-busy 并禁用按钮。图标由应用传 children；纯图标按钮必须有可访问名称。
+
+### Card
+
+原生 div。`padding='medium'`，可取 none / small / medium / large。只提供表面、圆角、间距，不自带 header / footer / title / selectable / onSelect 等接口。按业务需要放普通元素，不将有点击事件的 div 当作天然可键盘操作的按钮。
+
+### Separator
+
+原生 hr，无扩展属性，默认水平分隔。没有 orientation 属性；垂直分隔需要应用自己的样式与语义。
+
+### TextBox
+
+原生 input，`type='text'`。支持 type、name、value、defaultValue、placeholder、required、disabled、readOnly、autoComplete、min/max 等对应原生属性，ref 为 HTMLInputElement。可组合 email / password / search / date / file 等原生类型；日期和文件选择器本身由浏览器负责，不是额外的 CakeUI 日期或上传组件。
+
+普通输入 focus 使用一圈 1.5px 内描边，不叠加第二圈 outline。`aria-invalid='true'` 使用危险色内描边。placeholder 不代替 label。
+
+### TextArea
+
+原生 textarea，`rows=4`，ref 为 HTMLTextAreaElement。支持原生 value / defaultValue、name、maxLength、required 等。默认允许垂直 resize。没有 autosize 属性，自动高度由应用实现。
+
+### NumberBox
+
+固定 `input type='number'`，公开类型去掉 type。支持 min / max / step、原生事件、ref。没有返回 number 的自定义回调，也不内置千分位、货币格式、精度计算或业务范围修正。
+
+### ComboBox
+
+原生 select，ref 为 HTMLSelectElement，无额外 Props。children 使用原生 option / optgroup，支持 Fragment 嵌套；组件递归给它们合并 `cake-combobox-option` / `cake-combobox-group` 样式类，不丢弃已有 className。自定义 React 组件若在内部返回 option，不会被这一步递归展开；需要相同外观时直接传 option 元素。
+
+单选使用 value / defaultValue 和 `onChange(event)`。可以传原生 multiple 或 size，相关选择与提交仍由 select 负责；已验证的定制弹出菜单主要是单选下拉路径，不保证 multiple / size 列表框具有相同弹出外观。disabled、禁用 option / optgroup、required、form、重置和键盘操作保留原生规则。选项值使用字符串。
+
+下拉表面与 ContextMenu 共用圆角、padding、颜色、阴影；实现使用 `appearance: base-select`、`::picker(select)`、`::picker-icon`、`::checkmark` 和 anchor-size。支持时显示自定义菜单，picker 最大高度为 min(320px, 视口高度减 16px)，选中项有标记。不支持时降级为浏览器原生选择器，不是运行时切换到另一个 JS 组件。
+
+不接受 options 数组、placeholder、filterOption、searchable、onValueChange 等虚构属性。占位项可以用 `<option value="">请选择</option>` 配合 required；搜索、异步数据加载、虚拟滚动和可编辑输入由应用另外实现。不要给 option 放交互按钮并期待库管理它们。
+
+### CheckBox
+
+外层 label，内部固定 checkbox input，children 是标签文字。输入类型排除 type / size，增加 `indeterminate=false`。className 属于外层，ref 及其他原生 input 属性属于内部输入。
+
+indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；它是混合外观与语义，不等于 checked，也不自动控制全选逻辑。浏览器在用户操作时可能清除 DOM 的混合状态，应用应同步自己的 indeterminate 与 checked 状态。无文字 children 时提供 aria-label。
+
+### RadioButton
+
+外层 label，内部固定 radio input，children 是标签。无额外状态管理，类型排除 type / size。用相同 name 建立原生组；每项设置不同 value。原生浏览器负责组内互斥和键盘方向切换。没有单独的 RadioGroup 导出，语义分组可使用 GroupBox。
+
+### Switch
+
+外层 label，内部固定 checkbox input 并带 role='switch'。children 是标签，类型排除 type / size。沿用 checked / defaultChecked / onChange，参与 FormData，没有独立的 onCheckedChange。使用原生 disabled，不仅仅改透明度。
+
+### Slider
+
+固定 `input type='range'`，类型去掉 type。支持原生 min、max、step、value、defaultValue、onChange、ref。默认数值范围由浏览器决定，建议业务中明确指定。没有 marks、双滑块、值提示或自动格式化；用旁边的 output / 文本显示值，并提供可访问名称。
+
+### Field
+
+原生 div 容器，必填 `label: ReactNode`、`htmlFor: string`，可选 description / error。渲染 label、children、说明节点。非空 error 优先于 description，说明节点 id 为 `${htmlFor}-help`，错误说明带 role='alert'。
+
+不会克隆 children，不生成输入 id，不自动添加 aria-describedby / aria-invalid，也不自动验证。调用方必须将 htmlFor 与输入 id 对齐，并显式关联说明。输入需要必填时，required 放在输入上；Field 没有 required 扩展属性。
+
+### GroupBox
+
+原生 fieldset，必填 `label: ReactNode` 用作 legend，children 为分组内容。disabled 使用原生 fieldset 的禁用规则，ref 指向 fieldset。布局和每个控件的标签仍由调用方负责。
+
+### Tabs
+
+原生 div，结合内部 context 管理选择。`defaultValue=''`，可选受控 value 与 `onValueChange(value: string)`，`orientation='horizontal'`，也支持 vertical。没有自动选择第一个标签的逻辑，必须提供一个实际存在且可用的初始 value，否则所有面板可能隐藏、所有标签不在普通 Tab 顺序中。
+
+受控模式必须在回调中更新 value；非受控模式由内部状态维护。只有值变化才调用 onValueChange。value 应在同组内唯一且稳定，数据移除或禁用当前标签时由应用选取新的合法值。用 React useId 隔离不同组的 DOM id，支持嵌套。
+
+### TabList
+
+原生 div，必须放在 Tabs 中，输出 role='tablist' 与 aria-orientation。提供 aria-label 或 aria-labelledby。横向 Left / Right，纵向 Up / Down，Home / End 选首尾；跳过原生 disabled 项并循环，横向考虑 RTL。键盘移动焦点时会同时激活新标签。自定义 onKeyDown 先执行，preventDefault 可阻止内置导航。
+
+### Tab
+
+原生 button，必填 `value: string`。必须放在 Tabs 作用域内，通常作为 TabList 的子项。组件固定 type='button'、role='tab'、关联 id 和 ARIA，只有活动且未禁用标签的 tabIndex 为 0。onClick 先执行；未 preventDefault 时请求更新 Tabs 的值。
+
+### TabPanel
+
+原生 div，必填 `value: string` 与对应 Tab 匹配，必须放在 Tabs 中。组件固定 role='tabpanel'、tabIndex=0 和关联 ARIA。非活动面板通过 hidden 隐藏但保留挂载，内部状态、effect 和数据订阅仍然存在。若业务需要卸载，应由应用自行条件渲染。不要用 CSS display 强行覆盖 hidden。
+
+### Breadcrumb
+
+原生 nav，内部生成 ol，children 应为 BreadcrumbItem。默认 aria-label='Breadcrumb'，可替换为本地化名称。没有路由状态和链接生成逻辑，ref 指向 nav。
+
+### BreadcrumbItem
+
+原生 li，无扩展属性，放在 Breadcrumb 中。链接由 children 中的原生 a 或路由 Link 提供，当前项自行设置 aria-current='page'。href 属于链接，不属于 BreadcrumbItem。
+
+### Pagination
+
+原生 nav，必填 `page: number`、`count: number`、`onPageChange(page: number)`。count 是总页数，不是条目总数；页码从 1 开始。可选 previousLabel='Previous page'、nextLabel='Next page'、pageLabel 默认生成 'Page N'；nav 默认 aria-label='Pagination'，均可本地化。
+
+显示首尾页、当前页及前后相邻页，在间隔处显示省略号。count 向下取整并至少为 1，非有限数按 1；page 向下取整后约束到有效范围，非有限数按 1。这仅修正显示与点击计算，不会主动回调修正应用传入的状态。当前页按钮仍可点击；边界处上一页 / 下一页禁用。没有 pageSize、total、默认页或内置数据切片。空数据时是否隐藏分页由应用决定。
+
+### ListView
+
+原生 ul，只负责列表排版。children 使用 ListItem，ref 指向 ul。不是 listbox，没有选择、拖动、虚拟化或键盘选中管理。数据渲染使用应用自己的 map。
+
+### ListItem
+
+原生 li，只负责一项的布局。把动作放在内部 Button 或 a 上；不要仅添加 onClick 就假设 li 有按钮语义。没有 selected 属性和 onSelect 选择模型。
+
+### Table
+
+真正的 table，没有额外包裹层，ref 指向 HTMLTableElement。接受原生 caption、colgroup 及下列结构组件。需要水平滚动时由应用在外层添加 overflow 容器。没有 columns、dataSource、rowKey、排序或选择配置。
+
+### TableHead
+
+原生 thead，通常包含 TableRow，无额外属性。它是表头分组，不是单个表头单元格。
+
+### TableBody
+
+原生 tbody，通常通过数组 map 渲染 TableRow。空态由应用用 TableRow / TableCell + colSpan 表达；没有 loading 或 emptyText 属性。
+
+### TableRow
+
+原生 tr，children 为 TableHeader 或 TableCell。React key 由调用方设置。行交互、选中态和数据对象由应用负责。
+
+### TableHeader
+
+原生 th，`scope='col'`。行标题可传 scope='row'，支持 colSpan / rowSpan / aria-sort。需要排序时在其中放 Button，应用排序数据并维护 aria-sort；本组件不会自行排序。
+
+### TableCell
+
+原生 td，支持原生跨行跨列属性，children 可自由组合。不要把 div 直接放到 tr 代替 td。
+
+### Avatar
+
+原生 span，必填 name，可选 src、`size='medium'`、children。外层默认 role='img'、aria-label=name。图片 alt 为空，由外层提供名称。图片失败后显示 children，否则显示 trim 后名称前两个字符转大写。失败源按 src 记忆，更换 src 可以加载新图；没有上传、裁剪或在线状态逻辑。ref 指向 span，不能当作内部 img ref。
+
+### Dot
+
+原生 span，`tone='neutral'`。没有 aria-label 时默认 aria-hidden，适合作为装饰；有 aria-label 时默认 role='img' 并暴露名称。表达重要状态时同时提供文字，避免仅靠颜色区分。
+
+### Tag
+
+原生 span，`tone='neutral'`。可选 onRemove，存在时显示内部移除按钮；removeLabel 默认 'Remove'，建议提供如“移除文档标签”的具体名称。onRemove 仅通知应用，组件不会自行删除或隐藏。外层 ref 指向 span。没有 checked / selected 状态模型。
+
+### Badge
+
+原生 span，`tone='accent'`。children 自行传计数或文字，不自动处理 max、overflowCount、角标定位或隐藏 0。
+
+### Alert
+
+原生 div，`tone='accent'`。默认 danger 使用 role='alert'，其他 tone 使用 role='status'；可用原生 role 覆写。children 自由组织提示正文、图标或操作，不内置 title / description / closable 属性。静态说明若不应播报，可显式选择适当 role。
+
+### ProgressBar
+
+原生 progress，`max=100`。传 value 表示确定进度，省略 value 为不确定进度。应用负责数值和任务状态。提供 aria-label 或 label；不要只依靠视觉进度传达名称。没有 status / percentage / showText 属性。
+
+### Spinner
+
+原生 span，`size='medium'`。默认 role='status'、aria-label='Loading'，可用原生属性替换或本地化。只提供旋转指示，不负责遮罩、loading 状态切换或内容禁用。纯装饰时可 aria-hidden，附近另有状态文字时避免重复播报。
+
+### Skeleton
+
+原生 span，默认 aria-hidden=true。用 style / className 指定所需宽高、圆角；没有 count / rows / loading Props。加载结束后由应用切换为真实内容。减少动态效果时关闭持续脉冲。
+
+### HoverTips
+
+必填 content: ReactNode 和单个 `ReactElement<{ 'aria-describedby'?: string }>` children；可选 `delay=180` 毫秒、`placement='top'`（top / bottom）和 className。className 作用在外层 span，没有通用原生属性或 ref 透传。
+
+渲染外层 span 与原生手动 Popover，提示 role='tooltip'。克隆唯一子元素，将生成的说明 id 合并到其 aria-describedby，不增加额外的 Tab 停靠点。子组件必须将该属性传到实际可聚焦元素；不要传纯文本、数组或不能接收此属性的 Fragment。禁用按钮无法正常接收键盘焦点，需要额外的可聚焦帮助入口。
+
+悬停按 delay 打开，焦点或点击立即请求打开，离开使用 100ms 宽限，光标可进入提示层阅读，Escape 关闭。顶部空间不足时显示在下方；水平与垂直位置限制在视口 8px 边距内。滚动和 resize 重新定位。内容应为简短说明，不放表单、链接或其他必须操作的控件；它不是通用交互 Popover。
+
+### WhatsThis
+
+必填 children 为说明，可选 label='More information'，无通用 DOM Props。生成一个问号按钮并用 HoverTips 包裹。label 是按钮的无障碍名称，不是提示内容，可本地化为“关于同步方式”。帮助文字放 children。
+
+### Dialog
+
+原生 dialog，必填 `open: boolean`、`onOpenChange(open: boolean)`、`title: ReactNode`；可选 description、footer、`closeLabel='Close'`、`closeOnBackdrop=true`、`initialFocus: RefObject<HTMLElement | null>`。其余 Props 来自去掉 open / title / ref 的原生 dialog 类型。
+
+open 是受控状态，应用必须接受关闭请求并更新状态。组件使用 showModal / close，保留原生顶层、背景 inert 与焦点恢复。标题始终渲染为 h2 并与 dialog 关联；description 存在时由组件关联说明 id。组件内部有标题栏、关闭按钮、正文与可选 footer；不提供 footer 默认保存操作。
+
+初始焦点顺序：initialFocus.current；其次 autofocus 或 data-cake-autofocus='true'；其次正文内第一个未禁用 input / select / textarea / button；没有指定目标时保留浏览器初始焦点行为。目标必须位于 dialog 内。初始目标不可聚焦或被隐藏时应由应用修正，不把任意 div ref 当成可聚焦目标。
+
+Tab / Shift+Tab 在可用停靠点间约束；Escape 触发原生 cancel，调用方 onCancel.preventDefault 可阻止关闭请求。右上角关闭按钮请求 onOpenChange(false)。遮罩点击默认关闭，并检查按下是否发生在遮罩，避免从正文拖拽选择到外面时误关。closeOnBackdrop=false 仅关闭遮罩行为，不关闭 Escape 或标题栏按钮。onClick.preventDefault 可阻止内置遮罩关闭。
+
+正文不会在 open=false 时卸载，表单值与子组件状态可保留。需要每次重置时由应用改变 key、调用 reset 或更新受控状态。保存按钮在 footer 且 form 在正文时，使用原生 form='表单id' 与 type='submit' 关联。重要错误应在当前 Dialog 内呈现，不依赖被模态层遮挡的全局 Toast。
+
+### ContextMenu
+
+原生 div 触发区域，加一个保留在本 DOM 子树内的顶层 Popover。必填 `menu: ReactNode`、`menuLabel: string`，children 为触发区域；`interactive=false`。其余 Props 来自不带 ref 的 div。没有 open / onOpenChange / placement / items 属性。
+
+触发区域默认 tabIndex=0、aria-haspopup='menu'；提供 aria-label 或其他清晰名称以说明用途。将希望一起下陷的完整区域放在 ContextMenu 内，而不是只包裹一小段文字。Popup 通过顶层显示，不会因普通 overflow 容器裁切，不 portal 到 body，因此继承当前主题。
+
+普通模式：在 contextmenu 事件时打开，通常来自右键或系统等价操作；Shift+F10 和 Menu 键可在聚焦区域时打开。鼠标坐标或触发区左上角附近定位，并限制在视口至少 8px 边距内。打开时聚焦首个非 disabled MenuItem；没有项目时聚焦菜单容器。普通模式使用 popover='auto'，具有原生轻关闭行为。
+
+Interactive 模式的准确状态规则：
+
+| 输入事件 / 松开位置                                | 菜单与动作                                         | 区域按压反馈             |
+| -------------------------------------------------- | -------------------------------------------------- | ------------------------ |
+| 区域内右键按下（mousedown，button=2）              | 立即打开，焦点放在菜单容器，不预选第一项           | 整个区域开始下移 1px     |
+| 仍按住右键，光标移动                               | 根据实际悬停显示项目反馈，不执行业务回调           | 保持下陷                 |
+| 右键松开在本菜单可用 MenuItem 或其内部元素         | 关闭菜单，然后通过该按钮的 click 调用 onClick 一次 | 恢复                     |
+| 松开在空白、分隔线、禁用项、菜单外                 | 不选择项目，菜单保持打开                           | 恢复                     |
+| Escape / Tab                                       | 关闭并恢复之前焦点                                 | 恢复                     |
+| 后续点击菜单外、触发区域祖先实际滚动、resize       | 关闭                                               | 恢复                     |
+| 窗口失焦或文档隐藏                                 | 关闭                                               | 恢复                     |
+| pointercancel，或后续 mousemove 表明右键已不再按住 | 取消残留按压状态                                   | 恢复；不因此自动选择项目 |
+
+下陷曲线与默认 Button 完全相同：transform translateY(1px)，fast 默认 150ms，ease 默认 cubic-bezier(0.29, 0, 0, 1)。浮出的菜单保持定位，不随触发区域下移。减少动态效果时保留反馈结果，但过渡时间为 0。
+
+松开命中判断基于 `document.elementFromPoint(clientX, clientY)`，不依赖原始事件 target、鼠标捕获对象或键盘焦点。只执行当前菜单内的 HTMLButtonElement role='menuitem'，排除 :disabled 和 aria-disabled='true'。真正禁用菜单项请使用 disabled：键盘导航和普通点击依靠原生 disabled，单独 aria-disabled 不会自动阻止所有动作。
+
+Interactive 使用 popover='manual' 来管理关闭时机，并吞掉同次手势后续的原生 contextmenu / auxclick，防止选择后再次弹出系统菜单。右键松开选择始终关闭，即使 MenuItem.onClick 里 preventDefault。普通左键点击或键盘选择仍允许 preventDefault 保持打开。右键松开调用的是按钮 click，业务处理请放 onClick，不要要求该 click 的 button=2 才处理。
+
+两种模式都支持 Up / Down 循环、Home / End、600ms 内的键入前缀检索、原生 Enter / Space 激活、Escape / Tab 关闭。Tab 是关闭并恢复焦点，不是在菜单项之间逐个 Tab。普通选择后恢复打开前的焦点；祖先滚动、resize、外部点击等消失路径不应被应用当成统一的 focus 回调。
+
+触发区的 onContextMenu / onKeyDown 在内部操作之前执行，可 preventDefault 阻止对应默认行为。onMouseDown.preventDefault 可以阻止 Interactive 的按下打开；若想完全禁止所有打开路径，还需处理后续 contextmenu 与键盘事件。组件仅提供单层菜单，不支持子菜单、受控打开、菜单复选项或鼠标手势拖放。触屏用户应有可见的等价操作入口，不仅依赖右键。
+
+### MenuItem
+
+原生 button，可选 `shortcut: ReactNode`、`danger=false`，children 是项目内容。固定 type='button'、role='menuitem'、tabIndex=-1。用于 ContextMenu.menu 内，原生 disabled 会禁用交互。
+
+onClick 先执行；未 preventDefault 时通过内部 context 请求关闭菜单。在 Interactive 的右键松开路径中，关闭已在 click 前发起，因此 preventDefault 无法保留菜单。shortcut 只是显示文字，不注册键盘快捷键；danger 只是危险操作样式，不执行确认、删除或权限校验。用同一个业务函数连接菜单项、快捷键和其他可见按钮。
+
+### MenuSeparator
+
+原生 div，固定 role='separator'，放在 ContextMenu.menu 的项目之间。不是可选中项，Interactive 松开在此处不会触发动作或关闭菜单。
+
+### Toast
+
+原生 div 状态通知，必填 open / onOpenChange；`duration=4500` 毫秒、`tone='success'`、`closeLabel='Dismiss'`。类型不含 ref。默认 role='status'、aria-atomic=true，danger 使用 aria-live='assertive'，其他为 polite。
+
+单条受控通知，duration<=0 不自动关闭。悬停或焦点进入暂停，离开后按剩余时间继续。open 或 duration 改变会重置计时；仅更换 children 不会重置剩余时间，需要新一轮完整展示时可以改变 key 或重新开启。关闭按钮与计时器请求 onOpenChange(false)，应用更新 open。
+
+默认固定在视口右下 24px，宽度受视口限制，使用普通 z-index，不使用原生顶层或 portal。多个实例会重叠；队列、去重、位置编排和批量关闭由应用负责。open=false 保留空状态容器、卸载通知正文。不要将 Toast 当作必须被确认的 Dialog。
+
+### Accordion
+
+原生 div 排版容器，无扩展属性。children 使用 AccordionItem。不管理受控展开值，不自动限制同时打开一项。
+
+### AccordionItem
+
+原生 details，必填 `title: ReactNode` 替代原生字符串 title，用于内部 summary。支持原生 open、onToggle、name、ref。正文位于内部 div；summary 已带折叠箭头。浏览器支持时，用相同 name 的 details 实现互斥组，Accordion 自身不模拟该功能。没有 defaultOpen / onOpenChange 属性；需要受控同步时按原生 onToggle 读取 currentTarget.open。
+
+### LogView
+
+原生 div，`follow=true`，类型不含 ref。默认 role='log'、aria-label='Logs'、aria-live='polite'、aria-relevant='additions text'、tabIndex=0。可用原生属性本地化或调整播报。默认高度 220px，最小高度 80px，overflow auto，日志文字可选择复制。
+
+组件在 children 或 follow 变化时，仅当内部记录认为用户位于底部才滚到末尾。scroll 事件用底部剩余距离 <24px 判断是否在底部；用户向上翻阅后暂停跟随，滚回底部恢复。onScroll 在内部记录之后调用。follow=false 禁用自动跟随；改回 true 并不会无条件强行回到底部。
+
+没有虚拟滚动、最大条数、自动清空或过滤 Props。大量日志由应用限制保留量或窗口化，避免无限堆积 DOM。实时区域高频播报策略也由应用决定。
+
+### LogEntry
+
+原生 div，可选 time、dateTime、`level='info'`，level 为 info / success / warning / error / debug。渲染 time、级别、正文三个部分。time 是显示字符串；dateTime 写入 time.dateTime 和 title；children 为内容。不会解析日期、补充当前时间、国际化级别或省略相邻重复时间。省略 time 会保留时间列布局，适合应用自己合并连续相同时间的显示。
+
+## 5. 可直接集成的组合示例
+
+标有 `example=` 的 TSX 代码块都是独立模块，包验证会将它们放进真实安装 CakeUI tgz 的消费项目进行严格类型检查。为了展示 API，示例中的保存函数只回显数据；接入实际服务时替换相应业务函数。
+
+### 表单、错误关联与原生选择器
+
+```tsx example=settings-form
+import { type FormEvent, useId, useState } from 'react'
+
+import { Button, CheckBox, ComboBox, Field, GroupBox, NumberBox, TextArea, TextBox } from 'cakeui'
+
+export function SettingsForm() {
+  const id = useId()
+  const [error, setError] = useState('')
+  const [result, setResult] = useState('')
+  function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const data = new FormData(event.currentTarget)
+    const name = String(data.get('name') ?? '').trim()
+    if (!name) {
+      setError('名称不能只包含空格。')
+      return
+    }
+    setError('')
+    setResult(`已保存 ${name}，同步方式 ${data.get('sync')}`)
+  }
+  return (
+    <form
+      onSubmit={save}
+      onReset={() => {
+        setError('')
+        setResult('')
+      }}
+    >
+      <Field htmlFor={id + '-name'} label="名称" description="用于区分工作空间。" error={error}>
+        <TextBox
+          id={id + '-name'}
+          name="name"
+          defaultValue="文档空间"
+          required
+          aria-invalid={!!error}
+          aria-describedby={id + '-name-help'}
+        />
+      </Field>
+      <Field htmlFor={id + '-sync'} label="同步方式">
+        <ComboBox id={id + '-sync'} name="sync" defaultValue="manual">
+          <option value="manual">手动</option>
+          <optgroup label="自动">
+            <option value="wifi">仅 Wi-Fi</option>
+            <option value="always">始终</option>
+          </optgroup>
+          <option value="enterprise" disabled>
+            企业策略
+          </option>
+        </ComboBox>
+      </Field>
+      <Field htmlFor={id + '-limit'} label="最大保留数">
+        <NumberBox id={id + '-limit'} name="limit" min={1} max={1000} step={1} defaultValue={100} />
+      </Field>
+      <Field htmlFor={id + '-notes'} label="备注">
+        <TextArea id={id + '-notes'} name="notes" defaultValue="" />
+      </Field>
+      <GroupBox label="通知">
+        <CheckBox name="notify" value="enabled" defaultChecked>
+          完成后通知
+        </CheckBox>
+      </GroupBox>
+      <Button type="submit" variant="primary">
+        保存
+      </Button>
+      <Button type="reset">恢复初始值</Button>
+      <output aria-live="polite">{result}</output>
+    </form>
+  )
+}
+```
+
+### 受控输入与开关
+
+```tsx example=controlled-inputs
+import { useId, useState } from 'react'
+
+import { Field, GroupBox, RadioButton, Slider, Switch, TextBox } from 'cakeui'
+
+export function Preferences() {
+  const id = useId()
+  const [name, setName] = useState('miku')
+  const [enabled, setEnabled] = useState(true)
+  const [volume, setVolume] = useState(60)
+  const [mode, setMode] = useState('manual')
+  return (
+    <div>
+      <Field htmlFor={id + '-name'} label="名称">
+        <TextBox id={id + '-name'} value={name} onChange={(event) => setName(event.currentTarget.value)} />
+      </Field>
+      <Switch checked={enabled} onChange={(event) => setEnabled(event.currentTarget.checked)}>
+        启用声音
+      </Switch>
+      <Field htmlFor={id + '-volume'} label={`音量 ${volume}`}>
+        <Slider
+          id={id + '-volume'}
+          min={0}
+          max={100}
+          step={1}
+          value={volume}
+          disabled={!enabled}
+          onChange={(event) => setVolume(event.currentTarget.valueAsNumber)}
+        />
+      </Field>
+      <GroupBox label="同步模式">
+        <RadioButton
+          name={id + '-mode'}
+          value="manual"
+          checked={mode === 'manual'}
+          onChange={(event) => setMode(event.currentTarget.value)}
+        >
+          手动
+        </RadioButton>
+        <RadioButton
+          name={id + '-mode'}
+          value="auto"
+          checked={mode === 'auto'}
+          onChange={(event) => setMode(event.currentTarget.value)}
+        >
+          自动
+        </RadioButton>
+      </GroupBox>
+    </div>
+  )
+}
+```
+
+### Tabs、原生表格与应用分页
+
+```tsx example=table-and-tabs
+import { useState } from 'react'
+
+import {
+  Pagination,
+  Tab,
+  TabList,
+  TabPanel,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Tabs,
+} from 'cakeui'
+
+const files = [
+  { id: '1', name: '说明.md', kind: '文档' },
+  { id: '2', name: '标志.svg', kind: '设计' },
+  { id: '3', name: '设置.json', kind: '配置' },
+]
+export function FileWorkspace() {
+  const [tab, setTab] = useState('files')
+  const [page, setPage] = useState(1)
+  const pageSize = 2
+  const visible = files.slice((page - 1) * pageSize, page * pageSize)
+  return (
+    <Tabs value={tab} onValueChange={setTab}>
+      <TabList aria-label="工作空间内容">
+        <Tab value="files">文件</Tab>
+        <Tab value="activity">动态</Tab>
+      </TabList>
+      <TabPanel value="files">
+        <Table>
+          <caption>工作空间文件</caption>
+          <TableHead>
+            <TableRow>
+              <TableHeader>名称</TableHeader>
+              <TableHeader>类型</TableHeader>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {visible.map((file) => (
+              <TableRow key={file.id}>
+                <TableHeader scope="row">{file.name}</TableHeader>
+                <TableCell>{file.kind}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        <Pagination
+          aria-label="文件分页"
+          page={page}
+          count={Math.ceil(files.length / pageSize)}
+          onPageChange={setPage}
+          previousLabel="上一页"
+          nextLabel="下一页"
+          pageLabel={(value) => `第 ${value} 页`}
+        />
+      </TabPanel>
+      <TabPanel value="activity">暂无动态。</TabPanel>
+    </Tabs>
+  )
+}
+```
+
+### Interactive 菜单打开受控 Dialog
+
+```tsx example=interactive-dialog
+import { type FormEvent, useId, useRef, useState } from 'react'
+
+import { Button, Card, ContextMenu, Dialog, Field, MenuItem, MenuSeparator, TextBox } from 'cakeui'
+
+export function RenameResource() {
+  const id = useId()
+  const input = useRef<HTMLInputElement>(null)
+  const [name, setName] = useState('设计资源')
+  const [draft, setDraft] = useState(name)
+  const [open, setOpen] = useState(false)
+  function startRename() {
+    setDraft(name)
+    setOpen(true)
+  }
+  function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!draft.trim()) return
+    setName(draft.trim())
+    setOpen(false)
+  }
+  return (
+    <>
+      <ContextMenu
+        interactive
+        menuLabel="资源操作"
+        aria-label={`${name}，右键或 Shift F10 打开菜单`}
+        menu={
+          <>
+            <MenuItem onClick={startRename} shortcut="F2">
+              重命名
+            </MenuItem>
+            <MenuSeparator />
+            <MenuItem disabled>共享链接暂不可用</MenuItem>
+          </>
+        }
+      >
+        <Card>{name}</Card>
+      </ContextMenu>
+      <Button onClick={startRename}>重命名</Button>
+      <Dialog
+        open={open}
+        onOpenChange={setOpen}
+        title="重命名资源"
+        closeLabel="关闭"
+        initialFocus={input}
+        footer={
+          <Button type="submit" form={id} variant="primary" disabled={!draft.trim()}>
+            保存
+          </Button>
+        }
+      >
+        <form id={id} onSubmit={save}>
+          <Field htmlFor={id + '-name'} label="名称">
+            <TextBox
+              ref={input}
+              id={id + '-name'}
+              value={draft}
+              required
+              onChange={(event) => setDraft(event.currentTarget.value)}
+            />
+          </Field>
+        </form>
+      </Dialog>
+    </>
+  )
+}
+```
+
+上例的 F2 仅是菜单提示，没有绑定快捷键；触屏用户可用可见“重命名”按钮。Dialog 与 ContextMenu 为同级节点，避免把 Dialog 嵌入会参与菜单键盘事件冒泡的菜单内容。
+
+### 日志追加与单条通知
+
+```tsx example=logs-and-toast
+import { useState } from 'react'
+
+import { Button, LogEntry, type LogEntryProps, LogView, Toast } from 'cakeui'
+
+interface Entry {
+  id: number
+  time: string
+  dateTime: string
+  level: NonNullable<LogEntryProps['level']>
+  message: string
+}
+export function ActivityLog() {
+  const [entries, setEntries] = useState<Entry[]>([])
+  const [notice, setNotice] = useState({ open: false, key: 0 })
+  function append() {
+    const now = new Date()
+    setEntries((current) => [
+      ...current.slice(-199),
+      {
+        id: (current.at(-1)?.id ?? 0) + 1,
+        time: now.toLocaleTimeString(),
+        dateTime: now.toISOString(),
+        level: 'success',
+        message: '任务完成',
+      },
+    ])
+    setNotice((current) => ({ open: true, key: current.key + 1 }))
+  }
+  return (
+    <>
+      <Button onClick={append}>追加日志</Button>
+      <LogView follow aria-label="任务运行日志">
+        {entries.map((entry, index) => (
+          <LogEntry
+            key={entry.id}
+            level={entry.level}
+            dateTime={entry.dateTime}
+            time={index > 0 && entry.time === entries[index - 1].time ? undefined : entry.time}
+          >
+            {entry.message}
+          </LogEntry>
+        ))}
+      </LogView>
+      <Toast
+        key={notice.key}
+        open={notice.open}
+        onOpenChange={(open) => setNotice((current) => ({ ...current, open }))}
+        duration={4500}
+        tone="success"
+        closeLabel="关闭通知"
+      >
+        任务完成
+      </Toast>
+    </>
+  )
+}
+```
+
+示例限制保留 200 条日志，限制来自应用代码，LogView 不会自动截断。用于可复用的子组件示例省略重复 CSS import，宿主入口仍须引入一次样式。
+
+## 6. 主题、变量与动效
+
+三种配色分别有 light / dark 变体。可以在同一页面展示多个 Provider，菜单与 Dialog 保留在自己的主题 DOM 作用域中。全量变量与六套主题的精确值见自动生成附录。
+
+| 变量组                                                                       | 用途                                              |
+| ---------------------------------------------------------------------------- | ------------------------------------------------- |
+| --cake-bg / --cake-surface                                                   | 页面与卡片、弹层表面                              |
+| --cake-control / --cake-control-hover                                        | 普通控件常态与悬停背景                            |
+| --cake-text / --cake-muted                                                   | 正文与辅助文字                                    |
+| --cake-line / --cake-edge                                                    | 分隔线与内描边                                    |
+| --cake-hover / --cake-backdrop / --cake-shadow                               | 轻悬停背景、模态遮罩、弹层阴影                    |
+| --cake-accent / --cake-accent-soft / --cake-accent-hover / --cake-accent-ink | 主题色、填充、悬停填充与填充上的文字              |
+| --cake-success / --cake-warning / --cake-danger 及各自 -soft                 | 状态前景与背景                                    |
+| --cake-radius-small / -medium / -large / -dialog                             | 圆角，默认 10 / 14 / 20 / 26px                    |
+| --cake-control-height                                                        | 普通控件高度基线，comfortable 38px / compact 32px |
+| --cake-font / --cake-mono                                                    | 普通字体与日志、代码等宽字体                      |
+| --cake-fast / --cake-normal / --cake-slow / --cake-ease                      | 150 / 200 / 250ms 与缓出曲线                      |
+
+`--cake-tone` / `--cake-tone-soft` 是组件内部按 tone 计算的派生变量，推荐修改对应主题或状态变量而不是把它们当成全局配色入口。
+
+定制可用 Provider 的 style 设置变量（TypeScript 可用交叉类型为自定义属性建模），或者在引入 cakeui/style.css 之后加载应用样式，用自己的 className 调整。主题选择器可能有更高 specificity；覆盖具体主题颜色时可以限定自己的 `.app-theme.cake-theme`，需要超过带 data 属性的规则时增加明确的主题属性选择器。不要用大量 !important 遮盖层叠问题。
+
+```scss
+.app-theme.cake-theme {
+  --cake-font: 'Noto Sans SC', system-ui, sans-serif;
+  --cake-radius-small: 8px;
+}
+.app-theme.cake-theme[data-theme='blue'] {
+  --cake-accent: #426b91;
+}
+```
+
+字体按本机已安装字体回退，不下载远程字体。默认顺序包含 Inter Variable、SF Pro Text、Noto Sans SC、PingFang SC、Segoe UI Variable Text、system-ui；等宽字体使用 Cascadia Code / Consolas / monospace。
+
+默认 Button 的按压与 Interactive 区域下陷幅度均为 1px，不能为了加重效果给它们再叠加独立 transform 而不检查命中与定位。输入 focus 只保留一圈内描边；如果集成后出现双边框，检查消费项目的全局 input、focus、outline 和 box-shadow 规则。
+
+prefers-reduced-motion: reduce 将三个时长变量设为 0，并关闭 Spinner / Skeleton 的持续动画。业务状态与事件不等待 transitionend 或 animationend；即使动画关闭也应立即完成选择、关闭、提交和焦点恢复。
+
+## 7. 可访问性、交互验证与排错
+
+集成时逐项考虑：原生标签关系、图标按钮名称、禁用状态、键盘路径、当前焦点、页面缩放 / 窄视口、深色模式、减少动态效果、需要复制的内容。组件提供基础语义，但不会自动为业务内容补全名字、翻译英文标签或建立数据关系。
+
+| 现象                    | 优先检查                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------ |
+| 组件没有样式            | 是否导入 cakeui/style.css，是否安装本仓库打包产物，构建器是否允许 CSS import   |
+| 配色不是预期            | Provider 默认 blue/system；无 Provider 为 blue/light；Gallery 有独立本地持久化 |
+| 无法选择正文            | 根节点默认 user-select:none；给要复制的业务区域显式 user-select:text           |
+| 输入有两个边框          | 应用 reset / 全局 input 样式叠加了 border 或 outline；检查最终 computed style  |
+| ComboBox 仍为系统下拉   | 浏览器对 base-select / picker 的支持；多选或 size 路径；是否直接传 option      |
+| 输入无法编辑或重置      | 受控 value 没有在 onChange 更新，或 reset 只重置 DOM 未重置状态                |
+| Field 文字点击不聚焦    | htmlFor 与输入 id 是否一致；复合控件 id 是否落到真实输入上                     |
+| Tabs 没有内容           | 初始 value 为空、不匹配、被禁用，或外部 CSS 覆盖 hidden                        |
+| MenuItem 点击后不关闭   | onClick 是否 preventDefault；是否在 ContextMenu.menu 的作用域内                |
+| 右键松开执行了意外动作  | 以松开实际光标坐标为准，不以焦点为准；不要让业务动作绑定两套事件               |
+| Dialog 请求关闭却仍打开 | onOpenChange 是否更新受控 open，或应用校验是否刻意阻止关闭                     |
+| 提示不能通过键盘打开    | HoverTips 的 child 是否可聚焦且透传 aria-describedby；是否为 disabled 控件     |
+| Toast 新内容很快消失    | 仅替换 children 不重置计时；新通知使用新 key 或重新开启                        |
+| 日志不再自动滚到底      | 用户已经上翻，距离底部不少于 24px；follow 不负责无条件抢回滚动                 |
+| 构建报告导出不存在      | 对照 src/index.ts 和 Props 附录；不要按其他 UI 库命名猜测                      |
+
+目前不提供日期日历组件、树、富文本编辑器、多级菜单、拖拽系统、虚拟列表、Drawer 或 SidePanel。需要这些功能时先说明应用需求，再决定组合原生能力或增加独立实现，不伪造现有导出。
+
+## 8. 仓库结构、开发与验证
+
+```text
+ARCH.md                           原始设计需求与参考
+AGENTS.md                         本项目的 AI 协作和文档同步约定
+src/index.ts                      唯一公开组件 / 类型入口
+src/styles.scss                   全量 SCSS 入口
+src/components/Foo/index.tsx      每个公开组件的实现与 Props
+src/components/Foo/index.scss    对应样式
+src/components/CakeProvider/      主题与设计变量
+src/styles/_mixins.scss           输入、控件、菜单表面、状态色共享规则
+src/hooks/useControllable.ts      内部受控状态辅助，不公开导出
+src/focus.ts                      内部焦点停靠点查询
+demo/App/components/              Gallery 专用展示与组合示例
+docs/ai.md                        本文人工维护源
+scripts/docs.mjs                  纯文本生成与一致性检查
+public/llms.txt                   生成的简短索引
+public/llms-full.txt              生成的正文 + 公开类型 + 主题变量
+tests/components.test.tsx         单元 / DOM 行为验证
+tests/browser/                    真实 Chrome 交互与可访问性验证
+scripts/package-smoke.mjs         真实 tgz 消费、文档示例类型检查
+deploy/                          Nginx 与远端安装脚本
+scripts/deploy-gallery.ps1        Windows 部署入口
+```
+
+```sh
+npm run dev            # 本地 Gallery，通常为 http://127.0.0.1:5173
+npm run docs:build     # 从正文与源码重建两个纯文本文件
+npm run docs:check     # 检查生成结果、组件覆盖与源码一致，不修改文件
+npm run typecheck     # src / demo / tests 严格 TypeScript 检查
+npm test              # DOM、原生表单、受控状态、键盘、计时和滚动
+npm run build         # 组件库 ESM、声明文件与 CSS
+npm run build:demo    # 检查文档后输出静态 Gallery，包含两个纯文本文件
+npm run test:browser  # Chrome 真实交互、窄屏与 axe 检查
+npm run test:package  # 打包、离线安装、公开导出、SSR、文档示例类型与消费构建
+npm run format        # 项目格式化
+npm run check         # 文档、类型、单元测试、库与 Gallery 构建、格式检查
+```
+
+Windows 浏览器测试使用已安装 Google Chrome，其他系统需要先安装 Playwright Chromium。DOM 测试不能代替原生 dialog / Popover / picker 的真实浏览器验证。自动 axe 检查不能代替完整辅助技术人工验证。
+
+编码保持 TypeScript + SCSS，每个组件一个目录。具名函数用 function；匿名回调用箭头函数。样式为需要样式的元素分配 className，显式写出完整类名，不用 BEM、不用 `&-suffix` 拼接，不靠匿名标签后代选择器挂样式。优先 flex / grid；共享能力有真实复用需求后再提升。
+
+不使用 worktree。默认在当前分支工作，不为了普通改动创建分支。commit / push 前确认项目署名为 miku，不添加 AI / Codex 署名或 Co-Authored-By。完整协作规则见仓库根 AGENTS.md。
+
+## 9. 文档发布与后续维护
+
+每次改动都必须判断文档是否需要同步。公开 API、默认值、DOM / ref 目标、事件与关闭规则、主题变量、键盘或无障碍行为、兼容性、安装构建、Gallery 文档入口或部署方式发生变化时，更新相关文档与示例。纯内部重构若不改变这些内容，可以不改正文，但在交付说明中明确判断依据。不要为了形式要求制造无意义的文档改动。
+
+文档维护顺序：核对源码与测试 → 更新 docs/ai.md 对应段落 / 示例 → 必要时同步 README.md、docs/design.md、docs/deployment.md → 格式化 → npm run docs:build → npm run docs:check。新增公开组件必须有同名三级标题，并有具体的属性和行为说明。类型和主题变量附录自动生成，不手工编辑 public/llms*.txt。自动检查可以发现生成物过期、公开组件漏写等机械问题，不能代替维护者判断正文是否准确。
+
+Gallery 的“AI 技术文档”阅读页与纯文本使用同一份生成结果。全文是 UTF-8 的 text/plain，内部使用 Markdown 组织章节，包含代码和表格，但不是 HTML 页面。直接 GET 即可读取，不需要登录、运行 JavaScript 或先打开 Gallery。llms.txt 是短入口，真正生成代码前应读取 llms-full.txt；它们不是要求某个 AI 平台自动发现文档的保证。
+
+Gallery 构建会检查文档一致性，再将 public 中两个文件复制到 demo-dist。部署把 HTML、静态资源和文档作为同一版本上传并切换，避免站点更新却忘记发布新文档。纯文本路径明确使用 text/plain; charset=utf-8、no-cache，缺失文件返回 404 而不是 SPA HTML。
+
+本地 Vite 开发与 preview 通过文档中间件提供相同的 UTF-8 纯文本响应和 404 规则；开发读取 public，preview 读取构建输出目录。不依赖浏览器自行猜测编码。
+
+部署到 https://gallery.vanillacake.cn，复用 Ubuntu 上的 Nginx 和 Certbot / Let's Encrypt。Windows 使用 `./scripts/deploy-gallery.ps1`；已构建且内容未变化时可用 -SkipBuild。详细目录、证书续期和回退步骤见 `docs/deployment.md`。发布后验证 Gallery 链接可见、两条纯文本链接返回 200、Content-Type 正确、正文与本地生成结果一致。
+
+以上记录的是当前实现，不承诺未验证浏览器或未来版本的相同行为。修改库时同时修改描述；集成不同版本时以所安装包的类型与该版本源码为准。
+
+## 附录 A. 当前构建身份与公开导出
+
+- 包名：cakeui
+- 版本：0.1.0
+- 署名：miku
+- React peer：>=19.0.0；React DOM peer：>=19.0.0
+- 公开组件：48 个；下列列表与 src/index.ts 一致。
+- 文档 / package.json / src 内容指纹（SHA-256）：1991811b344bb9bf9e41d06ecbc17cb98ccb50436ca95cd44df565253a7a4581
+- 本文为生成结果，请修改 docs/ai.md 或相应源码后运行 npm run docs:build。
+
+Accordion, AccordionItem, Alert, Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, CakeProvider, Card, CheckBox, ComboBox, ContextMenu, Dialog, Dot, Field, GroupBox, HoverTips, ListItem, ListView, LogEntry, LogView, MenuItem, MenuSeparator, NumberBox, Pagination, ProgressBar, RadioButton, Separator, Skeleton, Slider, Spinner, Switch, Tab, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TabList, TabPanel, Tabs, Tag, TextArea, TextBox, Toast, WhatsThis
+
+## 附录 B. 完整公开 Props 与类型
+
+下列声明直接提取自公开入口所导出的源文件；原生属性由 React 类型扩展，不在这里重复 React 的完整 DOM 类型。组件对应同名 Props，例如 Button 使用 ButtonProps。默认值与行为见正文，类型中的可选标记不表达默认值。
+
+```typescript
+import type { ComponentPropsWithRef, ComponentPropsWithoutRef, ReactElement, ReactNode, RefObject } from 'react'
+
+export type AccordionProps = ComponentPropsWithRef<'div'>
+
+export interface AccordionItemProps extends Omit<ComponentPropsWithRef<'details'>, 'title'> {
+  title: ReactNode
+}
+
+export interface AlertProps extends ComponentPropsWithRef<'div'> {
+  tone?: Tone
+}
+
+export interface AvatarProps extends ComponentPropsWithRef<'span'> {
+  src?: string
+  name: string
+  size?: Size
+}
+
+export interface BadgeProps extends ComponentPropsWithRef<'span'> {
+  tone?: Tone
+}
+
+export type BreadcrumbProps = ComponentPropsWithRef<'nav'>
+
+export type BreadcrumbItemProps = ComponentPropsWithRef<'li'>
+
+export interface ButtonProps extends ComponentPropsWithRef<'button'> {
+  variant?: 'default' | 'primary' | 'ghost' | 'danger'
+  size?: Size
+  loading?: boolean
+}
+
+export type CakeTheme = 'blue' | 'pink' | 'gold'
+
+export type CakeMode = 'light' | 'dark' | 'system'
+
+export interface CakeProviderProps extends ComponentPropsWithRef<'div'> {
+  theme?: CakeTheme
+  mode?: CakeMode
+  density?: 'comfortable' | 'compact'
+}
+
+export interface CardProps extends ComponentPropsWithRef<'div'> {
+  padding?: 'none' | 'small' | 'medium' | 'large'
+}
+
+export interface CheckBoxProps extends Omit<ComponentPropsWithRef<'input'>, 'type' | 'size'> {
+  indeterminate?: boolean
+}
+
+export type ComboBoxProps = ComponentPropsWithRef<'select'>
+
+export interface ContextMenuProps extends ComponentPropsWithoutRef<'div'> {
+  menu: ReactNode
+  menuLabel: string
+  interactive?: boolean
+}
+
+export interface DialogProps extends Omit<ComponentPropsWithoutRef<'dialog'>, 'open' | 'title'> {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  title: ReactNode
+  description?: ReactNode
+  footer?: ReactNode
+  closeLabel?: string
+  closeOnBackdrop?: boolean
+  initialFocus?: RefObject<HTMLElement | null>
+}
+
+export interface DotProps extends ComponentPropsWithRef<'span'> {
+  tone?: Tone
+}
+
+export interface FieldProps extends ComponentPropsWithRef<'div'> {
+  label: ReactNode
+  htmlFor: string
+  description?: ReactNode
+  error?: ReactNode
+}
+
+export interface GroupBoxProps extends ComponentPropsWithRef<'fieldset'> {
+  label: ReactNode
+}
+
+export interface HoverTipsProps {
+  children: ReactElement<{ 'aria-describedby'?: string }>
+  content: ReactNode
+  delay?: number
+  placement?: 'top' | 'bottom'
+  className?: string
+}
+
+export type ListItemProps = ComponentPropsWithRef<'li'>
+
+export type ListViewProps = ComponentPropsWithRef<'ul'>
+
+export interface LogEntryProps extends ComponentPropsWithRef<'div'> {
+  time?: string
+  dateTime?: string
+  level?: 'info' | 'success' | 'warning' | 'error' | 'debug'
+}
+
+export interface LogViewProps extends ComponentPropsWithoutRef<'div'> {
+  follow?: boolean
+}
+
+export interface MenuItemProps extends ComponentPropsWithRef<'button'> {
+  shortcut?: ReactNode
+  danger?: boolean
+}
+
+export type MenuSeparatorProps = ComponentPropsWithRef<'div'>
+
+export type NumberBoxProps = Omit<ComponentPropsWithRef<'input'>, 'type'>
+
+export interface PaginationProps extends ComponentPropsWithRef<'nav'> {
+  page: number
+  count: number
+  onPageChange: (page: number) => void
+  previousLabel?: string
+  nextLabel?: string
+  pageLabel?: (page: number) => string
+}
+
+export type ProgressBarProps = ComponentPropsWithRef<'progress'>
+
+export type RadioButtonProps = Omit<ComponentPropsWithRef<'input'>, 'type' | 'size'>
+
+export type SeparatorProps = ComponentPropsWithRef<'hr'>
+
+export type SkeletonProps = ComponentPropsWithRef<'span'>
+
+export type SliderProps = Omit<ComponentPropsWithRef<'input'>, 'type'>
+
+export interface SpinnerProps extends ComponentPropsWithRef<'span'> {
+  size?: Size
+}
+
+export type SwitchProps = Omit<ComponentPropsWithRef<'input'>, 'type' | 'size'>
+
+export interface TabProps extends Omit<ComponentPropsWithRef<'button'>, 'value'> {
+  value: string
+}
+
+export type TableProps = ComponentPropsWithRef<'table'>
+
+export type TableBodyProps = ComponentPropsWithRef<'tbody'>
+
+export type TableCellProps = ComponentPropsWithRef<'td'>
+
+export type TableHeadProps = ComponentPropsWithRef<'thead'>
+
+export type TableHeaderProps = ComponentPropsWithRef<'th'>
+
+export type TableRowProps = ComponentPropsWithRef<'tr'>
+
+export type TabListProps = ComponentPropsWithRef<'div'>
+
+export interface TabPanelProps extends ComponentPropsWithRef<'div'> {
+  value: string
+}
+
+export interface TabsProps extends Omit<ComponentPropsWithRef<'div'>, 'onChange' | 'defaultValue'> {
+  value?: string
+  defaultValue?: string
+  onValueChange?: (value: string) => void
+  orientation?: 'horizontal' | 'vertical'
+}
+
+export interface TagProps extends ComponentPropsWithRef<'span'> {
+  tone?: Tone
+  onRemove?: () => void
+  removeLabel?: string
+}
+
+export type TextAreaProps = ComponentPropsWithRef<'textarea'>
+
+export type TextBoxProps = ComponentPropsWithRef<'input'>
+
+export interface ToastProps extends ComponentPropsWithoutRef<'div'> {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  duration?: number
+  tone?: Tone
+  closeLabel?: string
+}
+
+export interface WhatsThisProps {
+  children: ReactNode
+  label?: string
+}
+
+export type Size = 'small' | 'medium' | 'large'
+
+export type Tone = 'neutral' | 'accent' | 'success' | 'warning' | 'danger'
+```
+
+## 附录 C. 从 SCSS 生成的主题变量
+
+以下取 comfortable 密度、未开启减少动态效果时的值。compact 与 reduced-motion 的覆盖规则见正文。
+
+### 共用变量
+
+| 变量                    | 值                                                                                                                |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `--cake-control-height` | `38px`                                                                                                            |
+| `--cake-ease`           | `cubic-bezier(0.29, 0, 0, 1)`                                                                                     |
+| `--cake-edge`           | `inset 0 0 0 1px var(--cake-line)`                                                                                |
+| `--cake-fast`           | `150ms`                                                                                                           |
+| `--cake-font`           | `'Inter Variable', 'SF Pro Text', 'Noto Sans SC', 'PingFang SC', 'Segoe UI Variable Text', system-ui, sans-serif` |
+| `--cake-mono`           | `'Cascadia Code', 'Consolas', monospace`                                                                          |
+| `--cake-normal`         | `200ms`                                                                                                           |
+| `--cake-radius-dialog`  | `26px`                                                                                                            |
+| `--cake-radius-large`   | `20px`                                                                                                            |
+| `--cake-radius-medium`  | `14px`                                                                                                            |
+| `--cake-radius-small`   | `10px`                                                                                                            |
+| `--cake-slow`           | `250ms`                                                                                                           |
+
+### 六套配色的变量
+
+| 变量                   | blue / light                                  | blue / dark                               | pink / light                                  | pink / dark                               | gold / light                                  | gold / dark                               |
+| ---------------------- | --------------------------------------------- | ----------------------------------------- | --------------------------------------------- | ----------------------------------------- | --------------------------------------------- | ----------------------------------------- |
+| `--cake-accent`        | `#416b97`                                     | `#b5d2ef`                                 | `#93566e`                                     | `#efc3d4`                                 | `#8b654a`                                     | `#e8c8ad`                                 |
+| `--cake-accent-hover`  | `#c7ddf2`                                     | `#4a6d90`                                 | `#ebc9d8`                                     | `#825366`                                 | `#efc9aa`                                     | `#80614d`                                 |
+| `--cake-accent-ink`    | `#294866`                                     | `#f4f9ff`                                 | `#653b4b`                                     | `#fff7fa`                                 | `#513b2e`                                     | `#fff7ef`                                 |
+| `--cake-accent-soft`   | `#d6e7f7`                                     | `#3e5e7d`                                 | `#f1d8e3`                                     | `#71495a`                                 | `#f3d3b9`                                     | `#715543`                                 |
+| `--cake-backdrop`      | `#30394238`                                   | `#0007`                                   | `#30394238`                                   | `#0007`                                   | `#30394238`                                   | `#0007`                                   |
+| `--cake-bg`            | `#f6f8fb`                                     | `#202226`                                 | `#faf7f9`                                     | `#231f22`                                 | `#f8f5ef`                                     | `#211f1c`                                 |
+| `--cake-control`       | `#ffffffb8`                                   | `#ffffff12`                               | `#ffffffb8`                                   | `#ffffff12`                               | `#ffffffb8`                                   | `#ffffff12`                               |
+| `--cake-control-hover` | `#fff`                                        | `#ffffff1c`                               | `#fff`                                        | `#ffffff1c`                               | `#fff`                                        | `#ffffff1c`                               |
+| `--cake-danger`        | `#934a53`                                     | `#efb8be`                                 | `#934a53`                                     | `#efb8be`                                 | `#934a53`                                     | `#efb8be`                                 |
+| `--cake-danger-soft`   | `#f3dde0`                                     | `#9a596133`                               | `#f3dde0`                                     | `#9a596133`                               | `#f3dde0`                                     | `#9a596133`                               |
+| `--cake-hover`         | `#2b384509`                                   | `#ffffff0b`                               | `#2b384509`                                   | `#ffffff0b`                               | `#2b384509`                                   | `#ffffff0b`                               |
+| `--cake-line`          | `#2b38451a`                                   | `#f4f7fa1a`                               | `#2b38451a`                                   | `#f4f7fa1a`                               | `#2b38451a`                                   | `#f4f7fa1a`                               |
+| `--cake-muted`         | `#626d79`                                     | `#aab1b9`                                 | `#626d79`                                     | `#aab1b9`                                 | `#626d79`                                     | `#aab1b9`                                 |
+| `--cake-shadow`        | `0 0 0 1px #2b384514, 0 36px 100px #2b38451f` | `0 0 0 1px #ffffff14, 0 36px 100px #0005` | `0 0 0 1px #2b384514, 0 36px 100px #2b38451f` | `0 0 0 1px #ffffff14, 0 36px 100px #0005` | `0 0 0 1px #2b384514, 0 36px 100px #2b38451f` | `0 0 0 1px #ffffff14, 0 36px 100px #0005` |
+| `--cake-success`       | `#46654e`                                     | `#a9c8af`                                 | `#46654e`                                     | `#a9c8af`                                 | `#46654e`                                     | `#a9c8af`                                 |
+| `--cake-success-soft`  | `#dce9df`                                     | `#7b9b8233`                               | `#dce9df`                                     | `#7b9b8233`                               | `#dce9df`                                     | `#7b9b8233`                               |
+| `--cake-surface`       | `#fdfefe`                                     | `#2d3035`                                 | `#fdfefe`                                     | `#332d32`                                 | `#fdfefe`                                     | `#312e2a`                                 |
+| `--cake-text`          | `#29313a`                                     | `#edf0f3`                                 | `#29313a`                                     | `#edf0f3`                                 | `#29313a`                                     | `#edf0f3`                                 |
+| `--cake-warning`       | `#80602d`                                     | `#e2c18f`                                 | `#80602d`                                     | `#e2c18f`                                 | `#80602d`                                     | `#e2c18f`                                 |
+| `--cake-warning-soft`  | `#f3e7ce`                                     | `#b68c4133`                               | `#f3e7ce`                                     | `#b68c4133`                               | `#f3e7ce`                                     | `#b68c4133`                               |

@@ -23,6 +23,28 @@
 
 HTML 每次重新验证缓存；带哈希的资源长期缓存。工作台无需 Node.js 常驻服务，运行时不提供后端或收集业务数据。
 
+## AI 技术文档
+
+- 阅读页：[Gallery AI 技术文档](https://gallery.vanillacake.cn/?page=docs)
+- 完整纯文本：[llms-full.txt](https://gallery.vanillacake.cn/llms-full.txt)
+- 简短索引：[llms.txt](https://gallery.vanillacake.cn/llms.txt)
+
+正文在 `docs/ai.md` 维护。运行 `npm run docs:build` 从正文、公开类型与主题 SCSS 生成 `public/llms.txt` 和 `public/llms-full.txt`，`npm run docs:check` 检查内容是否一致以及公开组件是否遗漏。`build:demo` 在构建前检查，Vite 将生成文件复制到 `demo-dist`。`-SkipBuild` 也会检查文档与构建目录是否一致，避免上线旧文档。
+
+Nginx 为 `/llms.txt` 与 `/llms-*.txt` 使用专门的静态文件规则，响应 `Content-Type: text/plain; charset=utf-8` 与 `Cache-Control: no-cache`，缺失文件返回 404，不回退到 SPA HTML。客户端无需登录或执行 JavaScript，即可 GET 完整文档。阅读页加载同一个全文文件，库 API、站点与文档按同一发布目录切换。
+
+本地 Vite 开发和 preview 同样通过文档中间件声明 UTF-8 与纯文本类型，避免浏览器在无 JavaScript 页面中猜测错误编码。开发读取 `public`，preview 读取所构建的输出目录；缺失文档也返回 404。
+
+远端安装脚本检查两个文档存在，部署后核对 HTTPS 内容、Content-Type 和缺失文档的 404，失败则回退。对外验证可执行：
+
+```sh
+curl -I https://gallery.vanillacake.cn/llms-full.txt
+curl --fail https://gallery.vanillacake.cn/llms.txt
+curl -I https://gallery.vanillacake.cn/llms-missing.txt
+```
+
+后续每次改动都按 `AGENTS.md` 判断是否影响文档。类型与变量可以自动提取，交互语义、默认值和示例仍需人工核对。修改 API 或示例后运行 `npm run test:package`，会在真实 tgz 消费项目中检查文档 TSX 示例与生成的公开类型附录。
+
 ## 证书续期
 
 复用服务器已启用的 `snap.certbot.renew.timer`。证书使用可自动续期的 webroot 验证，成功后检查并重新加载 Nginx。验证单个站点的续期：

@@ -19,6 +19,7 @@ const result = JSON.parse(
 const tarball = resolve(consumer, result[0].filename)
 assert(result[0].files.some((file) => file.path === 'dist/cakeui.css'))
 assert(result[0].files.some((file) => file.path === 'dist/index.d.ts'))
+assert(result[0].files.some((file) => file.path === 'docs/ai.md'))
 assert(!result[0].files.some((file) => file.path.startsWith('demo/') || file.path.includes('node_modules')))
 writeFileSync(
   resolve(consumer, 'package.json'),
@@ -43,6 +44,14 @@ const app = <CakeProvider theme="gold"><TextBox ref={ref} name="name" /><Button 
 document.querySelector('#app')!.innerHTML = renderToStaticMarkup(createElement('div', null, app))
 `
 )
+const documentation = readFileSync(resolve(consumer, 'node_modules/cakeui/docs/ai.md'), 'utf8')
+const examples = [...documentation.matchAll(/^```tsx example=([\w-]+)\r?\n([\s\S]*?)^```/gm)]
+assert(examples.length > 0, 'Technical documentation must include complete TSX examples.')
+for (const [, name, code] of examples) writeFileSync(resolve(consumer, `docs-${name}.tsx`), code)
+const reference = readFileSync(resolve(root, 'public/llms-full.txt'), 'utf8')
+const publicTypes = reference.match(/## 附录 B\.[\s\S]*?```typescript\r?\n([\s\S]*?)```/)?.[1]
+assert(publicTypes, 'The generated public type appendix is missing.')
+writeFileSync(resolve(consumer, 'docs-public-types.ts'), publicTypes)
 writeFileSync(
   resolve(consumer, 'tsconfig.json'),
   JSON.stringify({
@@ -57,7 +66,7 @@ writeFileSync(
       noUncheckedSideEffectImports: true,
       types: ['vite/client'],
     },
-    include: ['main.tsx'],
+    include: ['*.tsx', 'docs-public-types.ts'],
   })
 )
 execFileSync(
@@ -89,4 +98,6 @@ execFileSync(
 )
 const packaged = JSON.parse(readFileSync(resolve(consumer, 'node_modules/cakeui/package.json'), 'utf8'))
 assert.equal(Object.keys(packaged.dependencies ?? {}).length, 0)
-console.log(`Package check passed: declarations, CSS exports, ESM, SSR and consumer build.\nArchive: ${tarball}`)
+console.log(
+  `Package check passed: declarations, CSS exports, ESM, SSR, ${examples.length} documentation examples, public type appendix and consumer build.\nArchive: ${tarball}`
+)
