@@ -47,10 +47,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:browser": "playwright test",
+    "test:release": "node --test tests/release.test.mjs",
     "test:package": "npm run docs:check && npm run build && node scripts/package-smoke.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run docs:check && npm run typecheck && npm test && npm run build && npm run build:demo && npm run format:check",
+    "check": "npm run docs:check && npm run typecheck && npm test && npm run test:release && npm run build && npm run build:demo && npm run format:check",
     "prepack": "npm run docs:check && npm run build"
   },
   "peerDependencies": {

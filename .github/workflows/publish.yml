@@ -1,0 +1,92 @@
+name: Publish npm package
+
+on:
+  push:
+    tags: ['v*']
+  # Manual runs validate the complete release artifact without publishing.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
+env:
+  NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+
+jobs:
+  validate:
+    name: Validate release artifact
+    if: github.repository == 'hatsune-miku/cakeui'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
+      - name: Install OIDC-capable npm
+        run: npm install --global npm@11.19.1
+      - name: Check package identity and release version
+        id: release
+        run: node scripts/release.mjs check
+      - run: npm ci
+      - run: npm run check
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - name: Test and retain the exact package to publish
+        run: npm run test:package -- --artifact-dir .cache/release
+      - name: Verify package integrity and dry-run publishing
+        env:
+          NPM_DIST_TAG: ${{ steps.release.outputs.dist_tag }}
+        run: |
+          node scripts/release.mjs verify
+          npm publish .cache/release/package.tgz --dry-run --ignore-scripts --access public --tag "$NPM_DIST_TAG"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: npm-package
+          path: .cache/release/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish with npm Trusted Publishing
+    needs: validate
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
+      - name: Install OIDC-capable npm
+        run: npm install --global npm@11.19.1
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          name: npm-package
+          path: .cache/release/
+      - name: Recheck identity, integrity and version availability
+        id: release
+        run: node scripts/release.mjs verify
+      - name: Publish the verified tarball using OIDC
+        env:
+          NPM_DIST_TAG: ${{ steps.release.outputs.dist_tag }}
+        # npm exchanges GitHub OIDC credentials and generates provenance automatically.
+        # Configure this exact workflow filename in npm; no NPM_TOKEN is needed.
+        run: npm publish .cache/release/package.tgz --ignore-scripts --access public --tag "$NPM_DIST_TAG"
+      - name: Verify the public registry artifact
+        run: node scripts/release.mjs verify-published

@@ -799,6 +799,10 @@ public/llms-full.txt              生成的正文 + 公开类型 + 主题变量
 tests/components.test.tsx         单元 / DOM 行为验证
 tests/browser/                    真实 Chrome 交互与可访问性验证
 scripts/package-smoke.mjs         真实 tgz 消费、文档示例类型检查
+scripts/release.mjs               npm 发布身份 / 版本 / artifact / 注册表校验
+tests/release.test.mjs            发布保护的边界与失败路径测试
+.github/workflows/publish.yml     GitHub OIDC 发布；手动运行只验证
+docs/publishing.md               npm Trusted Publisher 配置与发布操作
 deploy/                          Nginx 与远端安装脚本
 scripts/deploy-gallery.ps1        Windows 部署入口
 ```
@@ -809,12 +813,13 @@ npm run docs:build     # 从正文与源码重建两个纯文本文件
 npm run docs:check     # 检查生成结果、组件覆盖与源码一致，不修改文件
 npm run typecheck     # src / demo / tests 严格 TypeScript 检查
 npm test              # DOM、原生表单、受控状态、键盘、计时和滚动
+npm run test:release   # 版本 tag、包身份、注册表失败与 artifact 完整性保护
 npm run build         # 组件库 ESM、声明文件与 CSS
 npm run build:demo    # 检查文档后输出静态 Gallery，包含两个纯文本文件
 npm run test:browser  # Chrome 真实交互、窄屏与 axe 检查
 npm run test:package  # 打包、离线安装、公开导出、SSR、文档示例类型与消费构建
 npm run format        # 项目格式化
-npm run check         # 文档、类型、单元测试、库与 Gallery 构建、格式检查
+npm run check         # 文档、类型、单元 / 发布保护测试、库与 Gallery 构建、格式检查
 ```
 
 Windows 浏览器测试使用已安装 Google Chrome，其他系统需要先安装 Playwright Chromium。DOM 测试不能代替原生 dialog / Popover / picker 的真实浏览器验证。自动 axe 检查不能代替完整辅助技术人工验证。
@@ -823,7 +828,17 @@ Windows 浏览器测试使用已安装 Google Chrome，其他系统需要先安�
 
 不使用 worktree。默认在当前分支工作，不为了普通改动创建分支。commit / push 前确认项目署名为 miku，不添加 AI / Codex 署名或 Co-Authored-By。完整协作规则见仓库根 AGENTS.md。
 
-## 9. 文档发布与后续维护
+## 9. npm Trusted Publishing
+
+`.github/workflows/publish.yml` 使用 GitHub OIDC 发布 `@a1knla/cakeui`，不需要 npm token。GitHub 托管 Ubuntu runner 使用 Node 24 与 npm 11.19.1。推送 `v<package.json.version>` tag 时自动发布；Actions 的 Run workflow 始终只做验证，即使选择 tag 也不发布。普通分支 push、PR 和 GitHub Release 事件不触发此流程。
+
+首次使用前，在 npm 包 Settings → Trusted publishing 配置 GitHub Actions：用户 `hatsune-miku`、仓库 `cakeui`、文件名 `publish.yml`、Environment 留空，并明确允许 `npm publish`。仅有工作流文件或一次成功的手动验证不能证明 npm 侧信任已配置。npm 的新配置可能默认仅允许 `npm stage publish`，不能用于此工作流的直接发布。完整操作、官方来源与排错见仓库 [docs/publishing.md](https://github.com/hatsune-miku/cakeui/blob/main/docs/publishing.md)。
+
+验证 job 检查文档、类型、DOM 与发布保护测试、库 / Gallery 构建、格式、真实浏览器和实际包消费。`npm run test:package -- --artifact-dir .cache/release` 在包验证成功后保留同一个 tgz 及 SHA-512 元数据。发布 job 才授予 `id-token: write`，下载本次运行的 artifact，校验包名 / 版本 / 摘要并确认 npm 中该版本不存在，然后使用 `--ignore-scripts` 发布原 tgz。稳定版使用 `latest`，预发布版使用 `next`；拒绝不匹配的 tag、过期锁文件、带 `+build` 的版本以及注册表检查异常。发布后校验官方注册表的 dist.integrity。当前已发布的 `0.1.0` 不可重复发布，不为了测试工作流提升版本。
+
+`package.json.repository.url` 保持 `git+https://github.com/hatsune-miku/cakeui.git`，包和 Git 提交作者均使用 `miku`。公共仓库通过 Trusted Publishing 发布公共包时自动附带 provenance；OIDC 认证和 provenance 需在实际发布时验证。此工作流不自动部署 Gallery；文档或示例变动时仍按部署流程更新站点。将来修改工作流文件名、GitHub Environment、包身份、版本策略或验证步骤时同步维护本节与发布说明。
+
+## 10. 文档发布与后续维护
 
 每次改动都必须判断文档是否需要同步。公开 API、默认值、DOM / ref 目标、事件与关闭规则、主题变量、键盘或无障碍行为、兼容性、安装构建、Gallery 文档入口或部署方式发生变化时，更新相关文档与示例。纯内部重构若不改变这些内容，可以不改正文，但在交付说明中明确判断依据。不要为了形式要求制造无意义的文档改动。
 
