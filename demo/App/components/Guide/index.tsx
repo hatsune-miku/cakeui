@@ -5,16 +5,16 @@ import './index.scss'
 export function Guide() {
   return (
     <div className="demo-guide">
-      <Alert tone="neutral">0.1.0 本地初版，尚未发布到 npm。可以先构建并通过本地打包文件集成。</Alert>
+      <Alert tone="neutral">0.1.0 初版 · npm 包名 @a1knla/cakeui，需要 React 19 或更高版本。</Alert>
       <Card padding="large">
         <div className="demo-row">
           <Tag tone="accent">01</Tag>
-          <h2 className="demo-card-title">打包并安装</h2>
+          <h2 className="demo-card-title">从 npm 安装</h2>
         </div>
         <pre className="demo-doc-code">
           <code>
             {
-              '# 在 CakeUI 目录\nnpm install\nnpm run build\nnpm pack\n\n# 在你的 React 19 项目\nnpm install /path/to/cakeui-0.1.0.tgz'
+              '# 在已有 React 19 项目中\nnpm install @a1knla/cakeui\n\n# 验证本地改动时，在 CakeUI 目录打包\nnpm pack\n# 在消费项目安装生成的文件\nnpm install /path/to/a1knla-cakeui-0.1.0.tgz'
             }
           </code>
         </pre>
@@ -27,7 +27,7 @@ export function Guide() {
         <pre className="demo-doc-code">
           <code>
             {
-              'import { CakeProvider, Button, TextBox } from \'cakeui\'\nimport \'cakeui/style.css\'\n\nexport function App() {\n  return (\n    <CakeProvider theme="blue" mode="system">\n      <TextBox aria-label="名称" placeholder="输入名称" />\n      <Button variant="primary">保存</Button>\n    </CakeProvider>\n  )\n}'
+              'import { CakeProvider, Button, TextBox } from \'@a1knla/cakeui\'\nimport \'@a1knla/cakeui/style.css\'\n\nexport function App() {\n  return (\n    <CakeProvider theme="blue" mode="system">\n      <TextBox aria-label="名称" placeholder="输入名称" />\n      <Button variant="primary">保存</Button>\n    </CakeProvider>\n  )\n}'
             }
           </code>
         </pre>

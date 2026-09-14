@@ -25,29 +25,39 @@ CakeUI 是 React + TypeScript + SCSS 的组件库，面向日常长期使用的�
 - 表格、列表、菜单、日志、标签页通过 JSX children 组合。没有 `columns`、`dataSource`、`items`、`renderItem` 或通用 `asChild` / `as` 属性。
 - 不导入 Drawer、SidePanel、Select、Input、Tooltip、Modal、Checkbox 等未导出的名称。实际名称分别是 `ComboBox`、`TextBox`、`HoverTips`、`Dialog`、`CheckBox`；本项目没有 Drawer 或侧边面板组件。
 - 默认配色为蓝；`theme` 使用英文值 `blue` / `pink` / `gold`，面向用户的名称为“蓝 / 粉 / 金”。
-- 必须显式引入 `cakeui/style.css`。无需 Tailwind、CSS-in-JS、全局通知服务、图标包或额外 Provider 服务。
+- 必须显式引入 `@a1knla/cakeui/style.css`。无需 Tailwind、CSS-in-JS、全局通知服务、图标包或额外 Provider 服务。
 - 功能是否存在以当前源码和类型为准。不要将工作台的搜索、任务管理、主题持久化、图标或 Toast 调用函数当成库导出。
 
 ## 2. 安装、入口与执行环境
 
-组件库目前尚未发布到 npm。不要假设注册表上的同名包就是本仓库。先从本仓库构建并打包，再安装生成的 tgz。开发环境使用 Node.js 22.12+ 和 npm，运行项目时 React 与 React DOM 都应为 19 或更高版本。
+正式包名是 `@a1knla/cakeui`，npm 页面为 https://www.npmjs.com/package/@a1knla/cakeui 。品牌名与 GitHub 仓库仍为 CakeUI / cakeui；安装和导入时必须包含 `@a1knla/` scope。开发环境使用 Node.js 22.12+ 和 npm，运行项目时 React 与 React DOM 都应为 19 或更高版本。
+
+在已有 React 19 项目中安装：
+
+```sh
+npm install @a1knla/cakeui
+```
+
+如果使用的 npm 镜像还未同步新版本，可追加 `--registry=https://registry.npmjs.org/` 从官方注册表安装。维护者发布步骤、验证方式与署名约定见 `docs/publishing.md`。
+
+需要验证未发布的本地改动时，仍可从仓库打包安装：
 
 ```sh
 git clone https://github.com/hatsune-miku/cakeui.git
 cd cakeui
 npm ci
 npm pack
-# npm pack 的 prepack 会构建库；将输出的 cakeui-<版本>.tgz 交给消费项目
+# npm pack 的 prepack 会构建库；将输出的 a1knla-cakeui-<版本>.tgz 交给消费项目
 
 # 在已有 React 19 项目内，用实际文件名替换占位符
-npm install /absolute/path/to/cakeui-<版本>.tgz
+npm install /absolute/path/to/a1knla-cakeui-<版本>.tgz
 ```
 
 使用方式：
 
 ```tsx example=hello
-import { Button, CakeProvider, TextBox } from 'cakeui'
-import 'cakeui/style.css'
+import { Button, CakeProvider, TextBox } from '@a1knla/cakeui'
+import '@a1knla/cakeui/style.css'
 
 export function HelloCakeUI() {
   return (
@@ -378,7 +388,7 @@ onClick 先执行；未 preventDefault 时通过内部 context 请求关闭菜�
 ```tsx example=settings-form
 import { type FormEvent, useId, useState } from 'react'
 
-import { Button, CheckBox, ComboBox, Field, GroupBox, NumberBox, TextArea, TextBox } from 'cakeui'
+import { Button, CheckBox, ComboBox, Field, GroupBox, NumberBox, TextArea, TextBox } from '@a1knla/cakeui'
 
 export function SettingsForm() {
   const id = useId()
@@ -451,7 +461,7 @@ export function SettingsForm() {
 ```tsx example=controlled-inputs
 import { useId, useState } from 'react'
 
-import { Field, GroupBox, RadioButton, Slider, Switch, TextBox } from 'cakeui'
+import { Field, GroupBox, RadioButton, Slider, Switch, TextBox } from '@a1knla/cakeui'
 
 export function Preferences() {
   const id = useId()
@@ -518,7 +528,7 @@ import {
   TableHeader,
   TableRow,
   Tabs,
-} from 'cakeui'
+} from '@a1knla/cakeui'
 
 const files = [
   { id: '1', name: '说明.md', kind: '文档' },
@@ -575,7 +585,7 @@ export function FileWorkspace() {
 ```tsx example=interactive-dialog
 import { type FormEvent, useId, useRef, useState } from 'react'
 
-import { Button, Card, ContextMenu, Dialog, Field, MenuItem, MenuSeparator, TextBox } from 'cakeui'
+import { Button, Card, ContextMenu, Dialog, Field, MenuItem, MenuSeparator, TextBox } from '@a1knla/cakeui'
 
 export function RenameResource() {
   const id = useId()
@@ -648,7 +658,7 @@ export function RenameResource() {
 ```tsx example=logs-and-toast
 import { useState } from 'react'
 
-import { Button, LogEntry, type LogEntryProps, LogView, Toast } from 'cakeui'
+import { Button, LogEntry, type LogEntryProps, LogView, Toast } from '@a1knla/cakeui'
 
 interface Entry {
   id: number
@@ -726,7 +736,7 @@ export function ActivityLog() {
 
 `--cake-tone` / `--cake-tone-soft` 是组件内部按 tone 计算的派生变量，推荐修改对应主题或状态变量而不是把它们当成全局配色入口。
 
-定制可用 Provider 的 style 设置变量（TypeScript 可用交叉类型为自定义属性建模），或者在引入 cakeui/style.css 之后加载应用样式，用自己的 className 调整。主题选择器可能有更高 specificity；覆盖具体主题颜色时可以限定自己的 `.app-theme.cake-theme`，需要超过带 data 属性的规则时增加明确的主题属性选择器。不要用大量 !important 遮盖层叠问题。
+定制可用 Provider 的 style 设置变量（TypeScript 可用交叉类型为自定义属性建模），或者在引入 @a1knla/cakeui/style.css 之后加载应用样式，用自己的 className 调整。主题选择器可能有更高 specificity；覆盖具体主题颜色时可以限定自己的 `.app-theme.cake-theme`，需要超过带 data 属性的规则时增加明确的主题属性选择器。不要用大量 !important 遮盖层叠问题。
 
 ```scss
 .app-theme.cake-theme {
@@ -748,23 +758,23 @@ prefers-reduced-motion: reduce 将三个时长变量设为 0，并关闭 Spinner
 
 集成时逐项考虑：原生标签关系、图标按钮名称、禁用状态、键盘路径、当前焦点、页面缩放 / 窄视口、深色模式、减少动态效果、需要复制的内容。组件提供基础语义，但不会自动为业务内容补全名字、翻译英文标签或建立数据关系。
 
-| 现象                    | 优先检查                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------ |
-| 组件没有样式            | 是否导入 cakeui/style.css，是否安装本仓库打包产物，构建器是否允许 CSS import   |
-| 配色不是预期            | Provider 默认 blue/system；无 Provider 为 blue/light；Gallery 有独立本地持久化 |
-| 无法选择正文            | 根节点默认 user-select:none；给要复制的业务区域显式 user-select:text           |
-| 输入有两个边框          | 应用 reset / 全局 input 样式叠加了 border 或 outline；检查最终 computed style  |
-| ComboBox 仍为系统下拉   | 浏览器对 base-select / picker 的支持；多选或 size 路径；是否直接传 option      |
-| 输入无法编辑或重置      | 受控 value 没有在 onChange 更新，或 reset 只重置 DOM 未重置状态                |
-| Field 文字点击不聚焦    | htmlFor 与输入 id 是否一致；复合控件 id 是否落到真实输入上                     |
-| Tabs 没有内容           | 初始 value 为空、不匹配、被禁用，或外部 CSS 覆盖 hidden                        |
-| MenuItem 点击后不关闭   | onClick 是否 preventDefault；是否在 ContextMenu.menu 的作用域内                |
-| 右键松开执行了意外动作  | 以松开实际光标坐标为准，不以焦点为准；不要让业务动作绑定两套事件               |
-| Dialog 请求关闭却仍打开 | onOpenChange 是否更新受控 open，或应用校验是否刻意阻止关闭                     |
-| 提示不能通过键盘打开    | HoverTips 的 child 是否可聚焦且透传 aria-describedby；是否为 disabled 控件     |
-| Toast 新内容很快消失    | 仅替换 children 不重置计时；新通知使用新 key 或重新开启                        |
-| 日志不再自动滚到底      | 用户已经上翻，距离底部不少于 24px；follow 不负责无条件抢回滚动                 |
-| 构建报告导出不存在      | 对照 src/index.ts 和 Props 附录；不要按其他 UI 库命名猜测                      |
+| 现象                    | 优先检查                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------------ |
+| 组件没有样式            | 是否导入 @a1knla/cakeui/style.css，是否安装本仓库打包产物，构建器是否允许 CSS import |
+| 配色不是预期            | Provider 默认 blue/system；无 Provider 为 blue/light；Gallery 有独立本地持久化       |
+| 无法选择正文            | 根节点默认 user-select:none；给要复制的业务区域显式 user-select:text                 |
+| 输入有两个边框          | 应用 reset / 全局 input 样式叠加了 border 或 outline；检查最终 computed style        |
+| ComboBox 仍为系统下拉   | 浏览器对 base-select / picker 的支持；多选或 size 路径；是否直接传 option            |
+| 输入无法编辑或重置      | 受控 value 没有在 onChange 更新，或 reset 只重置 DOM 未重置状态                      |
+| Field 文字点击不聚焦    | htmlFor 与输入 id 是否一致；复合控件 id 是否落到真实输入上                           |
+| Tabs 没有内容           | 初始 value 为空、不匹配、被禁用，或外部 CSS 覆盖 hidden                              |
+| MenuItem 点击后不关闭   | onClick 是否 preventDefault；是否在 ContextMenu.menu 的作用域内                      |
+| 右键松开执行了意外动作  | 以松开实际光标坐标为准，不以焦点为准；不要让业务动作绑定两套事件                     |
+| Dialog 请求关闭却仍打开 | onOpenChange 是否更新受控 open，或应用校验是否刻意阻止关闭                           |
+| 提示不能通过键盘打开    | HoverTips 的 child 是否可聚焦且透传 aria-describedby；是否为 disabled 控件           |
+| Toast 新内容很快消失    | 仅替换 children 不重置计时；新通知使用新 key 或重新开启                              |
+| 日志不再自动滚到底      | 用户已经上翻，距离底部不少于 24px；follow 不负责无条件抢回滚动                       |
+| 构建报告导出不存在      | 对照 src/index.ts 和 Props 附录；不要按其他 UI 库命名猜测                            |
 
 目前不提供日期日历组件、树、富文本编辑器、多级菜单、拖拽系统、虚拟列表、Drawer 或 SidePanel。需要这些功能时先说明应用需求，再决定组合原生能力或增加独立实现，不伪造现有导出。
 
