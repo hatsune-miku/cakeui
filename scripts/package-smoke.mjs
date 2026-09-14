@@ -36,15 +36,15 @@ writeFileSync(
   resolve(consumer, 'main.tsx'),
   `import { createElement, createRef } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { Button, CakeProvider, ContextMenu, MenuItem, Dialog, TextBox, Tabs, TabList, Tab, TabPanel, type ButtonProps } from 'cakeui'
-import 'cakeui/style.css'
+import { Button, CakeProvider, ContextMenu, MenuItem, Dialog, TextBox, Tabs, TabList, Tab, TabPanel, type ButtonProps } from '@a1knla/cakeui'
+import '@a1knla/cakeui/style.css'
 const props: ButtonProps = { variant: 'primary', type: 'submit' }
 const ref = createRef<HTMLInputElement>()
 const app = <CakeProvider theme="gold"><TextBox ref={ref} name="name" /><Button {...props}>Save</Button><ContextMenu interactive menuLabel="Actions" menu={<MenuItem>Copy</MenuItem>}>Target</ContextMenu><Tabs value="a"><TabList><Tab value="a">A</Tab></TabList><TabPanel value="a">Content</TabPanel></Tabs><Dialog title="Details" open={false} onOpenChange={() => {}}>Details</Dialog></CakeProvider>
 document.querySelector('#app')!.innerHTML = renderToStaticMarkup(createElement('div', null, app))
 `
 )
-const documentation = readFileSync(resolve(consumer, 'node_modules/cakeui/docs/ai.md'), 'utf8')
+const documentation = readFileSync(resolve(consumer, 'node_modules/@a1knla/cakeui/docs/ai.md'), 'utf8')
 const examples = [...documentation.matchAll(/^```tsx example=([\w-]+)\r?\n([\s\S]*?)^```/gm)]
 assert(examples.length > 0, 'Technical documentation must include complete TSX examples.')
 for (const [, name, code] of examples) writeFileSync(resolve(consumer, `docs-${name}.tsx`), code)
@@ -78,7 +78,7 @@ writeFileSync(
   resolve(consumer, 'ssr.mjs'),
   `import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import * as ui from 'cakeui'
+import * as ui from '@a1knla/cakeui'
 import assert from 'node:assert/strict'
 assert.equal(Object.keys(ui).length, 48)
 assert.match(renderToStaticMarkup(createElement(ui.Button, { variant: 'primary' }, 'Save')), /cake-button/)
@@ -96,7 +96,7 @@ execFileSync(
   [resolve(root, 'node_modules/vite/bin/vite.js'), 'build', '--config', resolve(consumer, 'vite.config.mjs')],
   { cwd: consumer, stdio: 'inherit' }
 )
-const packaged = JSON.parse(readFileSync(resolve(consumer, 'node_modules/cakeui/package.json'), 'utf8'))
+const packaged = JSON.parse(readFileSync(resolve(consumer, 'node_modules/@a1knla/cakeui/package.json'), 'utf8'))
 assert.equal(Object.keys(packaged.dependencies ?? {}).length, 0)
 console.log(
   `Package check passed: declarations, CSS exports, ESM, SSR, ${examples.length} documentation examples, public type appendix and consumer build.\nArchive: ${tarball}`

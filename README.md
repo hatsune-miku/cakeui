@@ -4,7 +4,9 @@
 
 TypeScript + SCSS，48 个可组合组件，粉 / 蓝 / 金三套配色及明暗模式。运行时只有 React 与 React DOM 两个 peer dependencies，不依赖 Tailwind、CSS-in-JS、图标库或第三方 UI 库。
 
-当前为 **0.1.0 初版，组件库尚未发布到 npm**。
+当前为 **0.1.0 初版**，npm 包名为 **[@a1knla/cakeui](https://www.npmjs.com/package/@a1knla/cakeui)**。
+
+后续版本发布流程见 [npm 发布说明](docs/publishing.md)。
 
 在线工作台：[gallery.vanillacake.cn](https://gallery.vanillacake.cn)。更新部署与证书续期见 [部署说明](docs/deployment.md)。
 
@@ -38,21 +40,21 @@ Windows 浏览器测试默认使用已安装的 Google Chrome；其他系统使�
 
 ## 集成
 
-在 CakeUI 目录打包：
+在已有的 React 19 项目中安装：
 
 ```sh
-npm pack
+npm install @a1knla/cakeui
 ```
 
-在一个已有的 React 19 项目中安装生成的 `cakeui-0.1.0.tgz`：
+需要测试本地改动时，也可以在 CakeUI 目录运行 `npm pack`，然后安装生成的 `a1knla-cakeui-0.1.0.tgz`：
 
 ```sh
-npm install /path/to/cakeui-0.1.0.tgz
+npm install /path/to/a1knla-cakeui-0.1.0.tgz
 ```
 
 ```tsx
-import { Button, CakeProvider, Field, TextBox } from 'cakeui'
-import 'cakeui/style.css'
+import { Button, CakeProvider, Field, TextBox } from '@a1knla/cakeui'
+import '@a1knla/cakeui/style.css'
 
 export function Settings() {
   return (
@@ -84,7 +86,7 @@ function save(event: React.FormEvent<HTMLFormElement>) {
 
 ## 组件
 
-所有组件和对应的 `*Props` 类型均从 `cakeui` 导出。主题类型是 `CakeTheme` / `CakeMode`，公共类型是 `Size` / `Tone`。
+所有组件和对应的 `*Props` 类型均从 `@a1knla/cakeui` 导出。主题类型是 `CakeTheme` / `CakeMode`，公共类型是 `Size` / `Tone`。
 
 | 分类 | 组件                                                                                           |
 | ---- | ---------------------------------------------------------------------------------------------- |

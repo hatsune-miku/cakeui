@@ -160,7 +160,7 @@ const index = await format(
 
 > React + TypeScript + SCSS UI components. Native HTML props, composable JSX children. Default blue theme. Author: ${pkg.author}. Version: ${pkg.version}.
 
-CakeUI 当前尚未发布到 npm，请使用仓库构建的 tgz。需要 React / React DOM 19+，显式导入 cakeui/style.css。不要凭其他 UI 库的习惯猜测 API。
+安装：npm install ${pkg.name}。需要 React / React DOM 19+，显式导入 ${pkg.name}/style.css。包名包含 @a1knla/ scope，品牌名和 GitHub 仓库仍为 CakeUI / cakeui。不要凭其他 UI 库的习惯猜测 API。
 
 ## 文档 / Documentation
 

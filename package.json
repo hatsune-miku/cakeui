@@ -1,5 +1,5 @@
 {
-  "name": "cakeui",
+  "name": "@a1knla/cakeui",
   "version": "0.1.0",
   "description": "Small, familiar React components for software you use every day.",
   "type": "module",
@@ -9,6 +9,10 @@
     "url": "git+https://github.com/hatsune-miku/cakeui.git"
   },
   "homepage": "https://gallery.vanillacake.cn",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "bugs": {
     "url": "https://github.com/hatsune-miku/cakeui/issues"
   },
@@ -17,6 +21,7 @@
     "README.md",
     "docs/ai.md",
     "docs/design.md",
+    "docs/publishing.md",
     "docs/deployment.md"
   ],
   "main": "./dist/index.js",
