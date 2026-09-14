@@ -40,6 +40,14 @@ jobs:
       - run: npm run check
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
+      - name: Retain browser failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: browser-failure
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Test and retain the exact package to publish
         run: npm run test:package -- --artifact-dir .cache/release
       - name: Verify package integrity and dry-run publishing

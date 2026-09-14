@@ -44,7 +44,6 @@ export function ContextMenu({
     setPoint({ x, y, focusFirst })
   }
   useEffect(() => {
-    if (!interactive) return
     function cancelPress() {
       gesture.current.pressed = false
       setPressed(false)
@@ -196,7 +195,9 @@ export function ContextMenu({
         <div
           id={id}
           ref={popup}
-          popover={interactive ? 'manual' : 'auto'}
+          // Linux can dispatch contextmenu before pointerup; an auto popover
+          // would immediately light-dismiss on that same opening gesture.
+          popover="manual"
           role="menu"
           aria-label={menuLabel}
           tabIndex={-1}

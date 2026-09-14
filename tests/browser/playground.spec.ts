@@ -101,6 +101,28 @@ test('old automatic palette becomes blue and new explicit choices persist', asyn
   await expect(page.locator('.demo-app')).toHaveAttribute('data-theme', 'gold')
 })
 
+test('ordinary context menu survives opening before pointer release and still dismisses outside', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('switch', { name: 'Interactive 模式' }).uncheck()
+  const trigger = page.getByLabel('设计资源，右键或 Shift F10 打开菜单', { exact: true })
+  const menu = page.getByRole('menu', { name: '文件操作' })
+  await trigger.hover()
+  const bounds = await trigger.boundingBox()
+  // Reproduce Linux's contextmenu-before-pointerup ordering on every platform.
+  // Use a left press to avoid a second native contextmenu event on Windows release.
+  await page.mouse.down()
+  await trigger.dispatchEvent('contextmenu', {
+    button: 2,
+    clientX: bounds!.x + 12,
+    clientY: bounds!.y + 12,
+  })
+  await expect(menu).toBeVisible()
+  await page.mouse.up()
+  await expect(menu).toBeVisible()
+  await page.getByRole('heading', { name: '浮层与菜单', exact: true }).click()
+  await expect(menu).not.toBeVisible()
+})
+
 test('interactive menu opens on right down, depresses its trigger, and selects only on release', async ({ page }) => {
   await page.goto('/')
   const trigger = page.getByLabel('设计资源，右键或 Shift F10 打开菜单', { exact: true })
