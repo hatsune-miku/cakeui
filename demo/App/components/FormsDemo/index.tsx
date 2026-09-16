@@ -34,6 +34,29 @@ export function FormsDemo() {
           <NumberBox id="versions" min={1} max={99} defaultValue={10} />
         </Field>
       </div>
+      <Field label="模型提供方" htmlFor="model-provider">
+        <ComboBox
+          id="model-provider"
+          searchable
+          searchPlaceholder="搜索提供方…"
+          emptyText="没有匹配的提供方"
+          defaultValue=""
+        >
+          <option value="">选择模型提供方</option>
+          <optgroup label="云服务">
+            <option value="openai">OpenAI</option>
+            <option value="anthropic">Anthropic</option>
+            <option value="google">Google</option>
+          </optgroup>
+          <optgroup label="本地服务">
+            <option value="ollama">Ollama</option>
+            <option value="lmstudio">LM Studio</option>
+          </optgroup>
+          <option value="unavailable" disabled>
+            暂不可用
+          </option>
+        </ComboBox>
+      </Field>
       <Field label="备注" htmlFor="notes">
         <TextArea id="notes" rows={2} placeholder="留下一点说明…" />
       </Field>

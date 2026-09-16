@@ -1,8 +1,14 @@
 import { Children, type ComponentPropsWithRef, Fragment, type ReactNode, cloneElement, isValidElement } from 'react'
 
+import { SearchableComboBox } from './components/SearchableComboBox'
+
 import { cx } from '../../utils'
 
-export type ComboBoxProps = ComponentPropsWithRef<'select'>
+export interface ComboBoxProps extends ComponentPropsWithRef<'select'> {
+  searchable?: boolean
+  searchPlaceholder?: string
+  emptyText?: string
+}
 function styleOptions(children: ReactNode): ReactNode {
   return Children.map(children, (child) => {
     if (!isValidElement<{ className?: string; children?: ReactNode }>(child)) return child
@@ -17,8 +23,23 @@ function styleOptions(children: ReactNode): ReactNode {
     return child
   })
 }
-/** Styled native picker; selection, validation, reset and keyboard behavior stay native. */
-export function ComboBox({ className, children, ...props }: ComboBoxProps) {
+/** Native select by default, with optional searchable single selection and the same form value. */
+export function ComboBox({
+  searchable = false,
+  searchPlaceholder,
+  emptyText,
+  className,
+  children,
+  ...props
+}: ComboBoxProps) {
+  if (searchable && !props.multiple && (props.size === undefined || props.size <= 1)) {
+    return (
+      <SearchableComboBox {...props} className={className} searchPlaceholder={searchPlaceholder} emptyText={emptyText}>
+        {styleOptions(children)}
+      </SearchableComboBox>
+    )
+  }
+
   return (
     <select {...props} className={cx('cake-combobox', className)}>
       {styleOptions(children)}

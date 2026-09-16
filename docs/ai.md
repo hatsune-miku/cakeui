@@ -99,7 +99,7 @@ export function HelloCakeUI() {
 
 不包含全局 reset，不修改页面的 margin 或原生 h1 / button / table 的常规样式。导入 CSS 后，会在 `:root` 提供默认主题变量并设置 `user-select: none` 与 `-webkit-user-select: none`，因此页面默认不可选择文字。
 
-TextBox / TextArea / NumberBox 和 LogView 允许选择文字；ComboBox 明确保持不可选择。普通业务正文、原生 pre / code 或 contentEditable 若需要复制，应由应用显式开启选择。Gallery 的代码和 AI 文档阅读区已开启选择。
+TextBox / TextArea / NumberBox、ComboBox 的搜索输入和 LogView 允许选择文字；ComboBox 的原生选择器和候选项保持不可选择。普通业务正文、原生 pre / code 或 contentEditable 若需要复制，应由应用显式开启选择。Gallery 的代码和 AI 文档阅读区已开启选择。
 
 ```scss
 .app-copyable {
@@ -154,13 +154,19 @@ Provider 是可嵌套的 CSS 容器，产生实际 DOM，设置主题背景、�
 
 ### ComboBox
 
-原生 select，ref 为 HTMLSelectElement，无额外 Props。children 使用原生 option / optgroup，支持 Fragment 嵌套；组件递归给它们合并 `cake-combobox-option` / `cake-combobox-group` 样式类，不丢弃已有 className。自定义 React 组件若在内部返回 option，不会被这一步递归展开；需要相同外观时直接传 option 元素。
+默认是原生 select，ref 为 HTMLSelectElement。children 使用原生 option / optgroup，支持 Fragment 嵌套；组件递归给它们合并 `cake-combobox-option` / `cake-combobox-group` 样式类，不丢弃已有 className。自定义 React 组件若在内部返回 option，不会被这一步递归展开；需要相同外观时直接传 option 元素。
 
 单选使用 value / defaultValue 和 `onChange(event)`。可以传原生 multiple 或 size，相关选择与提交仍由 select 负责；已验证的定制弹出菜单主要是单选下拉路径，不保证 multiple / size 列表框具有相同弹出外观。disabled、禁用 option / optgroup、required、form、重置和键盘操作保留原生规则。选项值使用字符串。
 
 下拉表面与 ContextMenu 共用圆角、padding、颜色、阴影；实现使用 `appearance: base-select`、`::picker(select)`、`::picker-icon`、`::checkmark` 和 anchor-size。支持时显示自定义菜单，picker 最大高度为 min(320px, 视口高度减 16px)，选中项有标记。不支持时降级为浏览器原生选择器，不是运行时切换到另一个 JS 组件。
 
-不接受 options 数组、placeholder、filterOption、searchable、onValueChange 等虚构属性。占位项可以用 `<option value="">请选择</option>` 配合 required；搜索、异步数据加载、虚拟滚动和可编辑输入由应用另外实现。不要给 option 放交互按钮并期待库管理它们。
+可选 `searchable=false` 开启单选搜索，增加 `searchPlaceholder='Search…'` 和 `emptyText='No matching options'`。仍然接受 option / optgroup，不引入 options 数组或 onValueChange。搜索匹配选项的文字和 value，忽略大小写；分组名称显示在选项旁，禁用项不能选择，hidden 项不参与结果。multiple 或 size > 1 时保留原生 select，不开启搜索。
+
+搜索模式用输入框和原生 Popover 展示列表，原生 select 仍负责值、name、FormData、required、表单关联和重置；ref 仍指向 select，调用 ref.focus() 会聚焦可见输入框。`onChange(event)` 仅在选择变化时触发，event.target / currentTarget 是 select。输入查询不会修改已选值，不支持提交任意文本。ArrowUp / ArrowDown 移动候选，Enter 选择且不提交外层表单；Escape、Tab、失焦或外部点击取消查询并恢复已选文字。中文输入法确认不会提前选择。
+
+搜索模式下，className / style 属于外层容器，id、autoFocus、tabIndex、aria-label、aria-labelledby、aria-describedby、aria-invalid 属于可见输入框；其他原生属性和事件仍属于内部 select。用 Field 的 htmlFor 对齐 id，或提供 aria-label。输入框可选择和复制文字，浮层继承所属 Provider 的主题，在 Dialog 内也可以使用。
+
+占位项使用 `<option value="">请选择</option>` 配合 required；searchPlaceholder 是查询提示，不是选中值。数据加载和虚拟滚动由应用负责，库不提供 filterOption、自定义候选渲染或网络请求。不要给 option 放交互按钮。
 
 ### CheckBox
 
@@ -452,6 +458,40 @@ export function SettingsForm() {
       <Button type="reset">恢复初始值</Button>
       <output aria-live="polite">{result}</output>
     </form>
+  )
+}
+```
+
+### 可搜索的模型提供方选择
+
+```tsx example=searchable-combobox
+import { useId, useState } from 'react'
+
+import { ComboBox, Field } from '@a1knla/cakeui'
+
+export function ProviderPicker() {
+  const id = useId()
+  const [provider, setProvider] = useState('')
+  return (
+    <Field label="模型提供方" htmlFor={id}>
+      <ComboBox
+        id={id}
+        name="provider"
+        searchable
+        searchPlaceholder="搜索模型提供方…"
+        emptyText="没有匹配的模型提供方"
+        required
+        value={provider}
+        onChange={(event) => setProvider(event.currentTarget.value)}
+      >
+        <option value="">选择模型提供方</option>
+        <optgroup label="云服务">
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic</option>
+        </optgroup>
+        <option value="ollama">Ollama</option>
+      </ComboBox>
+    </Field>
   )
 }
 ```

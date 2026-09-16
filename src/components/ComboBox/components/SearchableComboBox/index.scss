@@ -1,0 +1,109 @@
+@use '../../../../styles/mixins' as *;
+
+.cake-combobox-search {
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+
+  .cake-combobox-native {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    pointer-events: none;
+  }
+
+  .cake-combobox-search-input {
+    @include input;
+    padding-right: 32px;
+  }
+
+  .cake-combobox-search-arrow {
+    position: absolute;
+    right: 14px;
+    top: calc(50% - 5px);
+    width: 7px;
+    height: 7px;
+    border-right: 1.5px solid var(--cake-muted);
+    border-bottom: 1.5px solid var(--cake-muted);
+    transform: rotate(45deg);
+    pointer-events: none;
+  }
+
+  .cake-combobox-search-popup {
+    @include popup;
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    overflow: hidden;
+
+    &:popover-open {
+      display: flex;
+      flex-direction: column;
+      animation: cake-tip-enter var(--cake-fast) var(--cake-ease);
+    }
+  }
+
+  .cake-combobox-search-list {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .cake-combobox-search-option {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 34px;
+    padding: 7px 10px;
+    margin: 1px 0;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+
+    &[data-active='true'] {
+      background: var(--cake-accent-soft);
+      color: var(--cake-accent-ink);
+
+      .cake-combobox-search-group {
+        color: inherit;
+      }
+    }
+
+    &[aria-selected='true'] {
+      color: var(--cake-accent-ink);
+
+      &::after {
+        content: '✓';
+        color: var(--cake-accent);
+      }
+    }
+
+    &[aria-disabled='true'] {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  }
+
+  .cake-combobox-search-label {
+    flex: 1;
+    overflow-wrap: anywhere;
+  }
+
+  .cake-combobox-search-group {
+    color: var(--cake-muted);
+    font-size: 11px;
+    overflow-wrap: anywhere;
+  }
+
+  .cake-combobox-search-empty {
+    padding: 10px;
+    color: var(--cake-muted);
+    font-size: 13px;
+  }
+}

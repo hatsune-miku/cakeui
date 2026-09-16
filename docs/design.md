@@ -18,6 +18,7 @@
 
 - 原生表单属性是主接口，不重新发明 `onValueChange` 代替输入控件的 onChange。只有 Tabs 的组合状态使用 onValueChange。
 - ComboBox 使用可定制的原生 select，与 ContextMenu 共用菜单表面样式，保留 option / optgroup、表单和键盘行为；不支持 `appearance: base-select` 的浏览器使用原生选择器。
+- ComboBox 的可选 searchable 模式在库内提供查询输入和 Popover 列表，继续用内部 select 承载值、事件、ref 和表单语义。查询只是候选过滤，不变成自由文本值；取消查询不修改选择。多选和 size 列表保留原生路径，不引入网络、虚拟列表或额外运行时依赖。
 - 表格、列表、菜单和日志接受 JSX children，调用者保有数据结构、排序、筛选和渲染权。
 - 单个组件各有目录和 SCSS；仅跨组件共享类型、小型 className 工具、颜色与输入 mixin。
 - Provider 只是 CSS 作用域，支持嵌套；所有浮层都保留在所属 DOM 树的浏览器顶层，没有 body portal 的主题复制问题。

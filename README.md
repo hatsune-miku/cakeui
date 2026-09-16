@@ -103,7 +103,9 @@ function save(event: React.FormEvent<HTMLFormElement>) {
 
 ### 原生优先
 
-`TextBox` 就是 `input`，`TextArea` 就是 `textarea`，`NumberBox` 就是 `input type="number"`。`ComboBox` 直接接受 `option` / `optgroup`，下拉层采用与 ContextMenu 相同的圆角、阴影和选中反馈；底层仍为 select，保留原生键盘检索、验证、表单重置、事件与 ref。选项和分组会自动合并样式类名，支持 Fragment 嵌套。初版不实现可编辑搜索或虚拟化下拉列表。
+`TextBox` 就是 `input`，`TextArea` 就是 `textarea`，`NumberBox` 就是 `input type="number"`。`ComboBox` 直接接受 `option` / `optgroup`，下拉层采用与 ContextMenu 相同的圆角、阴影和选中反馈；底层仍为 select，保留验证、表单重置、事件与 ref。选项和分组会自动合并样式类名，支持 Fragment 嵌套。
+
+大列表可以开启 `searchable`，按选项文字或 value 搜索。`searchPlaceholder` 和 `emptyText` 可本地化；选择仍使用 `onChange(event)`，查询文字不会变成表单值。搜索支持键盘、中文输入法、禁用分组和 Dialog 内的浮层，不增加运行时依赖。multiple / size > 1 继续使用原生选择器，不提供虚拟滚动。
 
 ComboBox 的菜单外观使用 `appearance: base-select` 和 `::picker(select)`，当前预览浏览器已验证支持；不支持这些能力的浏览器会降级为系统选择器。[浏览器能力说明](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/Customizable_select)。
 
@@ -116,6 +118,7 @@ ComboBox 的菜单外观使用 `appearance: base-select` 和 `::picker(select)`�
 | Button                 | `variant="default"`：default / primary / ghost / danger；`size="medium"`：small / medium / large；`loading=false`；默认 `type="button"` |
 | Card                   | `padding="medium"`：none / small / medium / large                                                                                       |
 | Field                  | `label`、`htmlFor`，可选 `description` / `error`；说明节点 id 为 `${htmlFor}-help`                                                      |
+| ComboBox               | `searchable=false`；搜索模式可用 `searchPlaceholder="Search…"`、`emptyText="No matching options"`；继续接受原生 option / optgroup       |
 | GroupBox               | `label`，其余属性属于原生 fieldset，可用 `disabled` 禁用整个分组                                                                        |
 | CakeProvider           | `theme="blue"`：blue / pink / gold；`mode="system"`：light / dark / system；`density="comfortable"`：comfortable / compact              |
 | Dot、Tag、Badge、Alert | `tone`：neutral / accent / success / warning / danger；Dot、Tag 默认 neutral，Badge、Alert 默认 accent                                  |
