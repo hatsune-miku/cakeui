@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 
-import { assertUnpublished, getReleaseInfo, verifyArtifact } from '../scripts/release.mjs'
+import { assertUnpublished, getReleaseInfo, verifyArtifact, verifyPublished } from '../scripts/release.mjs'
 
 function fixture(version = '1.2.3') {
   const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
@@ -109,4 +109,56 @@ test('artifact corruption and metadata for another release are rejected', () => 
   assert.throws(() => verifyArtifact(Buffer.from('changed bytes'), metadata, info), /integrity/)
   assert.throws(() => verifyArtifact(bytes, { ...metadata, version: '1.2.4' }, info), /version/)
   assert.throws(() => verifyArtifact(bytes, { ...metadata, name: 'cakeui' }, info), /name/)
+})
+
+test('post-publish verification waits for npm processing and then checks the exact artifact', async () => {
+  const info = { name: '@a1knla/cakeui', version: '1.2.3' }
+  let requests = 0
+  const delays = []
+  await verifyPublished(
+    info,
+    'sha512-tested',
+    async () => {
+      requests++
+      return requests < 4
+        ? new Response(null, { status: 404 })
+        : Response.json({ ...info, dist: { integrity: 'sha512-tested' } })
+    },
+    async (delay) => delays.push(delay)
+  )
+  assert.equal(requests, 4)
+  assert.deepEqual(delays, [10_000, 10_000, 10_000])
+})
+
+test('post-publish polling is bounded and does not hide registry failures or artifact mismatches', async () => {
+  const info = { name: '@a1knla/cakeui', version: '1.2.3' }
+  const delays = []
+  await assert.rejects(
+    verifyPublished(
+      info,
+      'sha512-tested',
+      async () => new Response(null, { status: 404 }),
+      async (delay) => delays.push(delay)
+    ),
+    /HTTP 404/
+  )
+  assert.equal(
+    delays.reduce((sum, delay) => sum + delay, 0),
+    300_000
+  )
+  for (const status of [401, 403, 429, 500]) {
+    await assert.rejects(
+      verifyPublished(
+        info,
+        'sha512-tested',
+        async () => new Response(null, { status }),
+        async () => assert.fail('Non-404 failures must not be retried')
+      ),
+      new RegExp(`HTTP ${status}`)
+    )
+  }
+  await assert.rejects(
+    verifyPublished(info, 'sha512-tested', async () => Response.json({ ...info, dist: { integrity: 'different' } })),
+    /differs from the tested artifact/
+  )
 })

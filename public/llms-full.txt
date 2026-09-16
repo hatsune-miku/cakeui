@@ -874,9 +874,9 @@ Windows 浏览器测试使用已安装 Google Chrome，其他系统需要先安�
 
 首次使用前，在 npm 包 Settings → Trusted publishing 配置 GitHub Actions：用户 `hatsune-miku`、仓库 `cakeui`、文件名 `publish.yml`、Environment 留空，并明确允许 `npm publish`。仅有工作流文件或一次成功的手动验证不能证明 npm 侧信任已配置。npm 的新配置可能默认仅允许 `npm stage publish`，不能用于此工作流的直接发布。完整操作、官方来源与排错见仓库 [docs/publishing.md](https://github.com/hatsune-miku/cakeui/blob/main/docs/publishing.md)。
 
-验证 job 检查文档、类型、DOM 与发布保护测试、库 / Gallery 构建、格式、真实浏览器和实际包消费。`npm run test:package -- --artifact-dir .cache/release` 在包验证成功后保留同一个 tgz 及 SHA-512 元数据。发布 job 才授予 `id-token: write`，下载本次运行的 artifact，校验包名 / 版本 / 摘要并确认 npm 中该版本不存在，然后使用 `--ignore-scripts` 发布原 tgz。稳定版使用 `latest`，预发布版使用 `next`；拒绝不匹配的 tag、过期锁文件、带 `+build` 的版本以及注册表检查异常。发布后校验官方注册表的 dist.integrity。当前已发布的 `0.1.0` 不可重复发布，不为了测试工作流提升版本。
+验证 job 检查文档、类型、DOM 与发布保护测试、库 / Gallery 构建、格式、真实浏览器和实际包消费。`npm run test:package -- --artifact-dir .cache/release` 在包验证成功后保留同一个 tgz 及 SHA-512 元数据。发布 job 才授予 `id-token: write`，下载本次运行的 artifact，校验包名 / 版本 / 摘要并确认 npm 中该版本不存在，然后使用 `--ignore-scripts` 发布原 tgz。稳定版使用 `latest`，预发布版使用 `next`；拒绝不匹配的 tag、过期锁文件、带 `+build` 的版本以及注册表检查异常。发布后校验官方注册表的 dist.integrity；npm 处理中的 404 每 10 秒重查，最多累计等待 5 分钟，不重试发布。已发布的版本不可重复发布，不为了测试工作流提升版本。
 
-`package.json.repository.url` 保持 `git+https://github.com/hatsune-miku/cakeui.git`，包和 Git 提交作者均使用 `miku`。公共仓库通过 Trusted Publishing 发布公共包时自动附带 provenance；OIDC 认证和 provenance 需在实际发布时验证。此工作流不自动部署 Gallery；文档或示例变动时仍按部署流程更新站点。将来修改工作流文件名、GitHub Environment、包身份、版本策略或验证步骤时同步维护本节与发布说明。
+`package.json.repository.url` 保持 `git+https://github.com/hatsune-miku/cakeui.git`，包的 author 保持 `miku`。公共仓库通过 Trusted Publishing 发布公共包时自动附带 provenance；OIDC 认证和 provenance 需在实际发布时验证。此工作流不自动部署 Gallery；文档或示例变动时仍按部署流程更新站点。将来修改工作流文件名、GitHub Environment、包身份、版本策略或验证步骤时同步维护本节与发布说明。
 
 ## 10. 文档发布与后续维护
 
@@ -901,7 +901,7 @@ Gallery 构建会检查文档一致性，再将 public 中两个文件复制到 
 - 署名：miku
 - React peer：>=19.0.0；React DOM peer：>=19.0.0
 - 公开组件：48 个；下列列表与 src/index.ts 一致。
-- 文档 / package.json / src 内容指纹（SHA-256）：60fb676a5771a3a7fa5681c3bff49522339bf3dbfe73b182ed35a4448431ea82
+- 文档 / package.json / src 内容指纹（SHA-256）：165ffcfbe2a146945d4b542540c7ac0795b427d6f8643e522b7a65a86acd6c17
 - 本文为生成结果，请修改 docs/ai.md 或相应源码后运行 npm run docs:build。
 
 Accordion, AccordionItem, Alert, Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, CakeProvider, Card, CheckBox, ComboBox, ContextMenu, Dialog, Dot, Field, GroupBox, HoverTips, ListItem, ListView, LogEntry, LogView, MenuItem, MenuSeparator, NumberBox, Pagination, ProgressBar, RadioButton, Separator, Skeleton, Slider, Spinner, Switch, Tab, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TabList, TabPanel, Tabs, Tag, TextArea, TextBox, Toast, WhatsThis

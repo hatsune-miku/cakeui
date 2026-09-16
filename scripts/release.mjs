@@ -56,11 +56,12 @@ export function verifyArtifact(bytes, metadata, info) {
   return integrity
 }
 
-async function verifyPublished(info, integrity) {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const response = await fetch(versionUrl(info), { signal: AbortSignal.timeout(30_000) })
-    if (response.status === 404 && attempt < 4) {
-      await setTimeout(2000)
+export async function verifyPublished(info, integrity, fetchRegistry = fetch, wait = setTimeout) {
+  // npm can accept a release before its processing queue makes it publicly readable.
+  for (let attempt = 0; attempt < 31; attempt++) {
+    const response = await fetchRegistry(versionUrl(info), { signal: AbortSignal.timeout(30_000) })
+    if (response.status === 404 && attempt < 30) {
+      await wait(10_000)
       continue
     }
     assert(response.ok, `Cannot verify the published version (HTTP ${response.status}); inspect npm before retrying.`)
