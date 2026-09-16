@@ -897,11 +897,11 @@ Gallery 构建会检查文档一致性，再将 public 中两个文件复制到 
 ## 附录 A. 当前构建身份与公开导出
 
 - 包名：@a1knla/cakeui
-- 版本：0.2.0
+- 版本：0.2.1
 - 署名：hatsune-miku
 - React peer：>=19.0.0；React DOM peer：>=19.0.0
 - 公开组件：48 个；下列列表与 src/index.ts 一致。
-- 文档 / package.json / src 内容指纹（SHA-256）：9d60f2d8d4be79172b16e53530ff3964b1f8a9a4dc12fbec975b71f4e4a0d477
+- 文档 / package.json / src 内容指纹（SHA-256）：8553d853b7749865f7ff642014df576719099aca54a189e0b75ec7e764d00656
 - 本文为生成结果，请修改 docs/ai.md 或相应源码后运行 npm run docs:build。
 
 Accordion, AccordionItem, Alert, Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, CakeProvider, Card, CheckBox, ComboBox, ContextMenu, Dialog, Dot, Field, GroupBox, HoverTips, ListItem, ListView, LogEntry, LogView, MenuItem, MenuSeparator, NumberBox, Pagination, ProgressBar, RadioButton, Separator, Skeleton, Slider, Spinner, Switch, Tab, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TabList, TabPanel, Tabs, Tag, TextArea, TextBox, Toast, WhatsThis
