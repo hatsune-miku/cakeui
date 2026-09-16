@@ -1,6 +1,6 @@
 # npm 发布
 
-包名为 `@a1knla/cakeui`，官方注册表为 https://registry.npmjs.org/ ，访问级别为 public。GitHub 仓库为 `hatsune-miku/cakeui`，作者与 Git 提交署名使用 `miku`。`package.json` 的 publishConfig 固定官方注册表和 public，锁文件中的下载地址也使用官方注册表。
+包名为 `@a1knla/cakeui`，官方注册表为 https://registry.npmjs.org/ ，访问级别为 public。GitHub 仓库为 `hatsune-miku/cakeui`，npm author、Git author / committer 和标签 tagger 统一使用 `hatsune-miku`，Git 邮箱为 `20541974+hatsune-miku@users.noreply.github.com`。`package.json` 的 publishConfig 固定官方注册表和 public，锁文件中的下载地址也使用官方注册表。
 
 首个版本 `0.1.0` 已发布。后续推荐使用 [Publish npm package 工作流](https://github.com/hatsune-miku/cakeui/actions/workflows/publish.yml)，源文件为 `.github/workflows/publish.yml`。它使用 npm Trusted Publishing，通过 GitHub OIDC 获取本次发布所需的临时身份，无需在 GitHub Secrets 中保存 npm token。
 
@@ -47,7 +47,7 @@ Windows PowerShell 本地使用此带参数命令时，写为 `npm.cmd run test:
 1. 确认当前工作区，遵循 `AGENTS.md` 评估并更新 API 文档、README、发布说明与 Gallery 示例。所有安装和 import 使用带 scope 的包名，CSS 入口为 `@a1knla/cakeui/style.css`。
 2. 在 package.json 与 package-lock.json 中同步设置尚未发布的版本，可以执行 `npm version <版本> --no-git-tag-version`。注册表已存在的版本不能覆盖，不删除重发。当前的 `0.1.0` 不能再用来测试发布。
 3. 运行格式化、`npm run docs:build`、`npm run check`、`npm run test:package`、`npm run test:browser`。检查包内容只包含 package.json、README、dist 与 files 列出的文档。
-4. 检查 Git author / committer 均使用 miku，以 miku 署名提交并推送经验证的改动。
+4. 检查 Git author / committer 均使用 hatsune-miku，邮箱为 20541974+hatsune-miku@users.noreply.github.com；以此身份提交并推送经验证的改动，创建标签时也使用同一身份。
 5. 首次接入时，可以先在 Actions 页面手动运行验证；确认 npm Trusted Publisher 已按上表配置，然后推送匹配的新版本 tag。
 
 例如，只有在 package.json 和锁文件已经改为 `0.1.1`、文档已重建且提交通过验证后，才执行：

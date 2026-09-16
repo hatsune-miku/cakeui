@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "description": "Small, familiar React components for software you use every day.",
   "type": "module",
-  "author": "miku",
+  "author": "hatsune-miku",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hatsune-miku/cakeui.git"

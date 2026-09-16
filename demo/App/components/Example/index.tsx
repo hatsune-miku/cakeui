@@ -56,7 +56,7 @@ export function Example() {
               <span className="demo-eyebrow">个人工作空间</span>
               <h2 className="demo-example-title">今天，做一点有用的事。</h2>
             </div>
-            <Avatar name="miku" size="large" />
+            <Avatar name="hatsune-miku" size="large" />
           </div>
           <div className="demo-between">
             <span className="demo-muted">组件库 · 初版准备</span>

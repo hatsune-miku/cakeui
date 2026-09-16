@@ -14,7 +14,7 @@ const versionPattern =
 export function getReleaseInfo(manifest, lock, context) {
   assert.equal(context.repository, repository, 'Unexpected GitHub repository.')
   assert.equal(manifest.name, '@a1knla/cakeui', 'Unexpected package name.')
-  assert.equal(manifest.author, 'miku', 'Package author must remain miku.')
+  assert.equal(manifest.author, 'hatsune-miku', 'Package author must be hatsune-miku.')
   assert.equal(manifest.repository?.url, `git+https://github.com/${repository}.git`, 'Repository URL mismatch.')
   assert.equal(manifest.publishConfig?.registry, registry, 'Publish only to the official npm registry.')
   assert.equal(manifest.publishConfig?.access, 'public', 'The npm package must be public.')

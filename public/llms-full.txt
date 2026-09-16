@@ -10,7 +10,7 @@
 
 源码：https://github.com/hatsune-miku/cakeui
 
-维护署名：miku。
+维护署名：hatsune-miku。
 
 ## 1. 先建立正确的项目模型
 
@@ -505,7 +505,7 @@ import { Field, GroupBox, RadioButton, Slider, Switch, TextBox } from '@a1knla/c
 
 export function Preferences() {
   const id = useId()
-  const [name, setName] = useState('miku')
+  const [name, setName] = useState('hatsune-miku')
   const [enabled, setEnabled] = useState(true)
   const [volume, setVolume] = useState(60)
   const [mode, setMode] = useState('manual')
@@ -866,7 +866,7 @@ Windows 浏览器测试使用已安装 Google Chrome，其他系统需要先安�
 
 编码保持 TypeScript + SCSS，每个组件一个目录。具名函数用 function；匿名回调用箭头函数。样式为需要样式的元素分配 className，显式写出完整类名，不用 BEM、不用 `&-suffix` 拼接，不靠匿名标签后代选择器挂样式。优先 flex / grid；共享能力有真实复用需求后再提升。
 
-不使用 worktree。默认在当前分支工作，不为了普通改动创建分支。commit / push 前确认项目署名为 miku，不添加 AI / Codex 署名或 Co-Authored-By。完整协作规则见仓库根 AGENTS.md。
+不使用 worktree。默认在当前分支工作，不为了普通改动创建分支。commit / push 前确认 Git author / committer 与标签 tagger 均为 hatsune-miku，邮箱为 20541974+hatsune-miku@users.noreply.github.com；不添加 AI / Codex 署名或 Co-Authored-By。完整协作规则见仓库根 AGENTS.md。
 
 ## 9. npm Trusted Publishing
 
@@ -876,7 +876,7 @@ Windows 浏览器测试使用已安装 Google Chrome，其他系统需要先安�
 
 验证 job 检查文档、类型、DOM 与发布保护测试、库 / Gallery 构建、格式、真实浏览器和实际包消费。`npm run test:package -- --artifact-dir .cache/release` 在包验证成功后保留同一个 tgz 及 SHA-512 元数据。发布 job 才授予 `id-token: write`，下载本次运行的 artifact，校验包名 / 版本 / 摘要并确认 npm 中该版本不存在，然后使用 `--ignore-scripts` 发布原 tgz。稳定版使用 `latest`，预发布版使用 `next`；拒绝不匹配的 tag、过期锁文件、带 `+build` 的版本以及注册表检查异常。发布后校验官方注册表的 dist.integrity；npm 处理中的 404 每 10 秒重查，最多累计等待 5 分钟，不重试发布。已发布的版本不可重复发布，不为了测试工作流提升版本。
 
-`package.json.repository.url` 保持 `git+https://github.com/hatsune-miku/cakeui.git`，包的 author 保持 `miku`。公共仓库通过 Trusted Publishing 发布公共包时自动附带 provenance；OIDC 认证和 provenance 需在实际发布时验证。此工作流不自动部署 Gallery；文档或示例变动时仍按部署流程更新站点。将来修改工作流文件名、GitHub Environment、包身份、版本策略或验证步骤时同步维护本节与发布说明。
+`package.json.repository.url` 保持 `git+https://github.com/hatsune-miku/cakeui.git`，包的 author 使用 `hatsune-miku`。公共仓库通过 Trusted Publishing 发布公共包时自动附带 provenance；OIDC 认证和 provenance 需在实际发布时验证。此工作流不自动部署 Gallery；文档或示例变动时仍按部署流程更新站点。将来修改工作流文件名、GitHub Environment、包身份、版本策略或验证步骤时同步维护本节与发布说明。
 
 ## 10. 文档发布与后续维护
 
@@ -898,10 +898,10 @@ Gallery 构建会检查文档一致性，再将 public 中两个文件复制到 
 
 - 包名：@a1knla/cakeui
 - 版本：0.2.0
-- 署名：miku
+- 署名：hatsune-miku
 - React peer：>=19.0.0；React DOM peer：>=19.0.0
 - 公开组件：48 个；下列列表与 src/index.ts 一致。
-- 文档 / package.json / src 内容指纹（SHA-256）：165ffcfbe2a146945d4b542540c7ac0795b427d6f8643e522b7a65a86acd6c17
+- 文档 / package.json / src 内容指纹（SHA-256）：24c7216191b1254ed4f52754a37403e7491a0516a1de4b1c03707a77e5c27629
 - 本文为生成结果，请修改 docs/ai.md 或相应源码后运行 npm run docs:build。
 
 Accordion, AccordionItem, Alert, Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, CakeProvider, Card, CheckBox, ComboBox, ContextMenu, Dialog, Dot, Field, GroupBox, HoverTips, ListItem, ListView, LogEntry, LogView, MenuItem, MenuSeparator, NumberBox, Pagination, ProgressBar, RadioButton, Separator, Skeleton, Slider, Spinner, Switch, Tab, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TabList, TabPanel, Tabs, Tag, TextArea, TextBox, Toast, WhatsThis

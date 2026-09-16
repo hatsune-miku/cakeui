@@ -17,6 +17,6 @@
 - 具名函数用 function，匿名回调用箭头函数；组件采用 `Foo/index.tsx` 与 `Foo/index.scss`。
 - 样式使用完整 className，禁止 BEM、`&-suffix` 拼接和给匿名后代标签挂样式；布局优先 flex / grid。
 - 禁止使用 worktree。默认在当前分支工作，慎重创建新分支，除非用户要求，不创建新分支。
-- 本项目公开署名使用 `miku`。commit / push 前检查 Git author 与 committer 配置；不添加 AI / Codex 署名或 Co-Authored-By。
+- 本项目公开署名统一使用 GitHub 账号名 `hatsune-miku`，包括 Git author / committer、标签 tagger、npm author、文档和演示中的维护者名称。commit / push 前检查仓库本地 Git 配置；邮箱使用 `20541974+hatsune-miku@users.noreply.github.com`。不添加 AI / Codex 署名或 Co-Authored-By。
 - 每个对话第一次执行 git commit 前告知用户。已授权的后续提交与部署无需重复询问。
 - 不在代码、文档、日志或提交中保存部署凭据。

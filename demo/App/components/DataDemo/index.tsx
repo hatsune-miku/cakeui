@@ -38,9 +38,9 @@ export function DataDemo() {
       <div className="demo-data-layout">
         <ListView aria-label="协作成员">
           <ListItem>
-            <Avatar name="miku" />
+            <Avatar name="hatsune-miku" />
             <div className="demo-grow">
-              miku<span className="demo-secondary-line">维护者</span>
+              hatsune-miku<span className="demo-secondary-line">维护者</span>
             </div>
             <Dot tone="success" aria-label="在线" />
           </ListItem>
