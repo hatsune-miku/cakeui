@@ -46,17 +46,13 @@ export function ActionsDemo() {
       <div className="demo-row">
         <Button size="small">小尺寸</Button>
         <Button disabled>不可用</Button>
-        <HoverTips content="直接执行操作，提示不会挡住你的下一步。">
+        <HoverTips content="下载文件">
           <Button variant="ghost">
             <Icon name="download" size={16} />
             悬停查看提示
           </Button>
         </HoverTips>
         <WhatsThis label="关于按钮">按钮默认不会提交表单。需要提交时，设置 type="submit"。</WhatsThis>
-      </div>
-      <div className="demo-footnote">
-        <span className="demo-tiny-line" />
-        150 ms · 响应先于动效
       </div>
     </Section>
   )

@@ -15,7 +15,8 @@ import { NavigationDemo } from './components/NavigationDemo'
 import { OverlaysDemo } from './components/OverlaysDemo'
 import { Tokens } from './components/Tokens'
 
-import { Button, type CakeMode, CakeProvider, type CakeTheme, Dot, HoverTips, Tag, TextBox, Toast } from '../../src'
+import { version } from '../../package.json'
+import { Button, type CakeMode, CakeProvider, type CakeTheme, Dot, HoverTips, TextBox, Toast } from '../../src'
 
 import './components/Icon/index.scss'
 import './index.scss'
@@ -30,23 +31,13 @@ const nav: { page: Page; label: string; icon: IconName }[] = [
   { page: 'docs', label: 'AI 技术文档', icon: 'file' },
 ]
 const categories: { id: Category; label: string }[] = [
-  { id: 'all', label: '全部零件' },
+  { id: 'all', label: '全部组件' },
   { id: 'basic', label: '基础' },
   { id: 'input', label: '输入' },
   { id: 'navigation', label: '导航' },
   { id: 'data', label: '数据展示' },
   { id: 'feedback', label: '反馈与浮层' },
 ]
-const descriptions: Record<Page, { title: string; description: string }> = {
-  components: { title: '熟悉的零件，刚好的体验。', description: '为长期使用的软件准备，简单组合，即刻响应。' },
-  example: { title: '让零件，成为日常。', description: '一个可操作的任务列表，看看基础组件如何自然地组合。' },
-  tokens: {
-    title: '同一种气质，三种表达。',
-    description: '从已有软件中沉淀的配色、圆角和动效，可以直接使用，也可以继续调整。',
-  },
-  guide: { title: '从一个 import 开始。', description: 'React + TypeScript + SCSS，保持集成过程清楚、简单。' },
-  docs: { title: '让 AI 读懂每一个零件。', description: '与源码一起维护的技术参考，可阅读、复制，也可直接交给 AI。' },
-}
 function readPage(): Page {
   const page = new URLSearchParams(window.location.search).get('page')
   return nav.find((item) => item.page === page)?.page ?? 'components'
@@ -206,7 +197,7 @@ export function App() {
             <Icon name="cake" size={22} />
           </span>
           <span>
-            CakeUI<span className="demo-brand-version">0.1</span>
+            CakeUI<span className="demo-brand-version">{version}</span>
           </span>
         </a>
         <span className="demo-sidebar-caption">组件工作台</span>
@@ -243,10 +234,7 @@ export function App() {
           ))}
         </div>
         <div className="demo-sidebar-bottom">
-          <span className="demo-sidebar-note">为日常软件而做。</span>
-          <span className="demo-footnote">少一点约定，多一点顺手。</span>
           <div className="demo-sidebar-status">
-            <Dot tone="success" />
             <span>React · TypeScript · SCSS</span>
           </div>
         </div>
@@ -304,23 +292,7 @@ export function App() {
         </header>
         <main className="demo-main" id="main" tabIndex={-1}>
           <div className="demo-intro">
-            <div className="demo-intro-kicker">
-              <span className="demo-eyebrow">
-                CAKE UI /{' '}
-                {page === 'components'
-                  ? 'COMPONENTS'
-                  : page === 'example'
-                    ? 'EXAMPLE'
-                    : page === 'tokens'
-                      ? 'FOUNDATIONS'
-                      : page === 'docs'
-                        ? 'TECHNICAL REFERENCE'
-                        : 'GETTING STARTED'}
-              </span>
-              <Tag tone="accent">初版预览</Tag>
-            </div>
-            <h1 className="demo-title">{descriptions[page].title}</h1>
-            <p className="demo-description">{descriptions[page].description}</p>
+            <h1 className="demo-title">{nav.find((item) => item.page === page)?.label}</h1>
           </div>
           <div className="demo-controls">
             <div className="demo-row">
@@ -368,7 +340,6 @@ export function App() {
                     {item.id === 'all' && <span className="demo-category-count">48</span>}
                   </button>
                 ))}
-                <span className="demo-gallery-note">原生属性，自由组合</span>
               </div>
               <div className="demo-gallery">
                 {filtered.map((section) => (
@@ -398,11 +369,15 @@ export function App() {
           {page === 'guide' && <Guide />}
           {page === 'docs' && <AiDocs />}
           <footer className="demo-footer">
-            <span>CakeUI · 简单的零件，长久的陪伴。</span>
+            <a className="demo-link" href="https://github.com/hatsune-miku/cakeui">
+              GitHub
+            </a>
             <a className="demo-link" href="/?page=docs">
               AI 技术文档
             </a>
-            <span>基于 CakeDesign 的设计实践</span>
+            <a className="demo-link" href="https://www.npmjs.com/package/@a1knla/cakeui">
+              npm
+            </a>
           </footer>
         </main>
       </div>

@@ -4,11 +4,6 @@
   gap: 24px;
   max-width: 940px;
   min-width: 0;
-  .demo-ai-introduction {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
   .demo-ai-links {
     display: flex;
     flex-wrap: wrap;
@@ -26,13 +21,6 @@
       outline-offset: 4px;
       border-radius: 3px;
     }
-  }
-  .demo-ai-url {
-    user-select: text;
-    -webkit-user-select: text;
-    overflow-wrap: anywhere;
-    font: 12px/1.8 var(--cake-mono);
-    color: var(--cake-muted);
   }
   .demo-ai-content {
     box-sizing: border-box;

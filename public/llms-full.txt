@@ -1,6 +1,6 @@
-# CakeUI 技术文档 · 面向 AI 与开发者
+# CakeUI 技术文档
 
-本文描述当前仓库已经实现的行为，用于让 AI 在不了解项目历史的情况下完成集成、生成界面、修改组件和验证改动。公开版本信息、完整 Props 类型与主题变量附录由源码生成，位于在线全文末尾。本文正文的唯一维护源是 `docs/ai.md`。
+API、组合示例、主题变量与维护流程。版本、完整 Props 类型和主题变量附录由源码生成，位于在线全文末尾。正文维护于 `docs/ai.md`。
 
 在线阅读：https://gallery.vanillacake.cn/?page=docs
 
@@ -12,9 +12,9 @@
 
 维护署名：hatsune-miku。
 
-## 1. 先建立正确的项目模型
+## 1. 接口约定
 
-CakeUI 是 React + TypeScript + SCSS 的组件库，面向日常长期使用的软件界面。它提供外观一致、名称熟悉的小零件，保留原生 HTML 结构和事件。数据获取、业务状态、排序、筛选、分页切片、存储、权限判断和异步任务由应用负责。
+CakeUI 使用 React、TypeScript 和 SCSS，组件保留原生 HTML 结构和事件。数据获取、业务状态、排序、筛选、分页切片、存储、权限判断和异步任务由应用负责。
 
 库的公开入口是 `src/index.ts`，发布产物入口是 `dist/index.js`。所有组件使用具名导出，没有默认导出。对应的 `*Props`、`Size`、`Tone`、`CakeTheme`、`CakeMode` 同时导出。内部 context、hooks、工具函数和 demo 组件不属于公开 API，不从内部路径导入。
 
@@ -901,7 +901,7 @@ Gallery 构建会检查文档一致性，再将 public 中两个文件复制到 
 - 署名：hatsune-miku
 - React peer：>=19.0.0；React DOM peer：>=19.0.0
 - 公开组件：48 个；下列列表与 src/index.ts 一致。
-- 文档 / package.json / src 内容指纹（SHA-256）：24c7216191b1254ed4f52754a37403e7491a0516a1de4b1c03707a77e5c27629
+- 文档 / package.json / src 内容指纹（SHA-256）：9d60f2d8d4be79172b16e53530ff3964b1f8a9a4dc12fbec975b71f4e4a0d477
 - 本文为生成结果，请修改 docs/ai.md 或相应源码后运行 npm run docs:build。
 
 Accordion, AccordionItem, Alert, Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, CakeProvider, Card, CheckBox, ComboBox, ContextMenu, Dialog, Dot, Field, GroupBox, HoverTips, ListItem, ListView, LogEntry, LogView, MenuItem, MenuSeparator, NumberBox, Pagination, ProgressBar, RadioButton, Separator, Skeleton, Slider, Spinner, Switch, Tab, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TabList, TabPanel, Tabs, Tag, TextArea, TextBox, Toast, WhatsThis

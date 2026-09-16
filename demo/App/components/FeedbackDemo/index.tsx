@@ -58,7 +58,7 @@ export function FeedbackDemo() {
           <Skeleton style={{ width: '80%' }} />
           <Skeleton style={{ width: '55%' }} />
         </div>
-        <span className="demo-footnote">为等待留一点余地</span>
+        <span className="demo-footnote">加载中</span>
       </div>
     </Section>
   )

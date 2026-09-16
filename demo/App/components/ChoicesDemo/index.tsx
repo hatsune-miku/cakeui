@@ -15,9 +15,7 @@ export function ChoicesDemo() {
       }
     >
       <div className="demo-between">
-        <span>
-          自动保存<span className="demo-secondary-line">让更改随时就绪</span>
-        </span>
+        <span>自动保存</span>
         <Switch aria-label="自动保存" defaultChecked />
       </div>
       <div className="demo-row">

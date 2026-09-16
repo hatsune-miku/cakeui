@@ -54,12 +54,12 @@ export function Example() {
           <div className="demo-between">
             <div>
               <span className="demo-eyebrow">个人工作空间</span>
-              <h2 className="demo-example-title">今天，做一点有用的事。</h2>
+              <h2 className="demo-example-title">任务列表</h2>
             </div>
             <Avatar name="hatsune-miku" size="large" />
           </div>
           <div className="demo-between">
-            <span className="demo-muted">组件库 · 初版准备</span>
+            <span className="demo-muted">CakeUI 开发</span>
             <Button variant="primary" onClick={() => setOpen(true)}>
               <Icon name="plus" size={16} />
               新建任务
@@ -100,7 +100,7 @@ export function Example() {
             ))}
           </Tabs>
         </Card>
-        <Alert tone="neutral">这是一个本地交互示例。任务会在刷新后恢复，主题设置会保留。</Alert>
+        <Alert tone="neutral">任务仅保存在内存中，刷新后重置。</Alert>
       </div>
       <Card>
         <span className="demo-eyebrow">当前进度</span>
@@ -109,8 +109,6 @@ export function Example() {
           <span className="demo-muted"> / {tasks.length}</span>
         </div>
         <ProgressBar value={completed} max={tasks.length || 1} aria-label="任务完成进度" />
-        <p className="demo-panel-text">勾选任务，进度随之更新。零件之间没有隐藏的数据约定。</p>
-        <Tag tone="accent">由基础组件自由组合</Tag>
       </Card>
       <Dialog
         open={open}
@@ -141,7 +139,7 @@ export function Example() {
               required
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="接下来准备做什么？"
+              placeholder="输入任务名称"
             />
           </Field>
           <Field htmlFor="task-category" label="分类">

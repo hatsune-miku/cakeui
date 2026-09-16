@@ -141,15 +141,10 @@
     margin-top: auto;
     padding: 35px 10px 0;
   }
-  .demo-sidebar-note {
-    font-size: 12px;
-    font-weight: 500;
-  }
   .demo-sidebar-status {
     display: flex;
     align-items: center;
     gap: 7px;
-    margin-top: 15px;
     font-size: 9px;
     color: var(--cake-muted);
     white-space: nowrap;
@@ -223,13 +218,7 @@
     outline: none;
   }
   .demo-intro {
-    margin-bottom: 30px;
-  }
-  .demo-intro-kicker {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
   }
   .demo-eyebrow {
     color: var(--cake-muted);
@@ -239,16 +228,10 @@
   }
   .demo-title {
     margin: 0;
-    font-size: clamp(24px, 2.5vw, 32px);
+    font-size: 24px;
     font-weight: 600;
     line-height: 1.5;
     letter-spacing: -0.6px;
-  }
-  .demo-description {
-    margin: 12px 0 0;
-    font-size: 13px;
-    line-height: 1.7;
-    color: var(--cake-muted);
   }
   .demo-controls {
     display: flex;
@@ -371,11 +354,6 @@
     background: var(--cake-surface);
     font: 9px var(--cake-mono);
   }
-  .demo-gallery-note {
-    margin-left: auto;
-    color: var(--cake-muted);
-    font-size: 10px;
-  }
   .demo-gallery {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -428,11 +406,6 @@
     gap: 6px;
     color: var(--cake-muted);
     font-size: 10px;
-  }
-  .demo-tiny-line {
-    width: 16px;
-    height: 1px;
-    background: var(--cake-accent);
   }
   .demo-secondary-line {
     display: block;
@@ -528,7 +501,7 @@
   }
   .demo-footer {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
     gap: 16px;
     border-top: 1px solid var(--cake-line);
     margin-top: 45px;
@@ -560,9 +533,6 @@
     }
     .demo-gallery {
       gap: 28px 20px;
-    }
-    .demo-gallery-note {
-      display: none;
     }
     .demo-data-layout {
       grid-template-columns: 200px minmax(0, 1fr);

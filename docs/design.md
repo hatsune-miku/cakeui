@@ -1,8 +1,8 @@
-# 初版设计记录
+# 设计记录
 
 ## 参考来源
 
-这次实现先阅读 ARCH.md 指定的本地参考项目，再独立整理为可复用 React API；没有带入它们的业务逻辑或运行时依赖。
+组件样式与交互参考以下项目；业务逻辑和运行时依赖由各项目分别维护。
 
 | 来源                  | 查阅位置                                                                                              | 保留的设计特征                                                             |
 | --------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
@@ -10,9 +10,9 @@
 | KFC Client            | `src/ui/styles/_tokens.scss`、`_buttons.scss`、`App.scss` 与相关布局                                  | 三套配色与深色变体、10/14/20/26 圆角、字体序列、宽扩散阴影、150ms 缓出反馈 |
 | KVM                   | `panel/src/components/ui/Select`、`Field`、`Badge`                                                    | 原生选择、清楚的表单标签、紧凑低饱和状态标签                               |
 | WalAssistantLark      | `src/components/LogsView`                                                                             | 时间与正文分栏、较密日志行、相邻时间可以省略、追加跟随                     |
-| CakeDesign revision 6 | [SKILL.md](https://raw.githubusercontent.com/hatsune-miku/cakedesign-skill/refs/heads/main/SKILL.md)  | 克制、熟悉、立即响应、减少不必要的交互步骤                                 |
+| CakeDesign revision 6 | [SKILL.md](https://raw.githubusercontent.com/hatsune-miku/cakedesign-skill/refs/heads/main/SKILL.md)  | 按下反馈、减少交互步骤、状态提示                                           |
 
-参考项目现有实现使用的名称并非总与 ARCH.md 相同，例如 KVM 为 Select / Badge，AnyDrop 的零件在统一样式文件内。CakeUI 统一使用需求中指定的 ComboBox、Tag、HoverTips、TextBox、CheckBox 等名字。
+参考项目的组件名称与实现位置可能不同，例如 KVM 使用 Select / Badge，AnyDrop 的组件样式在统一文件内。CakeUI 使用 ComboBox、Tag、HoverTips、TextBox、CheckBox 等名称。
 
 ## API 决策
 

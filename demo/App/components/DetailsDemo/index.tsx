@@ -20,13 +20,13 @@ export function DetailsDemo() {
         </div>
         <Separator />
         <Accordion>
-          <AccordionItem title="需要额外的样式框架吗？" name="guide" open>
-            不需要。引入一份 CSS 即可使用全部组件，主题通过 CSS 变量调整。
+          <AccordionItem title="样式与主题" name="guide" open>
+            引入 @a1knla/cakeui/style.css，使用 CSS 变量调整主题。
           </AccordionItem>
-          <AccordionItem title="表格的数据格式由谁决定？" name="guide">
-            由你的应用决定。Table 接受 children，用标准的表头、行和单元格组织内容。
+          <AccordionItem title="表格数据" name="guide">
+            Table 接受 children，用标准的表头、行和单元格组织内容，数据格式由应用决定。
           </AccordionItem>
-          <AccordionItem title="支持键盘和减少动态效果吗？" name="guide">
+          <AccordionItem title="键盘与动效" name="guide">
             支持原生表单操作、方向键切换标签页、Escape 关闭浮层，以及系统的减少动态效果设置。
           </AccordionItem>
         </Accordion>

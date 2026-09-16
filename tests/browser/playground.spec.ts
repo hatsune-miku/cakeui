@@ -299,7 +299,7 @@ test('mobile layout and reduced motion remain usable', async ({ page }) => {
   await page.getByRole('button', { name: '展开导航' }).click()
   await expect(page.getByRole('button', { name: '组件总览', exact: true })).toBeFocused()
   await page.getByRole('button', { name: '开始使用', exact: true }).click()
-  await expect(page.getByRole('heading', { name: '从一个 import 开始。' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '开始使用', exact: true })).toBeVisible()
   await page.getByRole('button', { name: '展开导航' }).click()
   await page.getByRole('button', { name: '组件总览', exact: true }).click()
   await page.screenshot({ path: 'test-results/mobile.png', fullPage: true })

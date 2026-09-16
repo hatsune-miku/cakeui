@@ -34,13 +34,13 @@ export function NavigationDemo() {
           </Tab>
         </TabList>
         <TabPanel value="files">
-          <p className="demo-panel-text">所有文件都在这里，按你的方式整理。</p>
+          <p className="demo-panel-text">共 8 个文件。</p>
         </TabPanel>
         <TabPanel value="activity">
           <p className="demo-panel-text">今天 14:32 更新了组件规范。</p>
         </TabPanel>
         <TabPanel value="archive">
-          <p className="demo-panel-text">归档的文件会保留在这里。</p>
+          <p className="demo-panel-text">暂无归档文件。</p>
         </TabPanel>
         <TabPanel value="locked">共享尚未启用。</TabPanel>
       </Tabs>

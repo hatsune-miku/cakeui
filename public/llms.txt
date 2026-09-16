@@ -19,4 +19,4 @@
 - ComboBox is a native select with option / optgroup; customizable picker appearance depends on browser support.
 - No Drawer or SidePanel. Global text selection defaults to none; input and log areas explicitly allow selection.
 
-完整文档内容指纹（SHA-256）：24c7216191b1254ed4f52754a37403e7491a0516a1de4b1c03707a77e5c27629
+完整文档内容指纹（SHA-256）：9d60f2d8d4be79172b16e53530ff3964b1f8a9a4dc12fbec975b71f4e4a0d477

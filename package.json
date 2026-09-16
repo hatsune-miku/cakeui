@@ -1,7 +1,7 @@
 {
   "name": "@a1knla/cakeui",
   "version": "0.2.0",
-  "description": "Small, familiar React components for software you use every day.",
+  "description": "React UI components with TypeScript, SCSS, and configurable themes.",
   "type": "module",
   "author": "hatsune-miku",
   "repository": {

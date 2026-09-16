@@ -70,7 +70,7 @@ export function Tokens() {
         </Card>
       </div>
       <Card>
-        <h2 className="demo-card-title">用 CSS 变量，自然延伸</h2>
+        <h2 className="demo-card-title">自定义 CSS 变量</h2>
         <pre className="demo-doc-code">
           <code>
             {

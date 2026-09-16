@@ -58,7 +58,7 @@ export function FormsDemo() {
         </ComboBox>
       </Field>
       <Field label="备注" htmlFor="notes">
-        <TextArea id="notes" rows={2} placeholder="留下一点说明…" />
+        <TextArea id="notes" rows={2} placeholder="输入备注" />
       </Field>
     </Section>
   )
