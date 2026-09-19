@@ -122,13 +122,13 @@ TextBox / TextArea / NumberBox、ComboBox 的搜索输入和 LogView 允许选�
 
 Provider 是可嵌套的 CSS 容器，产生实际 DOM，设置主题背景、文字色、字体、字号与行高，不创建 React 全局状态或 body portal。嵌套 Provider 按自己的 Props 和默认值重新确定主题，不自动继承外层 Props。system 用 CSS 媒体查询响应系统明暗。不使用 Provider 时默认变量为蓝色浅色，根变量本身不会跟随系统变暗。
 
-默认舒适密度字号 14px、控件高度变量 38px；紧凑密度字号 13px、高度变量 32px。个别组件有固定尺寸、padding、最小高度或触屏规则，不保证所有控件最终测量高度都等于该变量。Provider 不保存用户设置，主题持久化属于应用。
+默认舒适密度字号 14px、控件高度变量 38px。紧凑密度以 AnyDrop 为基准：字号 13px、normal 行高、控件高度变量 32px、圆角 8 / 10 / 12 / 14px；按钮常规字重 400、水平 padding 12px，输入 padding 5px 8px。紧凑卡片间距为 0 并使用内描边，复选框为原生 16px 输入，进度条为 5px；日志使用 11px / 1.55 行高。个别组件有固定尺寸、padding、最小高度或触屏规则，不保证所有控件最终测量高度都等于该变量。Provider 不保存用户设置，主题持久化属于应用。
 
 ### Button
 
 原生 button，ref 指向按钮。`variant='default'` 可取 default / primary / ghost / danger；`size='medium'` 使用 Size；`loading=false`；默认 `type='button'`。
 
-默认按钮常态为中性背景，按下时染上 accent-soft / accent-ink 并下移 1px，使用 AnyDrop 风格反馈。primary 常态已有主题色；ghost 透明；danger 用危险色。其他 variant 的按压为 scale(0.98)。动画使用 fast / ease 变量，默认 150ms 与 cubic-bezier(0.29, 0, 0, 1)。loading 显示小 Spinner、保留 children、设置 aria-busy 并禁用按钮。图标由应用传 children；纯图标按钮必须有可访问名称。
+默认按钮常态为中性背景，按下时染上 accent-soft 并下移 1px；各 variant 均保留 1px 下移反馈。primary 使用 primary / primary-ink，粉色主题为 AnyDrop 的玫红底白字，悬停与按下使用 accent-hover；ghost 透明；danger 用危险色。动画使用 fast / ease 变量，默认 150ms 与 cubic-bezier(0.29, 0, 0, 1)。loading 显示小 Spinner、保留 children、设置 aria-busy 并禁用按钮。图标由应用传 children；纯图标按钮必须有可访问名称。
 
 ### Card
 
@@ -142,7 +142,7 @@ Provider 是可嵌套的 CSS 容器，产生实际 DOM，设置主题背景、�
 
 原生 input，`type='text'`。支持 type、name、value、defaultValue、placeholder、required、disabled、readOnly、autoComplete、min/max 等对应原生属性，ref 为 HTMLInputElement。可组合 email / password / search / date / file 等原生类型；日期和文件选择器本身由浏览器负责，不是额外的 CakeUI 日期或上传组件。
 
-普通输入 focus 使用一圈 1.5px 内描边，不叠加第二圈 outline。`aria-invalid='true'` 使用危险色内描边。placeholder 不代替 label。
+普通输入 focus 使用一圈内描边（舒适密度 1.5px，紧凑密度 1px），不叠加第二圈 outline。`aria-invalid='true'` 使用危险色内描边。placeholder 不代替 label。
 
 ### TextArea
 
@@ -298,7 +298,7 @@ indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；
 
 渲染外层 span 与原生手动 Popover，提示 role='tooltip'。克隆唯一子元素，将生成的说明 id 合并到其 aria-describedby，不增加额外的 Tab 停靠点。子组件必须将该属性传到实际可聚焦元素；不要传纯文本、数组或不能接收此属性的 Fragment。禁用按钮无法正常接收键盘焦点，需要额外的可聚焦帮助入口。
 
-悬停按 delay 打开，焦点或点击立即请求打开，离开使用 100ms 宽限，光标可进入提示层阅读，Escape 关闭。顶部空间不足时显示在下方；水平与垂直位置限制在视口 8px 边距内。滚动和 resize 重新定位。内容应为简短说明，不放表单、链接或其他必须操作的控件；它不是通用交互 Popover。
+悬停按 delay 打开，焦点或点击立即请求打开，离开使用 100ms 宽限，光标可进入提示层阅读，Escape 关闭。顶部空间不足时显示在下方；水平与垂直位置限制在视口 8px 边距内。单个 DOM 触发元素以自身边界居中，不把它的 margin 当作可视宽度；自定义组件产生多个 DOM 元素时按包装层定位。提示文字的 letter-spacing 为 normal，避免继承触发标题的字距。与触发元素间距由 `--cake-tip-offset` 控制，舒适密度 8px、紧凑密度 6px；紧凑提示为 11px / 1.45 行高、6px 9px padding、最大宽度 220px。滚动和 resize 重新定位。内容应为简短说明，不放表单、链接或其他必须操作的控件；它不是通用交互 Popover。
 
 ### WhatsThis
 
@@ -760,9 +760,11 @@ export function ActivityLog() {
 
 三种配色分别有 light / dark 变体。可以在同一页面展示多个 Provider，菜单与 Dialog 保留在自己的主题 DOM 作用域中。全量变量与六套主题的精确值见自动生成附录。
 
+粉色主题以 AnyDrop 为最终样式基准：强调色 #d15776、悬停 #be476a、浅色背景 #f4f1ee、深色背景 #16151a。卡片是半透明表面，弹层使用独立的不透明 `--cake-popup`；不要把卡片直接当浮层底色。发生参考项目间的样式冲突时优先修正 CakeUI，使其与 AnyDrop 一致。蓝 / 金仍保留各自配色；默认 theme 仍为 blue。粉色主按钮白字与浅色辅助文字保留原样，存在小字号对比度低于 WCAG AA 的已知边界，见 `docs/design.md`；不要宣称该主题通过完整 AA。
+
 | 变量组                                                                       | 用途                                              |
 | ---------------------------------------------------------------------------- | ------------------------------------------------- |
-| --cake-bg / --cake-surface                                                   | 页面与卡片、弹层表面                              |
+| --cake-bg / --cake-surface / --cake-popup                                    | 页面、半透明卡片与不透明弹层表面                  |
 | --cake-control / --cake-control-hover                                        | 普通控件常态与悬停背景                            |
 | --cake-text / --cake-muted                                                   | 正文与辅助文字                                    |
 | --cake-line / --cake-edge                                                    | 分隔线与内描边                                    |
@@ -773,6 +775,8 @@ export function ActivityLog() {
 | --cake-control-height                                                        | 普通控件高度基线，comfortable 38px / compact 32px |
 | --cake-font / --cake-mono                                                    | 普通字体与日志、代码等宽字体                      |
 | --cake-fast / --cake-normal / --cake-slow / --cake-ease                      | 150 / 200 / 250ms 与缓出曲线                      |
+
+新增的 `--cake-surface-strong`、`--cake-hover-subtle`、`--cake-accent-subtle`、`--cake-hairline`、`--cake-atmosphere` / `-strong` 和 `--cake-shadow-strong` 为业务布局提供同源颜色与阴影。`--cake-primary` / `--cake-primary-ink` 将主按钮填充与淡色强调背景分开。控件细节通过 button / input / card / checkbox / progress / log / tip / help 前缀变量控制；精确默认值见附录。
 
 `--cake-tone` / `--cake-tone-soft` 是组件内部按 tone 计算的派生变量，推荐修改对应主题或状态变量而不是把它们当成全局配色入口。
 
@@ -788,7 +792,7 @@ export function ActivityLog() {
 }
 ```
 
-字体按本机已安装字体回退，不下载远程字体。默认顺序包含 Inter Variable、SF Pro Text、Noto Sans SC、PingFang SC、Segoe UI Variable Text、system-ui；等宽字体使用 Cascadia Code / Consolas / monospace。
+字体按本机已安装字体回退，不下载远程字体。默认顺序包含 Inter Variable、SF Pro Text、Noto Sans SC、PingFang SC、Segoe UI Variable Text、system-ui；紧凑密度使用 Segoe UI Variable Text / Segoe UI / PingFang SC / system-ui。等宽字体使用 Cascadia Code / Consolas / JetBrains Mono / Menlo / monospace。
 
 默认 Button 的按压与 Interactive 区域下陷幅度均为 1px，不能为了加重效果给它们再叠加独立 transform 而不检查命中与定位。输入 focus 只保留一圈内描边；如果集成后出现双边框，检查消费项目的全局 input、focus、outline 和 box-shadow 规则。
 

@@ -1,16 +1,20 @@
 # 设计记录
 
+## 0.3.0：对齐 AnyDrop
+
+粉色主题和 compact 密度以 AnyDrop 为最终样式来源，校准浅深配色、控件尺寸、字体、卡片边线、日志与提示层；修复半透明进度轨道重复绘制，以及带外边距的触发元素导致提示偏移的问题。已有粉色 / compact 消费者升级后会采用这些新默认值；blue / gold 保留各自配色，默认入口和 HTML 原生属性接口不变。已知粉色对比度边界见本文末尾。
+
 ## 参考来源
 
-组件样式与交互参考以下项目；业务逻辑和运行时依赖由各项目分别维护。
+AnyDrop 是组件样式的最终蓝本。参考之间出现冲突，尤其是配色冲突时，直接修正 CakeUI 与 AnyDrop 保持一致。粉色主题和紧凑密度用于还原 AnyDrop；业务逻辑和运行时依赖由各项目分别维护。
 
-| 来源                  | 查阅位置                                                                                              | 保留的设计特征                                                             |
-| --------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| AnyDrop               | `apps/desktop-tauri/src/styles.scss` 的 button、field-hint、field-tooltip、card、log-entry 与输入样式 | 轻背景、内描边、快速按压反馈、低干扰问号帮助、独立浮层                     |
-| KFC Client            | `src/ui/styles/_tokens.scss`、`_buttons.scss`、`App.scss` 与相关布局                                  | 三套配色与深色变体、10/14/20/26 圆角、字体序列、宽扩散阴影、150ms 缓出反馈 |
-| KVM                   | `panel/src/components/ui/Select`、`Field`、`Badge`                                                    | 原生选择、清楚的表单标签、紧凑低饱和状态标签                               |
-| WalAssistantLark      | `src/components/LogsView`                                                                             | 时间与正文分栏、较密日志行、相邻时间可以省略、追加跟随                     |
-| CakeDesign revision 6 | [SKILL.md](https://raw.githubusercontent.com/hatsune-miku/cakedesign-skill/refs/heads/main/SKILL.md)  | 按下反馈、减少交互步骤、状态提示                                           |
+| 来源                  | 查阅位置                                                                                              | 保留的设计特征                                           |
+| --------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| AnyDrop               | `apps/desktop-tauri/src/styles.scss` 的 button、field-hint、field-tooltip、card、log-entry 与输入样式 | 轻背景、内描边、快速按压反馈、低干扰问号帮助、独立浮层   |
+| KFC Client            | `src/ui/styles/_tokens.scss`、`_buttons.scss`、`App.scss` 与相关布局                                  | 蓝 / 金配色与舒适密度参考；粉色与紧凑密度以 AnyDrop 为准 |
+| KVM                   | `panel/src/components/ui/Select`、`Field`、`Badge`                                                    | 原生选择、清楚的表单标签、紧凑低饱和状态标签             |
+| WalAssistantLark      | `src/components/LogsView`                                                                             | 时间与正文分栏、较密日志行、相邻时间可以省略、追加跟随   |
+| CakeDesign revision 6 | [SKILL.md](https://raw.githubusercontent.com/hatsune-miku/cakedesign-skill/refs/heads/main/SKILL.md)  | 按下反馈、减少交互步骤、状态提示                         |
 
 参考项目的组件名称与实现位置可能不同，例如 KVM 使用 Select / Badge，AnyDrop 的组件样式在统一文件内。CakeUI 使用 ComboBox、Tag、HoverTips、TextBox、CheckBox 等名称。
 
@@ -44,3 +48,9 @@
 浏览器实际行为验证使用 Chrome。其他现代浏览器以原生标准能力为兼容基础，初版未逐一完成 Firefox / Safari 的实机验证。可访问性自动检查不代替完整的辅助技术人工测试。
 
 `npm run test:package` 实际打包并离线安装到 `.cache` 下的隔离消费目录，检查包的全部导出、严格声明解析、CSS 导出、服务端渲染及 Vite 消费构建；不通过源码别名替代安装验证。
+
+## AnyDrop 配色的已知对比度边界
+
+粉色主题按维护者要求保持 AnyDrop 原色。白字 / #d15776 主按钮的对比度约 3.93:1；浅色 #8a807a 辅助文字 / #f4f1ee 背景约 3.42:1，低于小字号 WCAG AA 的 4.5:1。浏览器测试继续执行完整 axe 审计，明确记录六主题预览中这三个已知节点（两套粉色主按钮和浅色辅助色值），新增节点或其他规则违规仍失败；不能将此表述为粉色主题通过完整 WCAG AA。AnyDrop 的颜色优先要求不等于无障碍豁免，若后续增加高对比度模式应单独设计，不能悄悄改变默认外观。
+
+浏览器测试可用 `PLAYWRIGHT_CHROMIUM_EXECUTABLE` 指定本机 Chromium；未设置时使用 Playwright 默认浏览器。

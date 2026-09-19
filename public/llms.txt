@@ -1,6 +1,6 @@
 # CakeUI
 
-> React + TypeScript + SCSS UI components. Native HTML props, composable JSX children. Default blue theme. Author: hatsune-miku. Version: 0.2.1.
+> React + TypeScript + SCSS UI components. Native HTML props, composable JSX children. Default blue theme. Author: hatsune-miku. Version: 0.3.0.
 
 安装：npm install @a1knla/cakeui。需要 React / React DOM 19+，显式导入 @a1knla/cakeui/style.css。包名包含 @a1knla/ scope，品牌名和 GitHub 仓库仍为 CakeUI / cakeui。不要凭其他 UI 库的习惯猜测 API。
 
@@ -19,4 +19,4 @@
 - ComboBox is a native select with option / optgroup; customizable picker appearance depends on browser support.
 - No Drawer or SidePanel. Global text selection defaults to none; input and log areas explicitly allow selection.
 
-完整文档内容指纹（SHA-256）：8553d853b7749865f7ff642014df576719099aca54a189e0b75ec7e764d00656
+完整文档内容指纹（SHA-256）：e1f270104d43d7cf3e0910df39b312b396ef5df18941e328c4cb81dea28d1f27

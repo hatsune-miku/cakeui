@@ -5,21 +5,23 @@
   .cake-hovertips-content {
     box-sizing: border-box;
     position: fixed;
+    transform: translate(-50%, -100%);
     inset: auto;
     margin: 0;
     width: max-content;
-    max-width: min(300px, calc(100vw - 16px));
+    max-width: min(var(--cake-tip-width), calc(100vw - 16px));
     max-height: calc(100dvh - 16px);
     overflow: auto;
     border: 0;
-    padding: 9px 12px;
+    padding: var(--cake-tip-padding);
     border-radius: var(--cake-radius-small);
-    background: var(--cake-surface);
+    background: var(--cake-popup);
     color: var(--cake-text);
     font: inherit;
-    font-size: 12px;
+    font-size: var(--cake-tip-font-size);
     font-weight: 400;
-    line-height: 1.6;
+    letter-spacing: normal;
+    line-height: var(--cake-tip-line-height);
     white-space: normal;
     box-shadow: var(--cake-shadow);
     &:popover-open {
@@ -30,10 +32,10 @@
 @keyframes cake-tip-enter {
   from {
     opacity: 0;
-    transform: translateY(3px);
+    translate: 0 3px;
   }
   to {
     opacity: 1;
-    transform: none;
+    translate: 0 0;
   }
 }

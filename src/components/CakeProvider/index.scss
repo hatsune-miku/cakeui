@@ -42,12 +42,34 @@
   --cake-accent-hover: #c7ddf2;
   --cake-accent-ink: #294866;
 }
+// AnyDrop is the source of truth for the pink palette, including translucent surfaces.
 @mixin pink {
-  --cake-bg: #faf7f9;
-  --cake-accent: #93566e;
-  --cake-accent-soft: #f1d8e3;
-  --cake-accent-hover: #ebc9d8;
-  --cake-accent-ink: #653b4b;
+  --cake-bg: #f4f1ee;
+  --cake-surface: rgba(255, 255, 255, 0.66);
+  --cake-surface-strong: rgba(255, 255, 255, 0.9);
+  --cake-popup: #fff;
+  --cake-control: rgba(255, 255, 255, 0.7);
+  --cake-control-hover: rgba(255, 255, 255, 0.98);
+  --cake-text: #2a2521;
+  --cake-muted: #8a807a;
+  --cake-line: rgba(38, 34, 31, 0.09);
+  --cake-hover: rgba(38, 34, 31, 0.04);
+  --cake-hover-subtle: rgba(38, 34, 31, 0.028);
+  --cake-backdrop: rgba(31, 27, 22, 0.2);
+  --cake-danger: #c0453f;
+  --cake-danger-soft: rgba(192, 69, 63, 0.12);
+  --cake-accent: #d15776;
+  --cake-accent-soft: rgba(209, 87, 118, 0.14);
+  --cake-accent-subtle: rgba(209, 87, 118, 0.08);
+  --cake-accent-hover: #be476a;
+  --cake-accent-ink: #2a2521;
+  --cake-primary: var(--cake-accent);
+  --cake-primary-ink: #fff;
+  --cake-hairline: inset 0 0 0 1px rgba(38, 34, 31, 0.06);
+  --cake-atmosphere: 0 0 40px 6px rgba(31, 27, 22, 0.12);
+  --cake-atmosphere-strong: 0 0 56px 10px rgba(31, 27, 22, 0.16);
+  --cake-shadow: var(--cake-edge), var(--cake-atmosphere);
+  --cake-shadow-strong: var(--cake-edge), var(--cake-atmosphere-strong);
 }
 @mixin gold {
   --cake-bg: #f8f5ef;
@@ -63,12 +85,26 @@
   --cake-accent-ink: #f4f9ff;
 }
 @mixin pink-dark {
-  --cake-bg: #231f22;
-  --cake-surface: #332d32;
-  --cake-accent: #efc3d4;
-  --cake-accent-soft: #71495a;
-  --cake-accent-hover: #825366;
-  --cake-accent-ink: #fff7fa;
+  @include pink;
+  --cake-bg: #16151a;
+  --cake-surface: rgba(255, 255, 255, 0.045);
+  --cake-surface-strong: rgba(40, 38, 46, 0.96);
+  --cake-popup: #26242b;
+  --cake-control: rgba(255, 255, 255, 0.07);
+  --cake-control-hover: rgba(255, 255, 255, 0.13);
+  --cake-text: #e7e2df;
+  --cake-muted: #948b86;
+  --cake-line: rgba(255, 255, 255, 0.08);
+  --cake-hover: rgba(255, 255, 255, 0.055);
+  --cake-hover-subtle: rgba(255, 255, 255, 0.03);
+  --cake-backdrop: rgba(0, 0, 0, 0.5);
+  --cake-accent-soft: rgba(209, 87, 118, 0.2);
+  --cake-accent-subtle: rgba(209, 87, 118, 0.12);
+  --cake-accent-ink: #e7e2df;
+  --cake-danger-soft: rgba(192, 69, 63, 0.2);
+  --cake-hairline: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --cake-atmosphere: 0 0 40px 6px rgba(0, 0, 0, 0.4);
+  --cake-atmosphere-strong: 0 0 56px 10px rgba(0, 0, 0, 0.5);
 }
 @mixin gold-dark {
   --cake-bg: #211f1c;
@@ -85,6 +121,16 @@
   -webkit-user-select: none;
   @include light;
   @include blue;
+  --cake-surface-strong: var(--cake-surface);
+  --cake-popup: var(--cake-surface);
+  --cake-hover-subtle: var(--cake-hover);
+  --cake-accent-subtle: var(--cake-accent-soft);
+  --cake-primary: var(--cake-accent-soft);
+  --cake-primary-ink: var(--cake-accent-ink);
+  --cake-hairline: var(--cake-edge);
+  --cake-atmosphere: 0 36px 100px #2b38451f;
+  --cake-atmosphere-strong: var(--cake-atmosphere);
+  --cake-shadow-strong: var(--cake-shadow);
   --cake-radius-small: 10px;
   --cake-radius-medium: 14px;
   --cake-radius-large: 20px;
@@ -96,7 +142,34 @@
   --cake-control-height: 38px;
   --cake-font:
     'Inter Variable', 'SF Pro Text', 'Noto Sans SC', 'PingFang SC', 'Segoe UI Variable Text', system-ui, sans-serif;
-  --cake-mono: 'Cascadia Code', 'Consolas', monospace;
+  --cake-mono: 'Cascadia Code', 'Consolas', 'JetBrains Mono', 'Menlo', monospace;
+  --cake-button-gap: 7px;
+  --cake-button-padding: 7px 14px;
+  --cake-button-weight: 500;
+  --cake-input-padding: 9px 12px;
+  --cake-input-focus-width: 1.5px;
+  --cake-input-hover: var(--cake-control-hover);
+  --cake-card-gap: 14px;
+  --cake-card-edge: none;
+  --cake-checkbox-size: 17px;
+  --cake-checkbox-margin: 0;
+  --cake-checkbox-color-scheme: inherit;
+  --cake-progress-height: 6px;
+  --cake-progress-track: var(--cake-hover);
+  --cake-log-gap: 2px;
+  --cake-log-padding: 12px;
+  --cake-log-background: var(--cake-hover);
+  --cake-log-font-size: 12px;
+  --cake-log-line-height: 1.7;
+  --cake-tip-padding: 9px 12px;
+  --cake-tip-width: 300px;
+  --cake-tip-font-size: 12px;
+  --cake-tip-line-height: 1.6;
+  --cake-tip-offset: 8px;
+  --cake-help-size: 17px;
+  --cake-help-font-size: 11px;
+  --cake-help-background: var(--cake-hover);
+  --cake-help-color: var(--cake-muted);
   --cake-edge: inset 0 0 0 1px var(--cake-line);
 }
 .cake-theme {
@@ -124,7 +197,43 @@
   }
   &[data-density='compact'] {
     --cake-control-height: 32px;
+    --cake-radius-small: 8px;
+    --cake-radius-medium: 10px;
+    --cake-radius-large: 12px;
+    --cake-radius-dialog: 14px;
+    --cake-font: 'Segoe UI Variable Text', 'Segoe UI', 'PingFang SC', system-ui, sans-serif;
+    --cake-button-gap: 6px;
+    --cake-button-padding: 0 12px;
+    --cake-button-weight: 400;
+    --cake-input-padding: 5px 8px;
+    --cake-input-focus-width: 1px;
+    --cake-input-hover: var(--cake-control);
+    --cake-card-gap: 0px;
+    --cake-card-edge: var(--cake-hairline);
+    --cake-checkbox-size: 16px;
+    // An invalid custom property invokes the consumer fallback to the UA margin.
+    --cake-checkbox-margin: initial;
+    --cake-checkbox-color-scheme: normal;
+    --cake-progress-height: 5px;
+    --cake-progress-track: var(--cake-accent-soft);
+    --cake-log-gap: 0px;
+    --cake-log-padding: 6px 10px 8px;
+    --cake-log-background: transparent;
+    --cake-log-font-size: 11px;
+    --cake-log-line-height: 1.55;
+    --cake-tip-padding: 6px 9px;
+    --cake-tip-width: 220px;
+    --cake-tip-font-size: 11px;
+    --cake-tip-line-height: 1.45;
+    --cake-tip-offset: 6px;
+    --cake-help-size: 14px;
+    --cake-help-font-size: 10px;
+    --cake-help-background: rgba(138, 128, 122, 0.24);
+    --cake-help-color: var(--cake-text);
     font-size: 13px;
+    line-height: normal;
+    font-synthesis: none;
+    text-rendering: geometricPrecision;
   }
   @media (prefers-color-scheme: dark) {
     &[data-mode='system'] {

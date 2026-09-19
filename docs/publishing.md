@@ -28,7 +28,7 @@ npm 当前要求 CLI 至少 11.5.1、Node 至少 22.14.0，且使用 GitHub 托�
 | Actions 页面 Run workflow              | 只验证，生成可下载的 tgz；即使选择 tag 也不发布 |
 | 普通分支 push、PR、GitHub Release 事件 | 不触发此发布工作流                              |
 
-验证 job 只有 `contents: read`，不授予 OIDC 权限。依次检查包名、作者、仓库、public / registry、manifest 与锁文件版本、tag；运行文档一致性、类型、DOM 单元测试、发布保护测试、库 / Gallery 构建、格式、真实浏览器交互与 axe 检查；最后安装实际 tgz，验证 ESM、CSS / 声明入口、SSR、6 个文档示例及消费项目构建。
+验证 job 只有 `contents: read`，不授予 OIDC 权限。依次检查包名、作者、仓库、public / registry、manifest 与锁文件版本、tag；运行文档一致性、类型、DOM 单元测试、发布保护测试、库 / Gallery 构建、格式、真实浏览器交互与 axe 检查；最后安装实际 tgz，验证 ESM、CSS / 声明入口、SSR、7 个文档示例及消费项目构建。
 
 `npm run test:package -- --artifact-dir .cache/release` 在全部包验证通过后保留同一个 tgz，并写入包名、版本和 SHA-512 integrity。工作流执行发布 dry-run 后上传 `npm-package` artifact，保留 7 天。`package.tgz` 与 `metadata.json` 位于 artifact 内。
 

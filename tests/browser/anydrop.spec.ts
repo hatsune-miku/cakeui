@@ -1,0 +1,37 @@
+import { expect, test } from '@playwright/test'
+
+test('AnyDrop compact composition preserves source colors, geometry and native interactions', async ({ page }) => {
+  await page.goto('/tests/browser/fixtures/anydrop/')
+  const light = page.getByTestId('light')
+  await expect(light).toHaveCSS('background-color', 'rgb(244, 241, 238)')
+  await expect(light).toHaveCSS('font-size', '13px')
+  await expect(page.getByTestId('dark')).toHaveCSS('background-color', 'rgb(22, 21, 26)')
+  const send = page.getByRole('button', { name: '发送文件' })
+  await expect(send).toHaveCSS('background-color', 'rgb(209, 87, 118)')
+  await expect(send).toHaveCSS('color', 'rgb(255, 255, 255)')
+  await expect(send).toHaveCSS('border-radius', '8px')
+  await expect(send).toHaveCSS('font-weight', '400')
+  expect((await send.boundingBox())!.height).toBe(32)
+  await send.hover()
+  await expect(send).toHaveCSS('background-color', 'rgb(190, 71, 106)')
+  await page.mouse.down()
+  await expect(send).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 1)')
+  await page.mouse.up()
+  await page.getByRole('checkbox', { name: '发送剪贴板' }).uncheck()
+  await expect(page.getByRole('checkbox', { name: '发送剪贴板' })).not.toBeChecked()
+  await page.getByRole('textbox', { name: '设备名' }).fill('修改的设备名')
+  await expect(page.getByRole('textbox', { name: '设备名' })).toHaveValue('修改的设备名')
+  expect((await page.getByRole('progressbar').boundingBox())!.height).toBe(5)
+  await page.getByRole('button', { name: '帮助', exact: true }).focus()
+  await expect(page.getByRole('tooltip')).toBeVisible()
+  await expect(page.getByRole('tooltip')).toHaveCSS('background-color', 'rgb(255, 255, 255)')
+  await expect(page.getByRole('tooltip')).toHaveCSS('letter-spacing', 'normal')
+  const helpBox = (await page.getByRole('button', { name: '帮助', exact: true }).boundingBox())!
+  const tipBox = (await page.getByRole('tooltip').boundingBox())!
+  expect(Math.abs(helpBox.x + helpBox.width / 2 - tipBox.x - tipBox.width / 2)).toBeLessThan(0.1)
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('tooltip')).not.toBeVisible()
+  // A nested provider must reset density and palette instead of inheriting compact pink.
+  await expect(page.getByTestId('nested-blue')).toHaveCSS('background-color', 'rgb(246, 248, 251)')
+  await expect(page.getByTestId('nested-blue').getByRole('button')).toHaveCSS('min-height', '38px')
+})

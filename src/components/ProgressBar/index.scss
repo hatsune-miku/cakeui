@@ -2,14 +2,15 @@
   appearance: none;
   display: block;
   width: 100%;
-  height: 6px;
+  height: var(--cake-progress-height);
   border: 0;
-  border-radius: 6px;
+  border-radius: 999px;
   overflow: hidden;
-  background: var(--cake-hover);
+  background: var(--cake-progress-track);
   accent-color: var(--cake-accent);
   &::-webkit-progress-bar {
-    background: var(--cake-hover);
+    // The outer track already owns the translucent fill; painting it twice darkens pink.
+    background: transparent;
     border-radius: inherit;
   }
   &::-webkit-progress-value {

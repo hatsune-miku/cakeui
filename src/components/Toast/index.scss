@@ -9,7 +9,7 @@
   gap: 18px;
   max-width: min(400px, calc(100vw - 48px));
   border-radius: var(--cake-radius-medium);
-  background: var(--cake-surface);
+  background: var(--cake-popup);
   color: var(--cake-text);
   &[data-open='true'] {
     padding: 10px 12px 10px 18px;

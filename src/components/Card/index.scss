@@ -2,9 +2,10 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--cake-card-gap);
   min-width: 0;
   background: var(--cake-surface);
+  box-shadow: var(--cake-card-edge);
   border-radius: var(--cake-radius-large);
   &[data-padding='small'] {
     padding: 14px;

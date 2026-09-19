@@ -9,9 +9,10 @@
   }
   .cake-checkbox-input {
     box-sizing: border-box;
-    width: 17px;
-    height: 17px;
-    margin: 0;
+    color-scheme: var(--cake-checkbox-color-scheme);
+    width: var(--cake-checkbox-size);
+    height: var(--cake-checkbox-size);
+    margin: var(--cake-checkbox-margin, revert);
     accent-color: var(--cake-accent);
     cursor: inherit;
     &:focus-visible {

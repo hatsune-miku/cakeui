@@ -30,11 +30,19 @@ export function HoverTips({ children, content, delay = 180, placement = 'top', c
     element.showPopover()
     function position() {
       if (!anchor.current || !element) return
-      const rect = anchor.current.getBoundingClientRect()
+      const triggers = Array.from(anchor.current.children).filter((child) => child !== element)
+      const rect = (triggers.length === 1 ? triggers[0] : anchor.current).getBoundingClientRect()
       const bounds = element.getBoundingClientRect()
-      const top = placement === 'top' && rect.top > bounds.height + 16 ? rect.top - bounds.height - 8 : rect.bottom + 8
-      element.style.left = `${Math.max(8, Math.min(rect.left + rect.width / 2 - bounds.width / 2, window.innerWidth - bounds.width - 8))}px`
-      element.style.top = `${Math.max(8, Math.min(top, window.innerHeight - bounds.height - 8))}px`
+      const offset = parseFloat(getComputedStyle(element).getPropertyValue('--cake-tip-offset')) || 8
+      const top =
+        placement === 'top' && rect.top > bounds.height + 16 ? rect.top - bounds.height - offset : rect.bottom + offset
+      const left = Math.max(
+        8,
+        Math.min(rect.left + rect.width / 2 - bounds.width / 2, window.innerWidth - bounds.width - 8)
+      )
+      // Preserve fractional-pixel edge painting, matching AnyDrop's translated tooltip.
+      element.style.left = `${left + bounds.width / 2}px`
+      element.style.top = `${Math.max(8, Math.min(top, window.innerHeight - bounds.height - 8)) + bounds.height}px`
     }
     function escape(event: KeyboardEvent) {
       if (event.key === 'Escape') close()

@@ -2,15 +2,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 17px;
-  height: 17px;
+  width: var(--cake-help-size);
+  height: var(--cake-help-size);
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: var(--cake-hover);
-  color: var(--cake-muted);
+  background: var(--cake-help-background);
+  color: var(--cake-help-color);
   font: inherit;
-  font-size: 11px;
+  font-size: var(--cake-help-font-size);
+  line-height: 1;
   font-weight: 600;
   cursor: help;
   &:hover {

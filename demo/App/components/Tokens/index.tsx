@@ -3,7 +3,7 @@ import { Button, CakeProvider, type CakeTheme, Card, CheckBox, Dot, Switch, Tag,
 import './index.scss'
 
 const themes: { value: CakeTheme; label: string; hex: string }[] = [
-  { value: 'pink', label: '粉', hex: '#F1D8E3' },
+  { value: 'pink', label: '粉', hex: '#D15776' },
   { value: 'blue', label: '蓝', hex: '#D6E7F7' },
   { value: 'gold', label: '金', hex: '#F3D3B9' },
 ]

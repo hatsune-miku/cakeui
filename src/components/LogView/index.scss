@@ -4,18 +4,18 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cake-log-gap);
   height: 220px;
   min-height: 80px;
   overflow: auto;
   overscroll-behavior: contain;
-  padding: 12px;
+  padding: var(--cake-log-padding);
   border-radius: var(--cake-radius-medium);
-  background: var(--cake-hover);
+  background: var(--cake-log-background);
   font-family: var(--cake-mono);
   font-variant-ligatures: none;
-  font-size: 12px;
-  line-height: 1.7;
+  font-size: var(--cake-log-font-size);
+  line-height: var(--cake-log-line-height);
   &:focus-visible {
     outline: 2px solid var(--cake-accent);
     outline-offset: 3px;
