@@ -168,12 +168,14 @@ const index = await format(
 
 安装：npm install ${pkg.name}。需要 React / React DOM 19+。基础组件显式导入 ${pkg.name}/style.css；HTML 幻灯片从 ${pkg.name}/presentation 导入，样式为 ${pkg.name}/presentation/style.css。presentation 是同包的 Web 子入口，不是 RN 包；新增入口尚未包含于已发布的 0.3.0，当前请安装本仓库打包产物。包名包含 @a1knla/ scope，品牌名和 GitHub 仓库仍为 CakeUI / cakeui。不要凭其他 UI 库的习惯猜测 API。
 
+CDN：普通 HTML 使用 <link rel="stylesheet" href="https://vanillacake.cn/cakeui-dist/cakeui.css"> 和 <script src="https://vanillacake.cn/cakeui-dist/cakeui.min.js"></script>。无需 npm、另引 React 或构建工具；基础组件从 CakeUI 取用，幻灯片从 CakeUI.presentation 取用，使用 CakeUI.React.createElement 和 CakeUI.createRoot 挂载。CDN 与 npm 的组件 Props 相同。完整文档第 2 节分别提供 npm / CDN 的基础组件和幻灯片示例，以及本地打包、离线与版本规则。
+
 ## 文档 / Documentation
 
 - [完整技术文档 / Full technical reference](https://gallery.vanillacake.cn/llms-full.txt): UTF-8 text/plain；${components.length} 个组件的 API、默认值、原生属性、ref、交互边界、主题变量、可编译示例和开发维护规则。生成代码前优先读取。
 - [Gallery 阅读页](https://gallery.vanillacake.cn/?page=docs): 同一份全文，可选择复制。
 - [HTML 幻灯片](https://gallery.vanillacake.cn/?page=presentation): 逐页演示、连续阅读、全屏与打印；独立页 /slides.html。
-- [外部 script 示例](https://gallery.vanillacake.cn/browser.html): 普通 HTML 引入 https://vanillacake.cn/cakeui-dist/cakeui.min.js 和 cakeui.css；全局 CakeUI，幻灯片位于 CakeUI.presentation，React 运行时内置。默认 URL 随稳定发版更新，固定版本使用 releases/<版本>/；初次部署为源码预览，查看 manifest.json 的 source。
+- [CDN / 外部 script 示例](https://gallery.vanillacake.cn/browser.html): 普通 HTML 使用内置 React 的完整浏览器构建。默认 URL 随稳定发版更新，固定版本使用 releases/<版本>/；初次部署为源码预览，查看 manifest.json 的 source。
 - [源码](https://github.com/hatsune-miku/cakeui): 基础入口 src/index.ts，幻灯片入口 src/presentation/index.ts；Props 在对应 components/*/index.tsx。
 - [维护规则](https://github.com/hatsune-miku/cakeui/blob/main/AGENTS.md): 每次改动都评估并同步受影响文档。
 

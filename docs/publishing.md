@@ -42,7 +42,7 @@ npm 发布及摘要校验成功后，独立 `deploy_browser` job 从本次验证
 
 每次稳定发版更新根目录的 `cakeui.min.js` / `cakeui.css`，预发布更新 `next/`，全部 npm 版本保留在 `releases/<版本>/`。默认 URL 会变化，长期保存的 HTML 建议锁定版本。首次建立分发时可运行 `npm run deploy:browser -- --preview`，仅发布当前源码预览到 `previews/<摘要>/`，未有稳定发布时同时初始化默认地址；它不能替换已有 npm 稳定版，CI 禁止使用 preview。详见 [部署说明](deployment.md)。
 
-验证 job 只有 `contents: read`，不授予 OIDC 权限。依次检查包名、作者、仓库、public / registry、manifest 与锁文件版本、tag；运行文档一致性、类型、DOM 单元测试、发布保护测试、库 / Gallery 构建、格式、真实浏览器交互与 axe 检查；最后安装实际 tgz，验证两个 ESM、CSS / 声明入口、SSR、8 个文档示例及消费项目构建。
+验证 job 只有 `contents: read`，不授予 OIDC 权限。依次检查包名、作者、仓库、public / registry、manifest 与锁文件版本、tag；运行文档一致性、类型、DOM 单元测试、发布保护测试、库 / Gallery 构建、格式、真实浏览器交互与 axe 检查；最后安装实际 tgz，验证两个 ESM、CSS / 声明入口、SSR、全部标注 example 的 TSX 文档示例及消费项目构建。CDN 的 HTML 文档示例由浏览器测试直接加载构建后的 JS / CSS，检查渲染与交互。
 
 `npm run test:package -- --artifact-dir .cache/release` 在全部包验证通过后保留同一个 tgz，并写入包名、版本和 SHA-512 integrity。工作流执行发布 dry-run 后上传 `npm-package` artifact，保留 7 天。`package.tgz` 与 `metadata.json` 位于 artifact 内。
 

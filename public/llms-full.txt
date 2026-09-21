@@ -30,7 +30,25 @@ CakeUI 使用 React、TypeScript 和 SCSS，组件保留原生 HTML 结构和事
 
 ## 2. 安装、入口与执行环境
 
-正式包名是 `@a1knla/cakeui`，npm 页面为 https://www.npmjs.com/package/@a1knla/cakeui 。品牌名与 GitHub 仓库仍为 CakeUI / cakeui；安装和导入时必须包含 `@a1knla/` scope。开发环境使用 Node.js 22.12+ 和 npm，运行项目时 React 与 React DOM 都应为 19 或更高版本。
+正式包名是 `@a1knla/cakeui`，npm 页面为 https://www.npmjs.com/package/@a1knla/cakeui 。品牌名与 GitHub 仓库仍为 CakeUI / cakeui；安装和导入时必须包含 `@a1knla/` scope。可通过 npm 安装，也可直接从下面的 CDN 地址引入浏览器版本。
+
+| 对比项       | npm / ESM                                                           | CDN / 普通 script                                                       |
+| ------------ | ------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| 适用场景     | 已有 React 工程、TypeScript、SSR                                    | 普通 HTML、单文件页面、HTML slides                                      |
+| React 与挂载 | 项目提供 React / React DOM 19+；从 react-dom/client 导入 createRoot | 运行时内置；使用 CakeUI.React 和 CakeUI.createRoot                      |
+| 基础组件     | 从 @a1knla/cakeui 具名导入                                          | 从 CakeUI 取用，如 CakeUI.Button                                        |
+| 幻灯片组件   | 从 @a1knla/cakeui/presentation 具名导入                             | 从 CakeUI.presentation 取用，如 CakeUI.presentation.SlideDeck           |
+| 样式         | 显式导入基础 style.css 和 / 或 presentation/style.css               | 一个 cakeui.css 包含基础组件和幻灯片样式                                |
+| 代码形式     | JSX / TSX 由消费项目编译；ESM 支持 tree-shaking                     | 普通 JavaScript，使用 CakeUI.React.createElement；无需构建工具          |
+| 版本选择     | 安装指定 npm 版本，并使用锁文件                                     | 默认 URL 随稳定发版更新；已发布版本可用 releases/<版本>/ 固定 JS 和 CSS |
+
+两种方式使用相同的组件 Props、原生事件和 children 组合规则。CDN 版本只改变加载方式，不额外提供 slides 编辑器或数据格式。下面分别给出基础组件和 presentation 示例。
+
+版本状态：presentation 和浏览器 IIFE 是当前仓库新增功能，已发布的 npm `0.3.0` 不含它们。ESM 新版本发布前请使用本节的“本地打包安装”流程。CDN 当前为源码预览；`CakeUI.version` 表示源码 package.json 版本，`https://vanillacake.cn/cakeui-dist/manifest.json` 中 source=preview 表示尚未由对应 npm 版本发布，不能把源码预览当作 npm 0.3.0 的 API。
+
+### 通过 npm 使用
+
+开发环境使用 Node.js 22.12+ 和 npm，运行项目时 React 与 React DOM 都应为 19 或更高版本。
 
 在已有 React 19 项目中安装：
 
@@ -40,20 +58,15 @@ npm install @a1knla/cakeui
 
 如果使用的 npm 镜像还未同步新版本，可追加 `--registry=https://registry.npmjs.org/` 从官方注册表安装。维护者发布步骤、验证方式与署名约定见 `docs/publishing.md`。
 
-需要验证未发布的本地改动时，仍可从仓库打包安装：
+如果项目还没有 React，先安装匹配的 React / React DOM；JSX / TSX 由 Vite 等构建工具或所用框架编译：
 
 ```sh
-git clone https://github.com/hatsune-miku/cakeui.git
-cd cakeui
-npm ci
-npm pack
-# npm pack 的 prepack 会构建库；将输出的 a1knla-cakeui-<版本>.tgz 交给消费项目
-
-# 在已有 React 19 项目内，用实际文件名替换占位符
-npm install /absolute/path/to/a1knla-cakeui-<版本>.tgz
+npm install react@^19 react-dom@^19
 ```
 
-使用方式：
+#### npm：基础组件
+
+在应用中渲染以下组件，CSS 每个入口引入一次即可：
 
 ```tsx example=hello
 import { Button, CakeProvider, TextBox } from '@a1knla/cakeui'
@@ -69,15 +82,80 @@ export function HelloCakeUI() {
 }
 ```
 
-构建提供两个 ESM / TypeScript 声明入口与各自的 CSS，另有普通 script 使用的浏览器 IIFE 版本。ESM 的 JS 可以 tree-shake，React / React DOM 是 peer dependencies；浏览器 IIFE 内置自己的 React / React DOM 运行时。CSS 按基础组件和 presentation 分开，不按单个组件拆包；浏览器版另提供包含两者的完整 CSS。没有 CommonJS 入口，也没有公开 SCSS 子路径。只用幻灯片的 ESM 消费方不需要基础 CSS 或 CakeProvider；同时使用基础控件时额外导入基础 CSS。消费项目不需要安装 Sass。
+#### npm：HTML 幻灯片
 
-版本状态：presentation 和浏览器 IIFE 是当前仓库新增功能，已发布的 npm `0.3.0` 不含它们。ESM 新版本发布前请使用上面的本地打包安装流程。浏览器分发初次部署是源码预览；`CakeUI.version` 表示源码 package.json 版本，分发的 manifest.json 中 source=preview 表示尚未由对应 npm 版本发布，不能把源码预览当作 npm 0.3.0 的 API。
+presentation 是同一个 npm 包的子入口，不需要另装一个包，也不从基础入口导入 SlideDeck：
 
-### 通过外部 script URL 使用
+```tsx example=presentation-minimal
+import { Slide, SlideDeck, SlideHeader, SlideText } from '@a1knla/cakeui/presentation'
+import '@a1knla/cakeui/presentation/style.css'
 
-当前默认地址为 `https://vanillacake.cn/cakeui-dist/cakeui.min.js` 与 `https://vanillacake.cn/cakeui-dist/cakeui.css`，完整示例在 `https://gallery.vanillacake.cn/browser.html`。JS 为单个普通脚本，不需要 type=module、import map、CDN React、npm 安装或本地打包。CSS 需单独加载；JS 不自动注入样式。两个文件对应远端 `/var/www/html/cakeui-dist`。稳定版发布后更新默认地址；`releases/<版本>/cakeui.min.js` 与同目录 CSS 固定版本且不覆盖，预发布版可通过 `next/` 或固定版本路径访问。
+export function ProjectSlides() {
+  return (
+    <SlideDeck aria-label="项目汇报">
+      <Slide aria-label="本周进展">
+        <SlideHeader title="本周进展" />
+        <SlideText>完成组件与文档。</SlideText>
+      </Slide>
+    </SlideDeck>
+  )
+}
+```
+
+只用幻灯片不需要基础 CSS 或 CakeProvider；同时使用 Button 等基础组件时，再从基础入口导入它们和 `@a1knla/cakeui/style.css`。将示例组件交给项目已有的 React 根节点渲染即可。主题分别通过 CakeProvider 和 SlideDeck 的 theme / mode 设置。
+
+ESM 构建提供 TypeScript 声明，JS 支持 tree-shaking，React / React DOM 是 peer dependencies。CSS 按基础组件和 presentation 分开，不按单个组件拆包。没有 CommonJS 入口，也没有公开 SCSS 子路径。消费项目不需要安装 Sass。
+
+### 通过 CDN 使用
+
+本文将 `https://vanillacake.cn/cakeui-dist/` 作为 CakeUI 的 CDN 地址使用：
+
+- JavaScript：[cakeui.min.js](https://vanillacake.cn/cakeui-dist/cakeui.min.js)
+- 完整样式：[cakeui.css](https://vanillacake.cn/cakeui-dist/cakeui.css)
+- 可直接打开或另存为 HTML 的[完整示例](https://gallery.vanillacake.cn/browser.html)
+
+JS 为单个普通脚本，不需要 type=module、import map、另引 React、npm 安装或本地打包。CSS 需单独加载；JS 不自动注入样式。稳定版发布后更新默认地址；`releases/<版本>/cakeui.min.js` 与同目录 CSS 固定版本且不覆盖，预发布版可通过 `next/` 或固定版本路径访问。只使用实际已发布且存在的版本目录，当前预览没有对应的 npm 正式版本目录。
 
 全局对象为 `window.CakeUI`（经典脚本内也可直接用 CakeUI）：基础 48 个组件位于 CakeUI.Button 等顶层；幻灯片 15 个组件位于 CakeUI.presentation；React 为 CakeUI.React，挂载函数为 CakeUI.createRoot，源码版本为 CakeUI.version。所有 Props 和事件与对应 ESM 组件相同，使用 React.createElement 表达 JSX 的同一棵元素树。浏览器不会直接执行 JSX / TSX；希望写 JSX 时预先编译，不要求运行时 Babel。
+
+#### CDN：基础组件
+
+将以下内容保存为 `.html` 即可打开；组件状态和事件使用包内置的 React：
+
+```html example=browser-basic
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CakeUI CDN 示例</title>
+    <link rel="stylesheet" href="https://vanillacake.cn/cakeui-dist/cakeui.css" />
+  </head>
+  <body>
+    <main id="app"></main>
+    <script src="https://vanillacake.cn/cakeui-dist/cakeui.min.js"></script>
+    <script>
+      const { React, createRoot, CakeProvider, Button } = CakeUI
+      const h = React.createElement
+
+      function App() {
+        const [count, setCount] = React.useState(0)
+        return h(
+          CakeProvider,
+          { theme: 'blue', mode: 'system' },
+          h(Button, { onClick: () => setCount((value) => value + 1) }, '计数 ' + count)
+        )
+      }
+
+      createRoot(document.getElementById('app')).render(h(App))
+    </script>
+  </body>
+</html>
+```
+
+#### CDN：HTML 幻灯片
+
+使用同一对 JS / CSS 地址，组件取自 `CakeUI.presentation`。此例与上面的 npm 幻灯片示例等价：
 
 ```html example=browser-url
 <!doctype html>
@@ -112,9 +190,30 @@ export function HelloCakeUI() {
 </html>
 ```
 
+#### 加载顺序、类型与版本
+
 脚本须在应用代码之前完成加载；不要给它加 async 后立即访问 CakeUI。每页只加载一个浏览器运行时；自定义组件的 hooks 使用 CakeUI.React，且通过 CakeUI.createRoot 挂载，不与宿主项目另一份 React 混用。已有 React 构建项目优先使用 ESM 子入口。浏览器全局类型可通过 `import type {} from '@a1knla/cakeui/browser'` 引入，此子路径仅提供类型，不是可运行的 ESM 入口。
 
 完整 CSS 具有基础样式的根变量和默认文字不可选规则，Slide 内仍可选择。外部 URL 需要网络，文件双击打开时也一样；自包含离线 HTML 要内嵌脚本、CSS 和所用媒体。保持 JS / CSS 版本一致；默认地址会随稳定发版改变，长期保存的演示建议固定 releases/<版本> 地址。HTTP 提供正确 MIME、CORS 与 no-cache，允许跨域引用和缓存重新验证。SRI 若由应用自行设置，应绑定固定版本字节，不把旧摘要用于可变的默认地址。
+
+### 本地打包安装与离线文件
+
+需要使用尚未发布到 npm 的功能时，从仓库构建并安装实际打包文件：
+
+```sh
+git clone https://github.com/hatsune-miku/cakeui.git
+cd cakeui
+npm ci
+npm pack
+# npm pack 的 prepack 会构建库；将输出的 a1knla-cakeui-<版本>.tgz 交给消费项目
+
+# 在已有 React 19 项目内，用实际文件名替换占位符
+npm install /absolute/path/to/a1knla-cakeui-<版本>.tgz
+```
+
+安装 tgz 后使用上面完全相同的 npm import 和 CSS 路径。若需要自行托管浏览器版，构建产物为 `dist/browser/cakeui.min.js` 和 `dist/browser/cakeui.css`，同时复制两者，将 HTML 中的 CDN 地址改为自己的 URL 或相对路径即可。把文件放在 HTML 旁边可以离线加载，但仍是三个文件；完全自包含的单 HTML 需要将 JS / CSS 内嵌，并处理图片、字体等所有外部资源。不要把 `dist/index.js` 直接用于普通 script 标签，它是需要 React 依赖解析的 ESM 入口。
+
+### SSR 与浏览器兼容性
 
 库的 ESM 构建带有 `'use client'` 指令。支持服务端渲染首屏 HTML，DOM 操作在 effect 或事件内执行；Dialog 和 Popover 等交互需要客户端挂载后才能打开。在使用 Server Components 的框架中，管理事件和状态的消费组件应处于客户端边界，CSS 按框架的全局样式规则引入。SSR 支持不代表服务端输出会自动打开模态框或提示层。
 
@@ -452,6 +551,8 @@ Gallery：`/?page=presentation`；独立示例：`/slides.html`，可接受 `the
 | fullscreen           | true          | 是否显示全屏按钮；只影响内置按钮                                                                                    |
 | labels               | 英文文案      | 部分覆盖 SlideDeckLabels；键为 previous、next、enterFullscreen、exitFullscreen、fullscreenUnavailable、empty、slide |
 | onFullscreenError    | undefined     | 全屏 Promise 拒绝时收到原始错误；同时显示 labels.fullscreenUnavailable                                              |
+
+npm 和 CDN 的 SlideDeck 都自带逐页展示、连续阅读布局、比例适配、上一页 / 下一页、页码、键盘翻页和全屏。默认逐页、16:9、显示导航与全屏按钮。`view` / `ratio` 的切换按钮，以及按章节名称跳页的列表不内置；Gallery 使用页面状态和按钮分别更新 `view`、`ratio`、`index`。复制最小示例会得到内置控件，不会自动包含 Gallery 顶部工具栏或下方章节列表。需要同样的控制区时，参见第 5 节的受控示例，通过 `index` / `onIndexChange` 与外部控件共享页码。
 
 children 只接受直接的 Slide、它们的数组、任意层 Fragment，以及 null / false 等条件空值；其他元素或文本会抛错。不要传内部返回 Slide 的自定义组件；可调用返回 Slide 数组的普通内容组合函数。给动态页使用稳定 key。嵌套交互内容直接放在 Slide 内。
 
@@ -1147,7 +1248,7 @@ Gallery 构建会检查文档一致性，再将 public 中两个文件复制到 
 - 署名：hatsune-miku
 - React peer：>=19.0.0；React DOM peer：>=19.0.0
 - 公开组件：63 个；下列分组分别与两个公开入口一致。
-- 文档 / package.json / src 内容指纹（SHA-256）：20988c17038752ce843d1a4b8146677238c0ca4b290cb4eca54521719176cbd6
+- 文档 / package.json / src 内容指纹（SHA-256）：1355f4905ee436fa2cf55f723dec4bc8d0c7e6aaf129f1d821a298e0b0c125f0
 - 本文为生成结果，请修改 docs/ai.md 或相应源码后运行 npm run docs:build。
 
 - src/index.ts（48 个）：Accordion, AccordionItem, Alert, Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, CakeProvider, Card, CheckBox, ComboBox, ContextMenu, Dialog, Dot, Field, GroupBox, HoverTips, ListItem, ListView, LogEntry, LogView, MenuItem, MenuSeparator, NumberBox, Pagination, ProgressBar, RadioButton, Separator, Skeleton, Slider, Spinner, Switch, Tab, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TabList, TabPanel, Tabs, Tag, TextArea, TextBox, Toast, WhatsThis
