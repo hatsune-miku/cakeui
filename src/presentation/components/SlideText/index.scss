@@ -1,0 +1,14 @@
+.cake-slide-text {
+  margin: 0;
+  font-size: var(--cake-slide-body, 24px);
+  line-height: 1.6;
+}
+.cake-slide-text[data-size='lead'] {
+  font-size: var(--cake-slide-lead, 28px);
+}
+.cake-slide-text[data-size='small'] {
+  font-size: var(--cake-slide-small, 16px);
+}
+.cake-slide-text[data-muted='true'] {
+  color: var(--cake-slide-muted, #596572);
+}

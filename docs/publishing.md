@@ -4,6 +4,12 @@
 
 首个版本 `0.1.0` 已发布。后续推荐使用 [Publish npm package 工作流](https://github.com/hatsune-miku/cakeui/actions/workflows/publish.yml)，源文件为 `.github/workflows/publish.yml`。它使用 npm Trusted Publishing，通过 GitHub OIDC 获取本次发布所需的临时身份，无需在 GitHub Secrets 中保存 npm token。
 
+## 包入口与当前开发状态
+
+基础入口 `@a1knla/cakeui` / `@a1knla/cakeui/style.css` 与 Web 幻灯片入口 `@a1knla/cakeui/presentation` / `@a1knla/cakeui/presentation/style.css` 在同一个 tgz 中。无需再注册名为 cakeui/presentation 的 npm 包，没有 RN 入口。新增 presentation 尚未发布于 npm 0.3.0；发布新版本时同步移除 README、docs/ai.md、本节及 scripts/docs.mjs 的未发布提示并重建文档。
+
+包验证同时检查两个入口的严格类型、原生 ref、SSR 和独立样式消费；不要只构建引用源码的 Gallery。普通分支提交不会发布 npm，需要按后文版本与 tag 流程发布。
+
 ## 一次性配置 npm Trusted Publisher
 
 在 npmjs.com 登录有权管理此包的账号，打开 `@a1knla/cakeui` 的 Settings → Trusted publishing → Add trusted publisher，选择 GitHub Actions，并填写：
@@ -28,7 +34,7 @@ npm 当前要求 CLI 至少 11.5.1、Node 至少 22.14.0，且使用 GitHub 托�
 | Actions 页面 Run workflow              | 只验证，生成可下载的 tgz；即使选择 tag 也不发布 |
 | 普通分支 push、PR、GitHub Release 事件 | 不触发此发布工作流                              |
 
-验证 job 只有 `contents: read`，不授予 OIDC 权限。依次检查包名、作者、仓库、public / registry、manifest 与锁文件版本、tag；运行文档一致性、类型、DOM 单元测试、发布保护测试、库 / Gallery 构建、格式、真实浏览器交互与 axe 检查；最后安装实际 tgz，验证 ESM、CSS / 声明入口、SSR、7 个文档示例及消费项目构建。
+验证 job 只有 `contents: read`，不授予 OIDC 权限。依次检查包名、作者、仓库、public / registry、manifest 与锁文件版本、tag；运行文档一致性、类型、DOM 单元测试、发布保护测试、库 / Gallery 构建、格式、真实浏览器交互与 axe 检查；最后安装实际 tgz，验证两个 ESM、CSS / 声明入口、SSR、8 个文档示例及消费项目构建。
 
 `npm run test:package -- --artifact-dir .cache/release` 在全部包验证通过后保留同一个 tgz，并写入包名、版本和 SHA-512 integrity。工作流执行发布 dry-run 后上传 `npm-package` artifact，保留 7 天。`package.tgz` 与 `metadata.json` 位于 artifact 内。
 

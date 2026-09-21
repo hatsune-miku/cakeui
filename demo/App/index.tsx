@@ -13,6 +13,7 @@ import { Icon, type IconName } from './components/Icon'
 import { LogsDemo } from './components/LogsDemo'
 import { NavigationDemo } from './components/NavigationDemo'
 import { OverlaysDemo } from './components/OverlaysDemo'
+import { PresentationDemo } from './components/PresentationDemo'
 import { Tokens } from './components/Tokens'
 
 import { version } from '../../package.json'
@@ -21,11 +22,12 @@ import { Button, type CakeMode, CakeProvider, type CakeTheme, Dot, HoverTips, Te
 import './components/Icon/index.scss'
 import './index.scss'
 
-type Page = 'components' | 'example' | 'tokens' | 'guide' | 'docs'
+type Page = 'components' | 'example' | 'presentation' | 'tokens' | 'guide' | 'docs'
 type Category = 'all' | 'basic' | 'input' | 'navigation' | 'data' | 'feedback'
 const nav: { page: Page; label: string; icon: IconName }[] = [
   { page: 'components', label: '组件总览', icon: 'grid' },
   { page: 'example', label: '应用示例', icon: 'layers' },
+  { page: 'presentation', label: '幻灯片', icon: 'file' },
   { page: 'tokens', label: '设计变量', icon: 'palette' },
   { page: 'guide', label: '开始使用', icon: 'code' },
   { page: 'docs', label: 'AI 技术文档', icon: 'file' },
@@ -365,6 +367,7 @@ export function App() {
             </>
           )}
           {page === 'example' && <Example />}
+          {page === 'presentation' && <PresentationDemo theme={settings.theme} mode={settings.mode} />}
           {page === 'tokens' && <Tokens />}
           {page === 'guide' && <Guide />}
           {page === 'docs' && <AiDocs />}

@@ -1,0 +1,16 @@
+.cake-slide-title {
+  margin: 0;
+  color: var(--cake-slide-ink, #29313a);
+  font-size: var(--cake-slide-title, 48px);
+  font-weight: 650;
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.cake-slide-title[data-size='display'] {
+  font-size: var(--cake-slide-display, 72px);
+  line-height: 1.1;
+}
+.cake-slide-title[data-size='medium'] {
+  font-size: var(--cake-slide-subtitle, 35px);
+}

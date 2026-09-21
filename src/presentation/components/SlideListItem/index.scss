@@ -1,0 +1,6 @@
+.cake-slide-list-item {
+  padding-left: 0.15em;
+}
+.cake-slide-list-item::marker {
+  color: var(--cake-slide-accent, #3d658f);
+}

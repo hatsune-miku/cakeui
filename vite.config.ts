@@ -40,10 +40,14 @@ export default defineConfig(({ mode }) => ({
   ],
   build:
     mode === 'demo'
-      ? { outDir: 'demo-dist' }
+      ? { outDir: 'demo-dist', rollupOptions: { input: { gallery: 'index.html', slides: 'slides.html' } } }
       : {
           copyPublicDir: false,
-          lib: { entry: 'src/index.ts', formats: ['es'], fileName: 'index' },
+          lib: {
+            entry: { index: 'src/index.ts', 'presentation/index': 'src/presentation/index.ts' },
+            formats: ['es'],
+            fileName: (_format, entryName) => `${entryName}.js`,
+          },
           rollupOptions: {
             external: ['react', 'react-dom', 'react/jsx-runtime'],
             output: { banner: "'use client';" },

@@ -16,7 +16,7 @@ API、组合示例、主题变量与维护流程。版本、完整 Props 类型�
 
 CakeUI 使用 React、TypeScript 和 SCSS，组件保留原生 HTML 结构和事件。数据获取、业务状态、排序、筛选、分页切片、存储、权限判断和异步任务由应用负责。
 
-库的公开入口是 `src/index.ts`，发布产物入口是 `dist/index.js`。所有组件使用具名导出，没有默认导出。对应的 `*Props`、`Size`、`Tone`、`CakeTheme`、`CakeMode` 同时导出。内部 context、hooks、工具函数和 demo 组件不属于公开 API，不从内部路径导入。
+基础组件公开入口是 `src/index.ts`，发布产物入口是 `dist/index.js`；HTML 幻灯片入口是 `src/presentation/index.ts`，对应 `@a1knla/cakeui/presentation`。两者均为 Web / React DOM，没有 React Native 部分。所有组件使用具名导出，没有默认导出。对应的 `*Props` 与相关类型同时导出。内部 context、hooks、工具函数和 demo 组件不属于公开 API，不从内部路径导入。
 
 优先遵守这些约定：
 
@@ -25,7 +25,7 @@ CakeUI 使用 React、TypeScript 和 SCSS，组件保留原生 HTML 结构和事
 - 表格、列表、菜单、日志、标签页通过 JSX children 组合。没有 `columns`、`dataSource`、`items`、`renderItem` 或通用 `asChild` / `as` 属性。
 - 不导入 Drawer、SidePanel、Select、Input、Tooltip、Modal、Checkbox 等未导出的名称。实际名称分别是 `ComboBox`、`TextBox`、`HoverTips`、`Dialog`、`CheckBox`；本项目没有 Drawer 或侧边面板组件。
 - 默认配色为蓝；`theme` 使用英文值 `blue` / `pink` / `gold`，面向用户的名称为“蓝 / 粉 / 金”。
-- 必须显式引入 `@a1knla/cakeui/style.css`。无需 Tailwind、CSS-in-JS、全局通知服务、图标包或额外 Provider 服务。
+- 基础组件显式引入 `@a1knla/cakeui/style.css`；幻灯片组件显式引入 `@a1knla/cakeui/presentation/style.css`。无需 Tailwind、CSS-in-JS、全局通知服务、图标包或额外 Provider 服务。
 - 功能是否存在以当前源码和类型为准。不要将工作台的搜索、任务管理、主题持久化、图标或 Toast 调用函数当成库导出。
 
 ## 2. 安装、入口与执行环境
@@ -69,7 +69,9 @@ export function HelloCakeUI() {
 }
 ```
 
-构建提供 ESM、TypeScript 声明与一份完整 CSS。JS 可以 tree-shake；CSS 不按组件拆包，没有 CommonJS 入口，也没有公开 SCSS 子路径。消费项目不需要安装 Sass。React / React DOM 是 peer dependencies；库不捆绑 React，也没有其他运行时依赖。
+构建提供两个 ESM / TypeScript 声明入口与各自的 CSS。JS 可以 tree-shake；CSS 按基础组件和 presentation 分开，不按单个组件拆包，没有 CommonJS 入口，也没有公开 SCSS 子路径。只用幻灯片时不需要基础 CSS 或 CakeProvider；同时使用基础控件时额外导入基础 CSS。消费项目不需要安装 Sass。React / React DOM 是 peer dependencies；库不捆绑 React，也没有其他运行时依赖。
+
+版本状态：presentation 是当前仓库新增的子入口，已发布的 `0.3.0` 不含此入口。新版本发布前请使用上面的本地打包安装流程，不能把当前源码能力当作 npm 0.3.0 的 API。
 
 库的 JavaScript 构建带有 `'use client'` 指令。支持服务端渲染首屏 HTML，DOM 操作在 effect 或事件内执行；Dialog 和 Popover 等交互需要客户端挂载后才能打开。在使用 Server Components 的框架中，管理事件和状态的消费组件应处于客户端边界，CSS 按框架的全局样式规则引入。SSR 支持不代表服务端输出会自动打开模态框或提示层。
 
@@ -97,7 +99,7 @@ export function HelloCakeUI() {
 
 ### 样式作用域与全局影响
 
-不包含全局 reset，不修改页面的 margin 或原生 h1 / button / table 的常规样式。导入 CSS 后，会在 `:root` 提供默认主题变量并设置 `user-select: none` 与 `-webkit-user-select: none`，因此页面默认不可选择文字。
+不包含全局 reset，不修改页面的 margin 或原生 h1 / button / table 的常规样式。导入基础 `style.css` 后，会在 `:root` 提供默认主题变量并设置 `user-select: none` 与 `-webkit-user-select: none`，因此页面默认不可选择文字。presentation CSS 只作用于 `cake-slide-*`，不设置根变量或全局选择规则；Slide 内允许选择文字，便于复制讲义和代码。
 
 TextBox / TextArea / NumberBox、ComboBox 的搜索输入和 LogView 允许选择文字；ComboBox 的原生选择器和候选项保持不可选择。普通业务正文、原生 pre / code 或 contentEditable 若需要复制，应由应用显式开启选择。Gallery 的代码和 AI 文档阅读区已开启选择。
 
@@ -385,9 +387,202 @@ onClick 先执行；未 preventDefault 时通过内部 context 请求关闭菜�
 
 原生 div，可选 time、dateTime、`level='info'`，level 为 info / success / warning / error / debug。渲染 time、级别、正文三个部分。time 是显示字符串；dateTime 写入 time.dateTime 和 title；children 为内容。不会解析日期、补充当前时间、国际化级别或省略相邻重复时间。省略 time 会保留时间列布局，适合应用自己合并连续相同时间的显示。
 
+## 4.1 HTML 幻灯片组件
+
+本节的 15 个组件及其 Props 均从 `@a1knla/cakeui/presentation` 导入，不从基础入口导出。它们为排版、逐页演示和讲义阅读提供 UI，不包含编辑器、Markdown 解析、自动图表、远程字体、自动播放、演讲者备注窗口或 RN 实现。内容通过 JSX 组合；原生 DOM 属性、事件和 React 19 ref 指向各组件的外层元素，下面明确列出的属性替代对应原生属性。
+
+Gallery：`/?page=presentation`；独立示例：`/slides.html`，可接受 `theme=blue|pink|gold`、`mode=light|dark|system` 查询参数。这些路由和参数属于示例站点，库不读写 URL 或 localStorage。
+
+### SlideDeck
+
+原生 div，默认 role=region、aria-label='Presentation'、tabIndex=0，建议传具体 `aria-label`。ref 指向该 div，可以调用 `focus()`。内部依次为 stage、每页 group 包装、可选导航控件、可选全屏错误提示。
+
+| 属性                 | 默认值        | 说明                                                                                                                |
+| -------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------- |
+| index / defaultIndex | undefined / 0 | 从 0 开始的页索引；index 为受控值，defaultIndex 只用于初始化                                                        |
+| onIndexChange        | undefined     | `(index: number) => void`，用户请求不同页时调用；受控模式需要应用回写                                               |
+| view                 | presentation  | presentation 固定画布逐页播放；document 连续阅读                                                                    |
+| ratio                | 16:9          | `SlideRatio = '16:9' \| '4:3' \| '16:10'`，Slide 可单独覆盖                                                         |
+| theme / mode         | blue / light  | blue / pink / gold；light / dark / system，system 用 CSS 媒体查询                                                   |
+| keyboard / controls  | true / true   | 启用区域内快捷键 / 底部按钮；document 不启用翻页快捷键或按钮                                                        |
+| loop                 | false         | 前后翻页到边界时是否循环；Home / End 仍跳首尾                                                                       |
+| fullscreen           | true          | 是否显示全屏按钮；只影响内置按钮                                                                                    |
+| labels               | 英文文案      | 部分覆盖 SlideDeckLabels；键为 previous、next、enterFullscreen、exitFullscreen、fullscreenUnavailable、empty、slide |
+| onFullscreenError    | undefined     | 全屏 Promise 拒绝时收到原始错误；同时显示 labels.fullscreenUnavailable                                              |
+
+children 只接受直接的 Slide、它们的数组、任意层 Fragment，以及 null / false 等条件空值；其他元素或文本会抛错。不要传内部返回 Slide 的自定义组件；可调用返回 Slide 数组的普通内容组合函数。给动态页使用稳定 key。嵌套交互内容直接放在 Slide 内。
+
+索引会截断成整数并限制到现有页范围；NaN / Infinity 按 0 处理，空集合显示“无页面”文案及 0 / 0，导航禁用。children 缩减或外部 index 越界只修正显示，不主动回调；非受控原值保留，页数恢复后可重新显示该原值。控制 props 不应在同一生命周期切换受控 / 非受控模式。
+
+演示模式始终挂载所有页面，非活动页包装设置 aria-hidden、inert 和 display:none；内部状态、effect、订阅、音视频仍存在，媒体暂停由应用管理。翻页隐藏包含焦点的页面时，将焦点回收到 deck；焦点位于其他区域时不抢焦点。阅读模式全部可访问。包装的 role=group、aria-roledescription=slide、名称包含页码与 Slide 的 aria-label。内置计数器通过 polite status 宣告当前页；controls=false 时应由应用提供需要的页码提示。
+
+只有焦点位于当前 deck 内时处理 ← / →、PageUp / PageDown、Space / Shift+Space、Home / End。不安装全局键盘监听；忽略 Ctrl / Meta / Alt 组合、内层 deck、表单控件、button、a、可编辑区域、常见交互 role、音视频和 pre。消费方的 onKeyDown 先执行，可 preventDefault 阻止翻页；自定义交互组件应在自己的键盘处理中阻止冒泡或 preventDefault。导航按钮聚焦时保留原生 Space / Enter 激活行为。
+
+全屏只由点击按钮请求，退出由按钮或浏览器 Escape 负责，fullscreenchange 同步按钮状态。不支持或权限禁止时禁用按钮；请求被拒绝时显示提示并调用错误回调，不抛出未处理 Promise。iframe 需要宿主允许 fullscreen。全屏使用当前 deck 根节点，画布按所选比例适配视口；不会锁定键盘、横屏方向或浏览器缩放。
+
+### Slide
+
+原生 section，内部有一个 `cake-slide-content` div 承载 children；ref、style、事件与 aria-* 均在 section。`ratio` 默认继承 deck，否则 16:9；`tone='paper'` 可取 paper / accent / inverted；`layout='default'` 可取 default / center / cover。center 垂直居中且文本居中，cover 垂直居中但文本左对齐；存在 SlideFooter 时其自动上边距会把页脚推到底部。可单独使用，不强制放入 SlideDeck，但连续阅读重排和分页由 Deck 提供。
+
+固定比例使用 aspect-ratio；文字、页边距和组件间距通过容器宽度等比例缩放。演示中超出内容区会出现内部滚动；不自动缩字、分页或隐藏超出正文。不要为可读性堆满内容，长页优先拆页。document 模式允许页面增高，在 deck 宽度不超过 640px 时取消固定比例、提高最小字号并将 SlideColumns 变为单栏。
+
+### SlideHeader
+
+原生 header，ref 指向 header。必填 `title: ReactNode` 替代原生 title，`children` 不接受；可选 label、description。内部按顺序渲染可选 label div、h2 SlideTitle、可选 p SlideText（muted）。title / description 内容应适合 heading / paragraph 语义，不嵌套同类块元素；需要不同标题等级时用 SlideTitle 自行组合。
+
+### SlideTitle
+
+原生 heading，ref 为 HTMLHeadingElement。`level=2` 可取 1 / 2 / 3，决定 h1 / h2 / h3；`size='large'` 可取 display / large / medium，分别为 1280px 画布下约 72 / 48 / 35.2px。视觉大小与语义等级独立，封面一般 level=1；children 作为标题内容，不自动截断。
+
+### SlideText
+
+原生 p。`size='body'` 可取 body / lead / small，对应 1280px 画布下 24 / 28.16 / 16px；`muted=false` 控制辅助文字色。接受行内 children、链接、强调等原生内容，不应嵌套 p、列表等块元素。
+
+### SlideFooter
+
+原生 footer，children 放在内容 div；可选 `source`、`page` 为 ReactNode，分别渲染来源和页码 div。默认上边框、自动上边距、16px 基准字号，空间不足时换行。页码由应用传入，不从 Deck 推断；因此独立 Slide 或重排时也应同步维护 page。
+
+### SlideColumns
+
+原生 div，CSS grid。`columns=2` 可取 2 / 3 / 4；`balance='equal'` 可取 equal / wide-left / wide-right，仅两栏时后三项决定 1:1 / 3:2 / 2:3。children 直接成为 grid 项，列数与数据无关；不包装每个孩子，不要求 SlidePanel。普通 div 内容的内部排版由应用自己设置。document 窄屏变为单栏，presentation 保持列数。
+
+### SlidePanel
+
+原生 div，内部 flex column，统一 padding、间距和圆角。`variant='soft'` 可取 soft / outline / accent，分别使用中性底、描边透明底、主题浅底。没有隐式 title/footer API，组合 SlideTitle、SlideText、列表等作为 children。
+
+### SlideList
+
+原生 ul，统一字号、行距和条目间距，无扩展属性。children 使用 SlideListItem 或原生 li；原生 li 不自动获得 SlideListItem 的 marker 样式。需要有序列表时可自行使用原生 ol 与合适的 className，没有 ordered 属性。
+
+### SlideListItem
+
+原生 li，无扩展属性。配合 SlideList，marker 使用强调色；保留 value 等原生属性，但编号是否生效由 ul / ol 的原生语义决定。
+
+### SlideStat
+
+原生 div，必填 `value`、`label`，可选 `detail` 均为 ReactNode；不接受 children。内部三个具名 div 按数值、标签、说明排列，顶部强调线，数值使用等宽数字及封面字号。只显示内容，不计算百分比、趋势、单位或统计结论；应标明数据来源或明确是示例数值。
+
+### SlideFigure
+
+原生 figure，children 放在媒体 div，后接可选 `caption: ReactNode` 对应 figcaption。ref 指向 figure。可容纳 SlideImage、原生 SVG、图表或 video；不加载或修改媒体，不自动把 caption 当作图片 alt。
+
+### SlideImage
+
+原生 img，要求 `alt: string`，装饰图可以显式传空字符串。`fit='contain'` 可取 contain / cover；保留 src、srcSet、sizes、loading、width、height、事件与 HTMLImageElement ref。默认媒体框 16:9，宽高占容器，圆角；可用 style / className 改 aspectRatio、尺寸。contain 保留完整图像，cover 可能裁切；媒体框比例不自动跟随 Deck ratio。默认不懒加载，打印前由应用保证图片已加载。
+
+### SlideQuote
+
+原生 blockquote，保留 `cite` URL 属性，ref 指向 blockquote。children 放入引文 div；可选 `attribution: ReactNode` 渲染 footer。左强调线和大字号用于短引文，不自动添加引号、作者或引用来源，不验证引文真实性。
+
+### SlideCode
+
+原生 pre，ref 指向 pre，默认 tabIndex=0 用于键盘滚动；必填 children:string 渲染到 code，React 转义文本。可选 language 仅为可见标签，不启用语法高亮或执行代码。默认保留空白、允许选择、横向滚动；打印时换行。设置适当 aria-label，长代码可拆页；没有复制按钮或剪贴板服务。
+
+### 幻灯片主题、打印与兼容性
+
+presentation 不读取 CakeProvider 的 Props / density；同页需要一致主题时将 theme / mode 同时传给各自容器。默认蓝色浅色；粉色在 CakeUI 色相基础上使用更深强调色，保证投影正文和小字的对比度，不能用它的色值替换基础组件的 AnyDrop 色值。紧凑密度不改变幻灯片字号。
+
+可通过 Deck 的 className 或 style 设置下表的公开 CSS 变量；不要依赖内部节点深度。Slide 单独使用时有蓝色浅色回退值。每个 Slide 的 cqw 以该页面自身宽度计算，适配外层容器，无需 JS 测量字号。
+
+| 变量                            | 蓝色浅色默认值 / 用途                                                |
+| ------------------------------- | -------------------------------------------------------------------- |
+| --cake-presentation-paper       | #fdfefe，页面底色                                                    |
+| --cake-presentation-ink         | #29313a，正文                                                        |
+| --cake-presentation-muted       | #596572，辅助文字                                                    |
+| --cake-presentation-surface     | #eef2f6，中性面板 / 代码底                                           |
+| --cake-presentation-line        | #c8d2dc，分隔与描边                                                  |
+| --cake-presentation-accent      | #3d658f，标题辅助 / 数值 / inverted 背景                             |
+| --cake-presentation-accent-soft | #d6e7f7，accent 页面和面板                                           |
+| --cake-presentation-accent-ink  | #fff，inverted 正文；自定义 accent 时同时检查此色                    |
+| --cake-presentation-font        | Segoe UI Variable Text、Segoe UI、PingFang SC、system-ui、sans-serif |
+| --cake-presentation-radius      | 16px，Slide 圆角回退值                                               |
+
+基准 1280px 宽画布的页边距为 60px、内容间距 24px，字号见各组件。窄屏 document 模式使用 24px 页边距、20px 间距，display / title / medium / body / lead / small 分别为 40 / 30 / 24 / 17 / 20 / 14px。按压导航按钮沿用 Button 的 1px 下移、150ms 和 cubic-bezier(0.29, 0, 0, 1)；prefers-reduced-motion 时取消过渡。无自动翻页或入场动画。
+
+CSS 打印媒体规则显示所有页，隐藏 Deck 控件，页间 break-after:page，末页不追加分页；代码允许折行。库不设置全局 @page、不隐藏宿主的导航或其他内容。消费方应提供独立演示路由并按需要设置打印纸张、横向、边距、背景图形；Gallery 的 `/slides.html` 示例设置 A4 横向、零页边距，并隐藏示例控制区。固定比例与纸张比例不同会有留白；内容过长仍可能跨页，库不自动分页。页内原生 hidden / 用户 CSS 保持原含义，应用自行准备打印内容。
+
+需要 CSS container queries / cqw、aspect-ratio、color-mix、inert 等现代 Web 能力；不捆绑 polyfill。全屏单独做能力检测，参见 [MDN Fullscreen](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullscreen)。自动化验证使用 Chromium，未完成 Firefox / Safari 全面实机及屏幕阅读器人工验证。SSR 输出包含全部页和隐藏状态；必须加载对应 CSS，键盘 / 全屏交互在客户端挂载后启用。
+
 ## 5. 可直接集成的组合示例
 
 标有 `example=` 的 TSX 代码块都是独立模块，包验证会将它们放进真实安装 CakeUI tgz 的消费项目进行严格类型检查。为了展示 API，示例中的保存函数只回显数据；接入实际服务时替换相应业务函数。
+
+### HTML 幻灯片：受控演示与连续阅读
+
+此例完整展示独立子入口与 CSS。切换阅读模式不改变内容；自定义页码由同一数据源维护。生产内容可以按 JSX 拆分，但传入 Deck 的顶层元素仍应是 Slide。
+
+```tsx example=presentation
+import { useState } from 'react'
+
+import {
+  Slide,
+  SlideCode,
+  SlideColumns,
+  SlideDeck,
+  SlideFigure,
+  SlideFooter,
+  SlideHeader,
+  SlideImage,
+  SlideList,
+  SlideListItem,
+  SlidePanel,
+  SlideQuote,
+  SlideStat,
+  SlideText,
+  SlideTitle,
+} from '@a1knla/cakeui/presentation'
+import '@a1knla/cakeui/presentation/style.css'
+
+export function ProjectSlides() {
+  const [index, setIndex] = useState(0)
+  const [reading, setReading] = useState(false)
+  return (
+    <main>
+      <button type="button" onClick={() => setReading(!reading)}>
+        切换阅读模式
+      </button>
+      <SlideDeck
+        aria-label="项目汇报"
+        index={index}
+        onIndexChange={setIndex}
+        view={reading ? 'document' : 'presentation'}
+        theme="blue"
+        mode="light"
+      >
+        <Slide aria-label="项目概览" tone="accent" layout="cover">
+          <SlideTitle level={1} size="display">
+            项目概览
+          </SlideTitle>
+          <SlideText size="lead">组件、文档与验证进展。</SlideText>
+          <SlideFooter page="1 / 3">项目组</SlideFooter>
+        </Slide>
+        <Slide aria-label="完成内容">
+          <SlideHeader title="完成内容" description="以下数值为示例。" />
+          <SlideColumns>
+            <SlidePanel>
+              <SlideStat value="3" label="示例页面" />
+              <SlideList>
+                <SlideListItem>统一版式</SlideListItem>
+                <SlideListItem>补充文档</SlideListItem>
+              </SlideList>
+            </SlidePanel>
+            <SlideFigure caption="图片请替换为项目内的真实资源。">
+              <SlideImage src="/project-overview.png" alt="项目概览示意" />
+            </SlideFigure>
+          </SlideColumns>
+          <SlideFooter page="2 / 3" source="项目记录" />
+        </Slide>
+        <Slide aria-label="集成方式">
+          <SlideHeader title="集成方式" />
+          <SlideCode language="TSX">{'<SlideText>项目进展</SlideText>'}</SlideCode>
+          <SlideQuote attribution="项目排版约定">一页讲清一个观点。</SlideQuote>
+          <SlideFooter page="3 / 3" />
+        </Slide>
+      </SlideDeck>
+    </main>
+  )
+}
+```
 
 ### 表单、错误关联与原生选择器
 
@@ -827,8 +1022,12 @@ prefers-reduced-motion: reduce 将三个时长变量设为 0，并关闭 Spinner
 ```text
 ARCH.md                           原始设计需求与参考
 AGENTS.md                         本项目的 AI 协作和文档同步约定
-src/index.ts                      唯一公开组件 / 类型入口
-src/styles.scss                   全量 SCSS 入口
+src/index.ts                      基础组件 / 类型入口
+src/styles.scss                   基础组件 SCSS 入口
+src/presentation/index.ts          HTML 幻灯片组件 / 类型入口
+src/presentation/styles.scss       独立幻灯片 SCSS 入口
+src/presentation/components/*/     幻灯片组件 index.tsx + index.scss
+slides.html                       独立演示 / 打印入口，使用 demo/presentation.tsx
 src/components/Foo/index.tsx      每个公开组件的实现与 Props
 src/components/Foo/index.scss    对应样式
 src/components/CakeProvider/      主题与设计变量
@@ -904,18 +1103,26 @@ Gallery 构建会检查文档一致性，再将 public 中两个文件复制到 
 - 版本：0.3.0
 - 署名：hatsune-miku
 - React peer：>=19.0.0；React DOM peer：>=19.0.0
-- 公开组件：48 个；下列列表与 src/index.ts 一致。
-- 文档 / package.json / src 内容指纹（SHA-256）：e1f270104d43d7cf3e0910df39b312b396ef5df18941e328c4cb81dea28d1f27
+- 公开组件：63 个；下列分组分别与两个公开入口一致。
+- 文档 / package.json / src 内容指纹（SHA-256）：e886353fce0ea7b3da1f85d1d23c4e9224ccf2815e350a9bf086b649598a9027
 - 本文为生成结果，请修改 docs/ai.md 或相应源码后运行 npm run docs:build。
 
-Accordion, AccordionItem, Alert, Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, CakeProvider, Card, CheckBox, ComboBox, ContextMenu, Dialog, Dot, Field, GroupBox, HoverTips, ListItem, ListView, LogEntry, LogView, MenuItem, MenuSeparator, NumberBox, Pagination, ProgressBar, RadioButton, Separator, Skeleton, Slider, Spinner, Switch, Tab, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TabList, TabPanel, Tabs, Tag, TextArea, TextBox, Toast, WhatsThis
+- src/index.ts（48 个）：Accordion, AccordionItem, Alert, Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, CakeProvider, Card, CheckBox, ComboBox, ContextMenu, Dialog, Dot, Field, GroupBox, HoverTips, ListItem, ListView, LogEntry, LogView, MenuItem, MenuSeparator, NumberBox, Pagination, ProgressBar, RadioButton, Separator, Skeleton, Slider, Spinner, Switch, Tab, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TabList, TabPanel, Tabs, Tag, TextArea, TextBox, Toast, WhatsThis
+- src/presentation/index.ts（15 个）：SlideDeck, Slide, SlideHeader, SlideTitle, SlideText, SlideFooter, SlideColumns, SlidePanel, SlideList, SlideListItem, SlideStat, SlideFigure, SlideImage, SlideQuote, SlideCode
 
 ## 附录 B. 完整公开 Props 与类型
 
 下列声明直接提取自公开入口所导出的源文件；原生属性由 React 类型扩展，不在这里重复 React 的完整 DOM 类型。组件对应同名 Props，例如 Button 使用 ButtonProps。默认值与行为见正文，类型中的可选标记不表达默认值。
 
 ```typescript
-import type { ComponentPropsWithRef, ComponentPropsWithoutRef, ReactElement, ReactNode, RefObject } from 'react'
+import type {
+  CSSProperties,
+  ComponentPropsWithRef,
+  ComponentPropsWithoutRef,
+  ReactElement,
+  ReactNode,
+  RefObject,
+} from 'react'
 
 export type AccordionProps = ComponentPropsWithRef<'div'>
 
@@ -1114,6 +1321,98 @@ export interface WhatsThisProps {
 export type Size = 'small' | 'medium' | 'large'
 
 export type Tone = 'neutral' | 'accent' | 'success' | 'warning' | 'danger'
+
+export interface SlideDeckLabels {
+  previous: string
+  next: string
+  enterFullscreen: string
+  exitFullscreen: string
+  fullscreenUnavailable: string
+  empty: string
+  slide: string
+}
+
+export interface SlideDeckProps extends ComponentPropsWithRef<'div'> {
+  index?: number
+  defaultIndex?: number
+  onIndexChange?: (index: number) => void
+  view?: 'presentation' | 'document'
+  ratio?: SlideRatio
+  theme?: 'blue' | 'pink' | 'gold'
+  mode?: 'light' | 'dark' | 'system'
+  keyboard?: boolean
+  controls?: boolean
+  loop?: boolean
+  fullscreen?: boolean
+  labels?: Partial<SlideDeckLabels>
+  onFullscreenError?: (error: unknown) => void
+}
+
+export type SlideRatio = '16:9' | '4:3' | '16:10'
+
+export interface SlideProps extends ComponentPropsWithRef<'section'> {
+  ratio?: SlideRatio
+  tone?: 'paper' | 'accent' | 'inverted'
+  layout?: 'default' | 'center' | 'cover'
+}
+
+export interface SlideHeaderProps extends Omit<ComponentPropsWithRef<'header'>, 'title' | 'children'> {
+  title: ReactNode
+  label?: ReactNode
+  description?: ReactNode
+}
+
+export interface SlideTitleProps extends ComponentPropsWithRef<'h2'> {
+  level?: 1 | 2 | 3
+  size?: 'display' | 'large' | 'medium'
+}
+
+export interface SlideTextProps extends ComponentPropsWithRef<'p'> {
+  size?: 'body' | 'lead' | 'small'
+  muted?: boolean
+}
+
+export interface SlideFooterProps extends ComponentPropsWithRef<'footer'> {
+  page?: ReactNode
+  source?: ReactNode
+}
+
+export interface SlideColumnsProps extends ComponentPropsWithRef<'div'> {
+  columns?: 2 | 3 | 4
+  balance?: 'equal' | 'wide-left' | 'wide-right'
+}
+
+export interface SlidePanelProps extends ComponentPropsWithRef<'div'> {
+  variant?: 'soft' | 'outline' | 'accent'
+}
+
+export interface SlideListProps extends ComponentPropsWithRef<'ul'> {}
+
+export interface SlideListItemProps extends ComponentPropsWithRef<'li'> {}
+
+export interface SlideStatProps extends Omit<ComponentPropsWithRef<'div'>, 'children'> {
+  value: ReactNode
+  label: ReactNode
+  detail?: ReactNode
+}
+
+export interface SlideFigureProps extends ComponentPropsWithRef<'figure'> {
+  caption?: ReactNode
+}
+
+export interface SlideImageProps extends ComponentPropsWithRef<'img'> {
+  alt: string
+  fit?: 'contain' | 'cover'
+}
+
+export interface SlideQuoteProps extends ComponentPropsWithRef<'blockquote'> {
+  attribution?: ReactNode
+}
+
+export interface SlideCodeProps extends Omit<ComponentPropsWithRef<'pre'>, 'children'> {
+  children: string
+  language?: string
+}
 ```
 
 ## 附录 C. 从 SCSS 生成的主题变量

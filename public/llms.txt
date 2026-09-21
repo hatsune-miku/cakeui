@@ -2,13 +2,14 @@
 
 > React + TypeScript + SCSS UI components. Native HTML props, composable JSX children. Default blue theme. Author: hatsune-miku. Version: 0.3.0.
 
-安装：npm install @a1knla/cakeui。需要 React / React DOM 19+，显式导入 @a1knla/cakeui/style.css。包名包含 @a1knla/ scope，品牌名和 GitHub 仓库仍为 CakeUI / cakeui。不要凭其他 UI 库的习惯猜测 API。
+安装：npm install @a1knla/cakeui。需要 React / React DOM 19+。基础组件显式导入 @a1knla/cakeui/style.css；HTML 幻灯片从 @a1knla/cakeui/presentation 导入，样式为 @a1knla/cakeui/presentation/style.css。presentation 是同包的 Web 子入口，不是 RN 包；新增入口尚未包含于已发布的 0.3.0，当前请安装本仓库打包产物。包名包含 @a1knla/ scope，品牌名和 GitHub 仓库仍为 CakeUI / cakeui。不要凭其他 UI 库的习惯猜测 API。
 
 ## 文档 / Documentation
 
-- [完整技术文档 / Full technical reference](https://gallery.vanillacake.cn/llms-full.txt): UTF-8 text/plain；48 个组件的 API、默认值、原生属性、ref、交互边界、主题变量、可编译示例和开发维护规则。生成代码前优先读取。
+- [完整技术文档 / Full technical reference](https://gallery.vanillacake.cn/llms-full.txt): UTF-8 text/plain；63 个组件的 API、默认值、原生属性、ref、交互边界、主题变量、可编译示例和开发维护规则。生成代码前优先读取。
 - [Gallery 阅读页](https://gallery.vanillacake.cn/?page=docs): 同一份全文，可选择复制。
-- [源码](https://github.com/hatsune-miku/cakeui): 公开组件入口 src/index.ts，Props 在 src/components/*/index.tsx。
+- [HTML 幻灯片](https://gallery.vanillacake.cn/?page=presentation): 逐页演示、连续阅读、全屏与打印；独立页 /slides.html。
+- [源码](https://github.com/hatsune-miku/cakeui): 基础入口 src/index.ts，幻灯片入口 src/presentation/index.ts；Props 在对应 components/*/index.tsx。
 - [维护规则](https://github.com/hatsune-miku/cakeui/blob/main/AGENTS.md): 每次改动都评估并同步受影响文档。
 
 ## API 提醒 / Key constraints
@@ -18,5 +19,6 @@
 - ContextMenu interactive defaults to false: right-down opens and depresses the region; right-release selects only an enabled item under the pointer, otherwise the menu stays open.
 - ComboBox is a native select with option / optgroup; customizable picker appearance depends on browser support.
 - No Drawer or SidePanel. Global text selection defaults to none; input and log areas explicitly allow selection.
+- Presentation CSS is independent and scoped. SlideDeck takes Slide children (including arrays/fragments), not a slides data schema. Keyboard navigation is scoped to the focused deck; printing exposes all slides.
 
-完整文档内容指纹（SHA-256）：e1f270104d43d7cf3e0910df39b312b396ef5df18941e328c4cb81dea28d1f27
+完整文档内容指纹（SHA-256）：e886353fce0ea7b3da1f85d1d23c4e9224ccf2815e350a9bf086b649598a9027

@@ -22,6 +22,9 @@ const result = JSON.parse(
 const tarball = resolve(consumer, result[0].filename)
 assert(result[0].files.some((file) => file.path === 'dist/cakeui.css'))
 assert(result[0].files.some((file) => file.path === 'dist/index.d.ts'))
+for (const name of ['index.js', 'index.d.ts', 'style.css']) {
+  assert(result[0].files.some((file) => file.path === `dist/presentation/${name}`))
+}
 assert(result[0].files.some((file) => file.path === 'docs/ai.md'))
 assert(!result[0].files.some((file) => file.path.startsWith('demo/') || file.path.includes('node_modules')))
 writeFileSync(
@@ -48,6 +51,27 @@ document.querySelector('#app')!.innerHTML = renderToStaticMarkup(createElement('
 `
 )
 const documentation = readFileSync(resolve(consumer, 'node_modules/@a1knla/cakeui/docs/ai.md'), 'utf8')
+// A second consumer entry deliberately has no base CSS or CakeProvider.
+writeFileSync(
+  resolve(consumer, 'presentation.tsx'),
+  `import { createRef } from 'react'
+import { createRoot } from 'react-dom/client'
+import { SlideDeck, Slide, SlideTitle, SlideText, type SlideDeckProps } from '@a1knla/cakeui/presentation'
+import '@a1knla/cakeui/presentation/style.css'
+const ref = createRef<HTMLDivElement>()
+const props: SlideDeckProps = { theme: 'gold', view: 'document', onIndexChange: (index) => console.log(index) }
+createRoot(document.querySelector('#app')!).render(<SlideDeck {...props} ref={ref}><Slide aria-label="Consumer"><SlideTitle>Slides</SlideTitle><SlideText>Standalone styles</SlideText></Slide></SlideDeck>)
+`
+)
+const presentationCss = readFileSync(
+  resolve(consumer, 'node_modules/@a1knla/cakeui/dist/presentation/style.css'),
+  'utf8'
+)
+assert.match(presentationCss, /\.cake-slide-deck/)
+assert(
+  !presentationCss.includes(':root') && !presentationCss.includes('.cake-button') && !presentationCss.includes('@page'),
+  'Presentation CSS must not include base resets, UI styles, or global print paper rules.'
+)
 const examples = [...documentation.matchAll(/^```tsx example=([\w-]+)\r?\n([\s\S]*?)^```/gm)]
 assert(examples.length > 0, 'Technical documentation must include complete TSX examples.')
 for (const [, name, code] of examples) writeFileSync(resolve(consumer, `docs-${name}.tsx`), code)
@@ -90,10 +114,30 @@ console.log('All 48 packed exports load; server rendering works.')
 )
 execFileSync(process.execPath, [resolve(consumer, 'ssr.mjs')], { cwd: consumer, stdio: 'inherit' })
 writeFileSync(
+  resolve(consumer, 'presentation-ssr.mjs'),
+  `import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import * as presentation from '@a1knla/cakeui/presentation'
+import assert from 'node:assert/strict'
+assert.equal(Object.keys(presentation).length, 15)
+assert.match(renderToStaticMarkup(createElement(presentation.SlideDeck, null, createElement(presentation.Slide, null, 'Hello slides'))), /cake-slide-deck/)
+assert.equal(presentation.CakeProvider, undefined)
+console.log('All 15 presentation exports load independently; server rendering works.')
+`
+)
+execFileSync(process.execPath, [resolve(consumer, 'presentation-ssr.mjs')], { cwd: consumer, stdio: 'inherit' })
+writeFileSync(
   resolve(consumer, 'index.html'),
   '<!doctype html><html><body><div id="app"></div><script type="module" src="/main.tsx"></script></body></html>'
 )
-writeFileSync(resolve(consumer, 'vite.config.mjs'), 'export default { build: { outDir: "build" } }')
+writeFileSync(
+  resolve(consumer, 'slides.html'),
+  '<!doctype html><html><body><div id="app"></div><script type="module" src="/presentation.tsx"></script></body></html>'
+)
+writeFileSync(
+  resolve(consumer, 'vite.config.mjs'),
+  'export default { build: { outDir: "build", rollupOptions: { input: { main: "index.html", slides: "slides.html" } } } }'
+)
 execFileSync(
   process.execPath,
   [resolve(root, 'node_modules/vite/bin/vite.js'), 'build', '--config', resolve(consumer, 'vite.config.mjs')],

@@ -23,6 +23,8 @@
 
 HTML 每次重新验证缓存；带哈希的资源长期缓存。工作台无需 Node.js 常驻服务，运行时不提供后端或收集业务数据。
 
+构建包含 Gallery 的 `index.html` 与独立 HTML 幻灯片 `slides.html`。`/?page=presentation` 在 Gallery 内预览，`/slides.html` 只加载幻灯片样式并提供全屏、连续阅读和打印 / PDF。部署时同时包含 `presentation-layout.svg` 示例图片与两个 HTML 入口引用的哈希资源；上线后检查两个入口及图片均可访问。独立页的打印样式设置 A4 横向，库样式本身不设置全局纸张。
+
 ## AI 技术文档
 
 - 阅读页：[Gallery AI 技术文档](https://gallery.vanillacake.cn/?page=docs)

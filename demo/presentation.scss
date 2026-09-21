@@ -1,0 +1,46 @@
+.presentation-body {
+  margin: 0;
+  background: #eef2f6;
+  color: #29313a;
+  font-family: 'Segoe UI', 'PingFang SC', system-ui, sans-serif;
+}
+.presentation-standalone {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+}
+@mixin dark-page {
+  background: #191d22;
+  color: #edf0f3;
+  --cake-accent: #a4cafa;
+  --cake-accent-soft: #303e51;
+  --cake-border: #4c5764;
+  --cake-text-secondary: #b7c0ca;
+}
+.presentation-body[data-mode='dark'] {
+  @include dark-page;
+}
+@media (prefers-color-scheme: dark) {
+  .presentation-body[data-mode='system'] {
+    @include dark-page;
+  }
+}
+@media (max-width: 640px) {
+  .presentation-standalone {
+    padding: 16px;
+  }
+}
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+  .presentation-body {
+    background: transparent;
+  }
+  .presentation-standalone {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+}

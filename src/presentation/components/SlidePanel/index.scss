@@ -1,0 +1,17 @@
+.cake-slide-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cake-slide-space, 24px);
+  min-width: 0;
+  padding: var(--cake-slide-space, 24px);
+  border-radius: calc(var(--cake-slide-space, 24px) * 0.6);
+  background: var(--cake-slide-surface, #eef2f6);
+  box-sizing: border-box;
+}
+.cake-slide-panel[data-variant='outline'] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--cake-slide-line, #c8d2dc);
+}
+.cake-slide-panel[data-variant='accent'] {
+  background: var(--cake-slide-accent-soft, #d6e7f7);
+}

@@ -1,0 +1,36 @@
+.cake-slide-code {
+  margin: 0;
+  min-width: 0;
+  padding: var(--cake-slide-space, 24px);
+  border-radius: calc(var(--cake-slide-space, 24px) * 0.6);
+  background: var(--cake-slide-surface, #eef2f6);
+  color: var(--cake-slide-ink, #29313a);
+  font:
+    var(--cake-slide-small, 16px) / 1.65 'Cascadia Code',
+    Consolas,
+    monospace;
+  white-space: pre;
+  overflow: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.cake-slide-code-language {
+  display: block;
+  margin-bottom: 0.8em;
+  color: var(--cake-slide-muted, #596572);
+  font: 500 var(--cake-slide-small, 16px) / 1.4 var(--cake-presentation-font, system-ui);
+}
+.cake-slide-code-content {
+  font: inherit;
+}
+.cake-slide-code:focus-visible {
+  outline: 2px solid var(--cake-slide-accent, #3d658f);
+  outline-offset: 3px;
+}
+@media print {
+  .cake-slide-code {
+    white-space: pre-wrap;
+    overflow: visible;
+    overflow-wrap: anywhere;
+  }
+}

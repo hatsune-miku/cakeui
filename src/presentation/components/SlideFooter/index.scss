@@ -1,0 +1,23 @@
+.cake-slide-footer {
+  display: flex;
+  align-items: baseline;
+  gap: var(--cake-slide-space, 24px);
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: var(--cake-slide-space, 24px);
+  border-top: 1px solid var(--cake-slide-line, #c8d2dc);
+  color: var(--cake-slide-muted, #596572);
+  font-size: var(--cake-slide-small, 16px);
+  line-height: 1.4;
+}
+.cake-slide-footer-content {
+  flex: 1;
+  min-width: 0;
+}
+.cake-slide-footer-source {
+  max-width: 55%;
+}
+.cake-slide-footer-page {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}

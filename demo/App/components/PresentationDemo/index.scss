@@ -1,0 +1,101 @@
+.presentation-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+.presentation-demo-toolbar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.presentation-demo-options {
+  display: flex;
+  gap: 4px;
+}
+.presentation-demo-button,
+.presentation-demo-page {
+  appearance: none;
+  background: transparent;
+  color: inherit;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-height: 36px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  &[aria-pressed='true'] {
+    background: var(--cake-accent-soft, #d6e7f7);
+    border-color: var(--cake-border, #c8d2dc);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--cake-accent, #416b97);
+    outline-offset: 3px;
+  }
+}
+.presentation-demo-link {
+  color: var(--cake-accent, #416b97);
+  font-size: 13px;
+  text-underline-offset: 4px;
+}
+.presentation-demo-outline {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.presentation-demo-page {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  text-align: left;
+  border-color: var(--cake-border, #c8d2dc);
+}
+.presentation-demo-page-number {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.65;
+}
+.presentation-demo-help {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--cake-text-secondary, #626d79);
+}
+.presentation-demo-source {
+  padding: 16px 0;
+  border-top: 1px solid var(--cake-border, #c8d2dc);
+}
+.presentation-demo-summary {
+  cursor: pointer;
+  font-size: 14px;
+}
+.presentation-demo-code {
+  overflow: auto;
+  font:
+    13px / 1.7 Consolas,
+    monospace;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--cake-surface, #eef2f6);
+  user-select: text;
+}
+@media (max-width: 700px) {
+  .presentation-demo-outline {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media print {
+  .presentation-demo {
+    display: block;
+  }
+  .presentation-demo-toolbar,
+  .presentation-demo-outline,
+  .presentation-demo-help,
+  .presentation-demo-source {
+    display: none;
+  }
+}

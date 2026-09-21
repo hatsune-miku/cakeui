@@ -32,7 +32,12 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./style.css": "./dist/cakeui.css"
+    "./style.css": "./dist/cakeui.css",
+    "./presentation": {
+      "types": "./dist/presentation/index.d.ts",
+      "import": "./dist/presentation/index.js"
+    },
+    "./presentation/style.css": "./dist/presentation/style.css"
   },
   "sideEffects": [
     "**/*.css",
@@ -40,7 +45,7 @@
   ],
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "vite build && sass --style=compressed --no-source-map src/styles.scss dist/cakeui.css && tsc -p tsconfig.build.json",
+    "build": "vite build && sass --style=compressed --no-source-map src/styles.scss dist/cakeui.css && sass --style=compressed --no-source-map src/presentation/styles.scss dist/presentation/style.css && tsc -p tsconfig.build.json",
     "build:demo": "npm run docs:check && vite build --mode demo",
     "docs:build": "node scripts/docs.mjs",
     "docs:check": "node scripts/docs.mjs --check",

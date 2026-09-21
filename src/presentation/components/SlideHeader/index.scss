@@ -1,0 +1,10 @@
+.cake-slide-header {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--cake-slide-space, 24px) * 0.5);
+}
+.cake-slide-header-label {
+  color: var(--cake-slide-accent, #3d658f);
+  font-size: var(--cake-slide-small, 16px);
+  font-weight: 600;
+}

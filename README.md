@@ -1,6 +1,6 @@
 # CakeUI
 
-React 19 组件库，使用 TypeScript 和 SCSS，提供 48 个组件、蓝 / 粉 / 金主题及明暗模式。
+React 19 组件库，使用 TypeScript 和 SCSS，提供 48 个基础组件、15 个 HTML 幻灯片组件、蓝 / 粉 / 金主题及明暗模式。
 
 [Gallery](https://gallery.vanillacake.cn) · [技术文档](https://gallery.vanillacake.cn/?page=docs) · [npm](https://www.npmjs.com/package/@a1knla/cakeui)
 
@@ -30,6 +30,8 @@ export function App() {
 ```
 
 `theme`：`blue` / `pink` / `gold`；`mode`：`light` / `dark` / `system`。组件支持原生 HTML 属性，通过 JSX children 组合。
+
+HTML 幻灯片使用独立入口 `@a1knla/cakeui/presentation` 和样式 `@a1knla/cakeui/presentation/style.css`，支持固定比例、连续阅读、键盘翻页、全屏和打印。参见[示例](https://gallery.vanillacake.cn/?page=presentation)与[API / 完整代码](docs/ai.md#41-html-幻灯片组件)。此入口尚未包含于 npm `0.3.0`，新版本发布前使用文档中的本地打包安装流程。
 
 ## 文档
 

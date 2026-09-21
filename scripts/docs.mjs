@@ -21,36 +21,42 @@ const body = read('docs/ai.md').trim()
 const components = []
 const declarations = []
 const reactTypes = new Set()
+const componentGroups = []
 
-for (const entry of parse('src/index.ts').statements) {
-  assert(
-    ts.isExportDeclaration(entry) && entry.moduleSpecifier,
-    'Review docs generator for the new public export syntax.'
-  )
-  const module = entry.moduleSpecifier.text.replace(/^\.\//, 'src/')
-  const path = existsSync(resolve(root, module + '.ts')) ? module + '.ts' : module + '/index.tsx'
-  const source = parse(path)
-  const names = entry.exportClause?.elements?.map((element) => (element.propertyName ?? element.name).text)
-  for (const node of source.statements) {
-    if (ts.isImportDeclaration(node) && node.moduleSpecifier.text === 'react') {
-      for (const specifier of node.importClause?.namedBindings?.elements ?? []) {
-        if (node.importClause.isTypeOnly || specifier.isTypeOnly) reactTypes.add(specifier.name.text)
+for (const entryPath of ['src/index.ts', 'src/presentation/index.ts']) {
+  const group = { entry: entryPath, components: [] }
+  componentGroups.push(group)
+  for (const entry of parse(entryPath).statements) {
+    assert(
+      ts.isExportDeclaration(entry) && entry.moduleSpecifier,
+      'Review docs generator for the new public export syntax.'
+    )
+    const module = entry.moduleSpecifier.text.replace(/^\.\//, entryPath.replace(/index\.ts$/, ''))
+    const path = existsSync(resolve(root, module + '.ts')) ? module + '.ts' : module + '/index.tsx'
+    const source = parse(path)
+    const names = entry.exportClause?.elements?.map((element) => (element.propertyName ?? element.name).text)
+    for (const node of source.statements) {
+      if (ts.isImportDeclaration(node) && node.moduleSpecifier.text === 'react') {
+        for (const specifier of node.importClause?.namedBindings?.elements ?? []) {
+          if (node.importClause.isTypeOnly || specifier.isTypeOnly) reactTypes.add(specifier.name.text)
+        }
       }
-    }
-    if (!node.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) continue
-    assert(node.name, `Unnamed public export in ${path}; review documentation generation.`)
-    const name = node.name.text
-    if (names && !names.includes(name)) continue
-    if (ts.isFunctionDeclaration(node)) {
-      assert(/^[A-Z]/.test(name), `New non-component export ${name} needs documentation support.`)
-      assert(body.includes(`\n### ${name}\n`), `Missing a dedicated ### ${name} section in docs/ai.md.`)
-      components.push(name)
-    } else {
-      assert(
-        ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node),
-        `Unsupported public declaration ${name}.`
-      )
-      declarations.push(node.getText(source))
+      if (!node.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) continue
+      assert(node.name, `Unnamed public export in ${path}; review documentation generation.`)
+      const name = node.name.text
+      if (names && !names.includes(name)) continue
+      if (ts.isFunctionDeclaration(node)) {
+        assert(/^[A-Z]/.test(name), `New non-component export ${name} needs documentation support.`)
+        assert(body.includes(`\n### ${name}\n`), `Missing a dedicated ### ${name} section in docs/ai.md.`)
+        components.push(name)
+        group.components.push(name)
+      } else {
+        assert(
+          ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node),
+          `Unsupported public declaration ${name}.`
+        )
+        declarations.push(node.getText(source))
+      }
     }
   }
 }
@@ -136,11 +142,11 @@ const full = await format(
 - 版本：${pkg.version}
 - 署名：${pkg.author}
 - React peer：${pkg.peerDependencies.react}；React DOM peer：${pkg.peerDependencies['react-dom']}
-- 公开组件：${components.length} 个；下列列表与 src/index.ts 一致。
+- 公开组件：${components.length} 个；下列分组分别与两个公开入口一致。
 - 文档 / package.json / src 内容指纹（SHA-256）：${fingerprint}
 - 本文为生成结果，请修改 docs/ai.md 或相应源码后运行 npm run docs:build。
 
-${components.join(', ')}
+${componentGroups.map((group) => `- ${group.entry}（${group.components.length} 个）：${group.components.join(', ')}`).join('\n')}
 
 ## 附录 B. 完整公开 Props 与类型
 
@@ -160,13 +166,14 @@ const index = await format(
 
 > React + TypeScript + SCSS UI components. Native HTML props, composable JSX children. Default blue theme. Author: ${pkg.author}. Version: ${pkg.version}.
 
-安装：npm install ${pkg.name}。需要 React / React DOM 19+，显式导入 ${pkg.name}/style.css。包名包含 @a1knla/ scope，品牌名和 GitHub 仓库仍为 CakeUI / cakeui。不要凭其他 UI 库的习惯猜测 API。
+安装：npm install ${pkg.name}。需要 React / React DOM 19+。基础组件显式导入 ${pkg.name}/style.css；HTML 幻灯片从 ${pkg.name}/presentation 导入，样式为 ${pkg.name}/presentation/style.css。presentation 是同包的 Web 子入口，不是 RN 包；新增入口尚未包含于已发布的 0.3.0，当前请安装本仓库打包产物。包名包含 @a1knla/ scope，品牌名和 GitHub 仓库仍为 CakeUI / cakeui。不要凭其他 UI 库的习惯猜测 API。
 
 ## 文档 / Documentation
 
 - [完整技术文档 / Full technical reference](https://gallery.vanillacake.cn/llms-full.txt): UTF-8 text/plain；${components.length} 个组件的 API、默认值、原生属性、ref、交互边界、主题变量、可编译示例和开发维护规则。生成代码前优先读取。
 - [Gallery 阅读页](https://gallery.vanillacake.cn/?page=docs): 同一份全文，可选择复制。
-- [源码](https://github.com/hatsune-miku/cakeui): 公开组件入口 src/index.ts，Props 在 src/components/*/index.tsx。
+- [HTML 幻灯片](https://gallery.vanillacake.cn/?page=presentation): 逐页演示、连续阅读、全屏与打印；独立页 /slides.html。
+- [源码](https://github.com/hatsune-miku/cakeui): 基础入口 src/index.ts，幻灯片入口 src/presentation/index.ts；Props 在对应 components/*/index.tsx。
 - [维护规则](https://github.com/hatsune-miku/cakeui/blob/main/AGENTS.md): 每次改动都评估并同步受影响文档。
 
 ## API 提醒 / Key constraints
@@ -176,6 +183,7 @@ const index = await format(
 - ContextMenu interactive defaults to false: right-down opens and depresses the region; right-release selects only an enabled item under the pointer, otherwise the menu stays open.
 - ComboBox is a native select with option / optgroup; customizable picker appearance depends on browser support.
 - No Drawer or SidePanel. Global text selection defaults to none; input and log areas explicitly allow selection.
+- Presentation CSS is independent and scoped. SlideDeck takes Slide children (including arrays/fragments), not a slides data schema. Keyboard navigation is scoped to the focused deck; printing exposes all slides.
 
 完整文档内容指纹（SHA-256）：${fingerprint}
 `,
