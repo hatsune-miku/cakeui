@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
@@ -20,6 +20,7 @@ test('classic external script works from a local HTML file with no npm, import m
       body: readFileSync(resolve('dist/browser', name)),
     })
   })
+  mkdirSync(resolve('.cache'), { recursive: true })
   const folder = mkdtempSync(resolve('.cache/browser-example-'))
   const html = resolve(folder, 'index.html')
   writeFileSync(html, readFileSync('public/browser.html'))
