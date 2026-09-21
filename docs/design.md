@@ -57,6 +57,8 @@ AnyDrop 是组件样式的最终蓝本。参考之间出现冲突，尤其是配
 
 ## HTML 幻灯片子入口
 
+另外提供普通 script 使用的浏览器 IIFE：`dist/browser/cakeui.min.js` 暴露 CakeUI 全局对象，包含基础组件、presentation、React 与 createRoot；配套完整 CSS。既有 ESM 消费继续使用 React peer，并保留两个入口的样式隔离。浏览器版不在运行时转译 JSX、请求外部 React 或自动注入 CSS，调用者使用 React.createElement 或预编译的应用脚本。浏览器分发随 npm 发版从已验证的相同 tgz 提取上传，不重新编译另一份产物。
+
 `@a1knla/cakeui/presentation` 面向 Web / React DOM，用 JSX 组合内容；不实现 RN 或编辑器。基础组件入口与 CSS 保持独立，构建输出两个 ESM / 类型入口和两份 CSS，没有新运行时依赖。
 
 版式采用同一组对齐线：页边距、标题、内容、页脚。1280px 宽画布以 60px 页边距、24px 间距组织内容；封面 / 普通标题 / 正文 / 注释为 72 / 48 / 24 / 16px。Segoe UI 系统字体用于正文，Cascadia Code / Consolas 用于代码，不加载远程字体。封面使用大标题与浅主题底；分栏页通过留白组织内容；指标使用强调线；图片与图注保持在同一个 figure 内，短引文使用竖线和大字，避免每页都堆叠卡片。

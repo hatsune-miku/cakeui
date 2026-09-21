@@ -25,6 +25,25 @@ HTML 每次重新验证缓存；带哈希的资源长期缓存。工作台无需
 
 构建包含 Gallery 的 `index.html` 与独立 HTML 幻灯片 `slides.html`。`/?page=presentation` 在 Gallery 内预览，`/slides.html` 只加载幻灯片样式并提供全屏、连续阅读和打印 / PDF。部署时同时包含 `presentation-layout.svg` 示例图片与两个 HTML 入口引用的哈希资源；上线后检查两个入口及图片均可访问。独立页的打印样式设置 A4 横向，库样式本身不设置全局纸张。
 
+## 浏览器 JS / CSS 分发
+
+固定目录为 `/var/www/html/cakeui-dist`，由现有 `vanillacake.cn` HTTPS 站点提供：
+
+- 默认 JS：`https://vanillacake.cn/cakeui-dist/cakeui.min.js`
+- 默认 CSS：`https://vanillacake.cn/cakeui-dist/cakeui.css`
+- 当前来源与摘要：`https://vanillacake.cn/cakeui-dist/manifest.json`
+- 固定 npm 版本：`https://vanillacake.cn/cakeui-dist/releases/<版本>/cakeui.min.js`，CSS 同目录。
+- 预发布通道：`https://vanillacake.cn/cakeui-dist/next/`，引用时追加文件名。
+- 普通 script 示例：`https://gallery.vanillacake.cn/browser.html`，HTML 本身不需要本地构建。
+
+每次 npm 发布成功后，`publish.yml` 自动上传已验证 tgz 中的 `dist/browser/cakeui.min.js` 和 `dist/browser/cakeui.css`。不直接上传 `dist/index.js` 或 `dist/presentation/index.js`，它们仍是外置 React 的 ESM。
+
+初始化由 `deploy/install-browser.sh <上传目录>` 完成，上传目录必须位于 `/home/miku/.cache/cakeui-browser-setup/` 下，并包含接收器、Nginx snippet 和专用 `deploy-key.pub`。脚本需要一次 sudo，将 root 所有的接收器安装到 `/usr/local/libexec/cakeui-dist-receive`，使 miku 可写指定分发目录，并添加带 forced command 的部署公钥；保留其他 authorized_keys。Nginx 主站仅增加 `/cakeui-dist/` location，配置检查通过后重载，资源返回正确 MIME、`Access-Control-Allow-Origin: *` 与 no-cache；缺失资源返回 404。已有主站证书沿用现有 Certbot 配置。
+
+接收器仅接受明确的两个文件名，校验版本格式、体积和 SHA-256，将版本目录完整落盘后原子切换 current / next 软链接。根目录的两个文件链接到 current；固定版本目录不覆盖，重复部署相同产物可重试。preview 可初始化空目录，但不会覆盖 npm 稳定版。当前 bootstrap 的 manifest.source 为 preview，直到下一次稳定 npm 发布。
+
+本机使用免密 SSH 运行 `npm.cmd run deploy:browser -- --artifact-dir <已发布artifact目录>`；日常自动化使用 Actions Secrets 中专用密钥，无需 sudo 或账户密码。只需要检查连接时运行 `npm run deploy:browser -- --check`。Linux 接收器的验证命令为 `python3 -m unittest discover -s tests -p browser_receiver_test.py`，在 Ubuntu 执行；Windows 本机的原子软链接替换行为不作为服务端兼容目标。
+
 ## AI 技术文档
 
 - 阅读页：[Gallery AI 技术文档](https://gallery.vanillacake.cn/?page=docs)

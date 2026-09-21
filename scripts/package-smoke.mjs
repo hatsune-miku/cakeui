@@ -4,6 +4,7 @@ import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } fro
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
+import { runInNewContext } from 'node:vm'
 
 const { values } = parseArgs({ options: { 'artifact-dir': { type: 'string' } } })
 
@@ -24,6 +25,9 @@ assert(result[0].files.some((file) => file.path === 'dist/cakeui.css'))
 assert(result[0].files.some((file) => file.path === 'dist/index.d.ts'))
 for (const name of ['index.js', 'index.d.ts', 'style.css']) {
   assert(result[0].files.some((file) => file.path === `dist/presentation/${name}`))
+}
+for (const name of ['cakeui.min.js', 'cakeui.css', 'global.d.ts']) {
+  assert(result[0].files.some((file) => file.path === `dist/browser/${name}`))
 }
 assert(result[0].files.some((file) => file.path === 'docs/ai.md'))
 assert(!result[0].files.some((file) => file.path.startsWith('demo/') || file.path.includes('node_modules')))
@@ -51,6 +55,20 @@ document.querySelector('#app')!.innerHTML = renderToStaticMarkup(createElement('
 `
 )
 const documentation = readFileSync(resolve(consumer, 'node_modules/@a1knla/cakeui/docs/ai.md'), 'utf8')
+const browserScript = readFileSync(resolve(consumer, 'node_modules/@a1knla/cakeui/dist/browser/cakeui.min.js'), 'utf8')
+const browserGlobal = runInNewContext(browserScript + '\nCakeUI', { console }, { timeout: 5000 })
+assert.equal(typeof browserGlobal.Button, 'function')
+assert.equal(typeof browserGlobal.createRoot, 'function')
+assert.equal(typeof browserGlobal.React.useState, 'function')
+assert.equal(Object.keys(browserGlobal.presentation).length, 15)
+assert.equal(browserGlobal.version, JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version)
+writeFileSync(
+  resolve(consumer, 'browser-types.tsx'),
+  `import type {} from '@a1knla/cakeui/browser'
+const element = CakeUI.React.createElement(CakeUI.presentation.Slide, { 'aria-label': 'Browser types' }, 'Slide')
+window.CakeUI.createRoot(document.createElement('div')).render(element)
+`
+)
 // A second consumer entry deliberately has no base CSS or CakeProvider.
 writeFileSync(
   resolve(consumer, 'presentation.tsx'),

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CakeUI · Script 引用示例</title>
+    <link rel="stylesheet" href="https://vanillacake.cn/cakeui-dist/cakeui.css" crossorigin="anonymous" />
+    <style>
+      .browser-example {
+        max-width: 1100px;
+        margin: 24px auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .browser-example-tools {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .browser-example-caption {
+        margin: 0;
+        color: var(--cake-text-secondary);
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="app"></main>
+    <noscript>此示例需要启用 JavaScript。</noscript>
+    <script src="https://vanillacake.cn/cakeui-dist/cakeui.min.js" crossorigin="anonymous"></script>
+    <script>
+      const { React, createRoot, CakeProvider, Button } = CakeUI
+      const { SlideDeck, Slide, SlideHeader, SlideText, SlideFooter } = CakeUI.presentation
+      const h = React.createElement
+
+      function BrowserExample() {
+        const [count, setCount] = React.useState(0)
+        return h(
+          CakeProvider,
+          { theme: 'blue', className: 'browser-example' },
+          h(
+            'div',
+            { className: 'browser-example-tools' },
+            h(Button, { onClick: () => setCount(count + 1) }, '计数 ' + count),
+            h('p', { className: 'browser-example-caption' }, '外部 JS + CSS · 普通 HTML · CakeUI ' + CakeUI.version)
+          ),
+          h(
+            SlideDeck,
+            {
+              'aria-label': 'Script 引用示例',
+              labels: { previous: '上一页', next: '下一页', enterFullscreen: '全屏演示', exitFullscreen: '退出全屏' },
+            },
+            h(
+              Slide,
+              { 'aria-label': '浏览器直接引用', tone: 'accent' },
+              h(SlideHeader, { title: '浏览器直接引用', description: '从一个 script URL 加载组件和 React 运行时。' }),
+              h(SlideText, null, '基础组件与 presentation 共用一份运行时，无需本地构建。'),
+              h(SlideFooter, { page: '1 / 2' }, 'hatsune-miku')
+            ),
+            h(
+              Slide,
+              { 'aria-label': '复用相同 API' },
+              h(SlideHeader, { title: '复用相同 API' }),
+              h(SlideText, null, '用 React.createElement 创建组件；也可以将 JSX 预先编译后再引用。'),
+              h(SlideFooter, { page: '2 / 2' }, 'CakeUI.presentation')
+            )
+          )
+        )
+      }
+
+      createRoot(document.getElementById('app')).render(h(BrowserExample))
+    </script>
+  </body>
+</html>

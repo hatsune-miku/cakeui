@@ -35,6 +35,8 @@ HTML 幻灯片使用独立入口 `@a1knla/cakeui/presentation` 和样式 `@a1knl
 
 ## 文档
 
+普通 HTML 可通过外部 `cakeui.min.js` 与 `cakeui.css` 使用内置 React 的浏览器版本：[直接引用示例](https://gallery.vanillacake.cn/browser.html) · [用法与版本规则](docs/ai.md#通过外部-script-url-使用)。每次 npm 发版会自动更新远端浏览器分发；目前默认地址为源码预览。
+
 - [API 与示例](docs/ai.md)
 - [AI 文档索引](https://gallery.vanillacake.cn/llms.txt) · [完整纯文本](https://gallery.vanillacake.cn/llms-full.txt)
 - [发布](docs/publishing.md) · [部署](docs/deployment.md) · [设计记录](docs/design.md)

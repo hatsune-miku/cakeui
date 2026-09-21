@@ -69,11 +69,54 @@ export function HelloCakeUI() {
 }
 ```
 
-构建提供两个 ESM / TypeScript 声明入口与各自的 CSS。JS 可以 tree-shake；CSS 按基础组件和 presentation 分开，不按单个组件拆包，没有 CommonJS 入口，也没有公开 SCSS 子路径。只用幻灯片时不需要基础 CSS 或 CakeProvider；同时使用基础控件时额外导入基础 CSS。消费项目不需要安装 Sass。React / React DOM 是 peer dependencies；库不捆绑 React，也没有其他运行时依赖。
+构建提供两个 ESM / TypeScript 声明入口与各自的 CSS，另有普通 script 使用的浏览器 IIFE 版本。ESM 的 JS 可以 tree-shake，React / React DOM 是 peer dependencies；浏览器 IIFE 内置自己的 React / React DOM 运行时。CSS 按基础组件和 presentation 分开，不按单个组件拆包；浏览器版另提供包含两者的完整 CSS。没有 CommonJS 入口，也没有公开 SCSS 子路径。只用幻灯片的 ESM 消费方不需要基础 CSS 或 CakeProvider；同时使用基础控件时额外导入基础 CSS。消费项目不需要安装 Sass。
 
-版本状态：presentation 是当前仓库新增的子入口，已发布的 `0.3.0` 不含此入口。新版本发布前请使用上面的本地打包安装流程，不能把当前源码能力当作 npm 0.3.0 的 API。
+版本状态：presentation 和浏览器 IIFE 是当前仓库新增功能，已发布的 npm `0.3.0` 不含它们。ESM 新版本发布前请使用上面的本地打包安装流程。浏览器分发初次部署是源码预览；`CakeUI.version` 表示源码 package.json 版本，分发的 manifest.json 中 source=preview 表示尚未由对应 npm 版本发布，不能把源码预览当作 npm 0.3.0 的 API。
 
-库的 JavaScript 构建带有 `'use client'` 指令。支持服务端渲染首屏 HTML，DOM 操作在 effect 或事件内执行；Dialog 和 Popover 等交互需要客户端挂载后才能打开。在使用 Server Components 的框架中，管理事件和状态的消费组件应处于客户端边界，CSS 按框架的全局样式规则引入。SSR 支持不代表服务端输出会自动打开模态框或提示层。
+### 通过外部 script URL 使用
+
+当前默认地址为 `https://vanillacake.cn/cakeui-dist/cakeui.min.js` 与 `https://vanillacake.cn/cakeui-dist/cakeui.css`，完整示例在 `https://gallery.vanillacake.cn/browser.html`。JS 为单个普通脚本，不需要 type=module、import map、CDN React、npm 安装或本地打包。CSS 需单独加载；JS 不自动注入样式。两个文件对应远端 `/var/www/html/cakeui-dist`。稳定版发布后更新默认地址；`releases/<版本>/cakeui.min.js` 与同目录 CSS 固定版本且不覆盖，预发布版可通过 `next/` 或固定版本路径访问。
+
+全局对象为 `window.CakeUI`（经典脚本内也可直接用 CakeUI）：基础 48 个组件位于 CakeUI.Button 等顶层；幻灯片 15 个组件位于 CakeUI.presentation；React 为 CakeUI.React，挂载函数为 CakeUI.createRoot，源码版本为 CakeUI.version。所有 Props 和事件与对应 ESM 组件相同，使用 React.createElement 表达 JSX 的同一棵元素树。浏览器不会直接执行 JSX / TSX；希望写 JSX 时预先编译，不要求运行时 Babel。
+
+```html example=browser-url
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>项目汇报</title>
+    <link rel="stylesheet" href="https://vanillacake.cn/cakeui-dist/cakeui.css" />
+  </head>
+  <body>
+    <main id="slides"></main>
+    <script src="https://vanillacake.cn/cakeui-dist/cakeui.min.js"></script>
+    <script>
+      const { React, createRoot } = CakeUI
+      const { SlideDeck, Slide, SlideHeader, SlideText } = CakeUI.presentation
+      const h = React.createElement
+      createRoot(document.getElementById('slides')).render(
+        h(
+          SlideDeck,
+          { 'aria-label': '项目汇报' },
+          h(
+            Slide,
+            { 'aria-label': '本周进展' },
+            h(SlideHeader, { title: '本周进展' }),
+            h(SlideText, null, '完成组件与文档。')
+          )
+        )
+      )
+    </script>
+  </body>
+</html>
+```
+
+脚本须在应用代码之前完成加载；不要给它加 async 后立即访问 CakeUI。每页只加载一个浏览器运行时；自定义组件的 hooks 使用 CakeUI.React，且通过 CakeUI.createRoot 挂载，不与宿主项目另一份 React 混用。已有 React 构建项目优先使用 ESM 子入口。浏览器全局类型可通过 `import type {} from '@a1knla/cakeui/browser'` 引入，此子路径仅提供类型，不是可运行的 ESM 入口。
+
+完整 CSS 具有基础样式的根变量和默认文字不可选规则，Slide 内仍可选择。外部 URL 需要网络，文件双击打开时也一样；自包含离线 HTML 要内嵌脚本、CSS 和所用媒体。保持 JS / CSS 版本一致；默认地址会随稳定发版改变，长期保存的演示建议固定 releases/<版本> 地址。HTTP 提供正确 MIME、CORS 与 no-cache，允许跨域引用和缓存重新验证。SRI 若由应用自行设置，应绑定固定版本字节，不把旧摘要用于可变的默认地址。
+
+库的 ESM 构建带有 `'use client'` 指令。支持服务端渲染首屏 HTML，DOM 操作在 effect 或事件内执行；Dialog 和 Popover 等交互需要客户端挂载后才能打开。在使用 Server Components 的框架中，管理事件和状态的消费组件应处于客户端边界，CSS 按框架的全局样式规则引入。SSR 支持不代表服务端输出会自动打开模态框或提示层。
 
 浏览器需要支持原生 dialog、Popover API、`:has()`、`color-mix()` 等当前实现使用的能力。库不捆绑 polyfill。真实浏览器自动测试使用 Chrome；Firefox / Safari 没有完成全面实机验证。ComboBox 的可定制选择器有独立的能力降级，见对应章节，不将“可运行”与“所有浏览器外观完全相同”混为一谈。
 
@@ -1104,7 +1147,7 @@ Gallery 构建会检查文档一致性，再将 public 中两个文件复制到 
 - 署名：hatsune-miku
 - React peer：>=19.0.0；React DOM peer：>=19.0.0
 - 公开组件：63 个；下列分组分别与两个公开入口一致。
-- 文档 / package.json / src 内容指纹（SHA-256）：e886353fce0ea7b3da1f85d1d23c4e9224ccf2815e350a9bf086b649598a9027
+- 文档 / package.json / src 内容指纹（SHA-256）：20988c17038752ce843d1a4b8146677238c0ca4b290cb4eca54521719176cbd6
 - 本文为生成结果，请修改 docs/ai.md 或相应源码后运行 npm run docs:build。
 
 - src/index.ts（48 个）：Accordion, AccordionItem, Alert, Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, CakeProvider, Card, CheckBox, ComboBox, ContextMenu, Dialog, Dot, Field, GroupBox, HoverTips, ListItem, ListView, LogEntry, LogView, MenuItem, MenuSeparator, NumberBox, Pagination, ProgressBar, RadioButton, Separator, Skeleton, Slider, Spinner, Switch, Tab, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TabList, TabPanel, Tabs, Tag, TextArea, TextBox, Toast, WhatsThis

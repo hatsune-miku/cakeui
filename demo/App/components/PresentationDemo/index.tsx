@@ -107,6 +107,11 @@ export function PresentationDemo({
         聚焦画布后，用 ← / →、Page Up / Down、空格翻页，Home / End 跳至首尾。窄屏可切换连续阅读。
       </p>
       {!standalone && (
+        <a className="presentation-demo-link" href="/browser.html" target="_blank" rel="noreferrer">
+          普通 HTML / 外部 script 引用示例 ↗
+        </a>
+      )}
+      {!standalone && (
         <details className="presentation-demo-source">
           <summary className="presentation-demo-summary">导入与最小示例</summary>
           <pre className="presentation-demo-code">

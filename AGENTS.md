@@ -16,6 +16,12 @@
 - 发布 Gallery 时让文档与站点一起部署。验证 `/?page=docs`、`/llms.txt`、`/llms-full.txt`；纯文本应为 UTF-8 text/plain，缺失文件不能返回 SPA HTML。
 - 自动提取类型和变量不能代替语义审查；交付前检查说明是否与实际行为一致。
 
+## 浏览器分发与发版
+
+- 每次 CakeUI 发版都把经过验证的浏览器产物 `cakeui.min.js` 和 `cakeui.css` 发布到 `miku@vanillacake.cn:/var/www/html/cakeui-dist`。使用仓库发布工作流或 `scripts/deploy-browser.mjs`，不要直接上传 ESM 入口冒充普通 script 构建。
+- 浏览器构建包含 React / React DOM、基础组件和 presentation；npm 的 ESM 入口继续外置 React peer。版本固定地址保留不覆盖，稳定版更新默认地址，预发布版更新 next。
+- 同步 API、浏览器引用示例和部署文档；部署凭据仅存 GitHub Actions Secrets 或本机凭据存储，不能写进仓库或日志。
+
 ## 开发与署名
 
 - 先阅读 `ARCH.md`，沿用 TypeScript + SCSS、原生属性、JSX 组合的设计，不凭其他库习惯发明 API。

@@ -4,6 +4,8 @@ import { type PreviewServer, type ViteDevServer, defineConfig } from 'vite'
 
 import react from '@vitejs/plugin-react'
 
+import { version } from './package.json'
+
 function serveDocumentation(server: ViteDevServer | PreviewServer, directory: string) {
   server.middlewares.use(async (request, response, next) => {
     const path = new URL(request.url ?? '/', 'http://localhost').pathname
@@ -29,6 +31,10 @@ function serveDocumentation(server: ViteDevServer | PreviewServer, directory: st
 }
 
 export default defineConfig(({ mode }) => ({
+  define:
+    mode === 'browser'
+      ? { __CAKEUI_VERSION__: JSON.stringify(version), 'process.env.NODE_ENV': '"production"' }
+      : undefined,
   plugins: [
     react(),
     {
@@ -41,16 +47,28 @@ export default defineConfig(({ mode }) => ({
   build:
     mode === 'demo'
       ? { outDir: 'demo-dist', rollupOptions: { input: { gallery: 'index.html', slides: 'slides.html' } } }
-      : {
-          copyPublicDir: false,
-          lib: {
-            entry: { index: 'src/index.ts', 'presentation/index': 'src/presentation/index.ts' },
-            formats: ['es'],
-            fileName: (_format, entryName) => `${entryName}.js`,
+      : mode === 'browser'
+        ? {
+            copyPublicDir: false,
+            emptyOutDir: false,
+            lib: {
+              entry: 'src/browser/index.ts',
+              name: 'CakeUI',
+              formats: ['iife'],
+              fileName: () => 'browser/cakeui.min.js',
+            },
+            minify: 'esbuild',
+          }
+        : {
+            copyPublicDir: false,
+            lib: {
+              entry: { index: 'src/index.ts', 'presentation/index': 'src/presentation/index.ts' },
+              formats: ['es'],
+              fileName: (_format, entryName) => `${entryName}.js`,
+            },
+            rollupOptions: {
+              external: ['react', 'react-dom', 'react/jsx-runtime'],
+              output: { banner: "'use client';" },
+            },
           },
-          rollupOptions: {
-            external: ['react', 'react-dom', 'react/jsx-runtime'],
-            output: { banner: "'use client';" },
-          },
-        },
 }))
