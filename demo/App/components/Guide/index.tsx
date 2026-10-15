@@ -27,10 +27,31 @@ export function Guide() {
         </pre>
       </Card>
       <Card padding="large">
+        <h2 className="demo-card-title">主题与设置弹窗</h2>
+        <p className="demo-panel-text">
+          六种预设或单强调色支持浅色、深色和跟随系统。ThemeSettings 在当前 Provider
+          内预览，取消恢复，应用才通过存储适配器保存。主题配置 API 和 ThemeSettings 从 0.4.0 起提供。
+        </p>
+        <pre className="demo-doc-code">
+          <code>{`import { CakeProvider, ThemeSettings } from '@a1knla/cakeui'
+import '@a1knla/cakeui/style.css'
+
+export function App() {
+  return (
+    <CakeProvider accentColor="#70569b" mode="system">
+      <ThemeSettings />
+    </CakeProvider>
+  )
+}`}</code>
+        </pre>
+        <a className="demo-link" href="/?page=docs">
+          配置 API、持久化与迁移说明
+        </a>
+      </Card>
+      <Card padding="large">
         <h2 className="demo-card-title">npm：HTML 幻灯片</h2>
         <p className="demo-panel-text">
-          presentation 是同包的 Web 子入口，只用幻灯片时无需 CakeProvider 或基础样式。已发布的 npm 0.3.0
-          尚未包含此入口，新版本发布前请按技术文档从源码打包安装，或使用下方 CDN。
+          presentation 是同包的 Web 子入口，从 0.4.0 起提供，只用幻灯片时无需 CakeProvider 或基础样式。
         </p>
         <pre className="demo-doc-code">
           <code>{`import { SlideDeck, Slide, SlideHeader } from '@a1knla/cakeui/presentation'
@@ -68,8 +89,8 @@ export function Slides() {
           React.createElement 和 createRoot 挂载，完整 CSS 已包含两者。自定义组件的 hooks 使用 CakeUI.React。
         </p>
         <p className="demo-panel-text">
-          默认 CDN 地址随稳定发版更新，目前是源码预览；正式发布后可用 releases/版本号/ 固定 JS 和 CSS。 外部 URL
-          需要联网；完全离线的单 HTML 需要内嵌脚本、样式和媒体。
+          默认 CDN 地址随稳定发版更新，可用 releases/0.4.0/ 固定 JS 和 CSS。外部 URL 需要联网；完全离线的单 HTML
+          需要内嵌脚本、样式和媒体。
         </p>
         <div className="demo-row">
           <a className="demo-link" href="/browser.html" target="_blank" rel="noreferrer">

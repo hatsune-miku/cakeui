@@ -4,11 +4,11 @@
 
 首个版本 `0.1.0` 已发布。后续推荐使用 [Publish npm package 工作流](https://github.com/hatsune-miku/cakeui/actions/workflows/publish.yml)，源文件为 `.github/workflows/publish.yml`。它使用 npm Trusted Publishing，通过 GitHub OIDC 获取本次发布所需的临时身份，无需在 GitHub Secrets 中保存 npm token。
 
-## 包入口与当前开发状态
+## 包入口
 
-基础入口 `@a1knla/cakeui` / `@a1knla/cakeui/style.css` 与 Web 幻灯片入口 `@a1knla/cakeui/presentation` / `@a1knla/cakeui/presentation/style.css` 在同一个 tgz 中。无需再注册名为 cakeui/presentation 的 npm 包，没有 RN 入口。新增 presentation 尚未发布于 npm 0.3.0；发布新版本时同步移除 README、docs/ai.md、本节及 scripts/docs.mjs 的未发布提示并重建文档。
+基础入口 `@a1knla/cakeui` / `@a1knla/cakeui/style.css`、Web 幻灯片入口 `@a1knla/cakeui/presentation` / `@a1knla/cakeui/presentation/style.css` 与纯主题入口 `@a1knla/cakeui/theme` 在同一个 tgz 中。theme 不依赖 React；无需注册额外 npm 包，没有 RN 入口。presentation、theme、ThemeSettings 和浏览器 IIFE 从 0.4.0 起提供，浏览器产物随 npm 版本同步部署。
 
-包验证同时检查两个 ESM 入口的严格类型、原生 ref、SSR、独立样式消费以及浏览器 IIFE 和全局类型。`dist/browser/cakeui.min.js` 内置 React / React DOM、基础组件和 presentation，`dist/browser/cakeui.css` 为对应完整样式；二者包含在同一个 npm tgz 中。普通分支提交不会发布 npm，需要按后文版本与 tag 流程发布。
+包验证检查三个 ESM 入口、严格类型、原生 ref、SSR、独立样式消费以及浏览器 IIFE 和全局类型。`dist/browser/cakeui.min.js` 内置 React / React DOM、基础组件、presentation 和 CakeUI.theme，`dist/browser/cakeui.css` 为对应完整样式；二者包含在同一个 npm tgz 中。普通分支提交不会发布 npm，需要按后文版本与 tag 流程发布。
 
 ## 一次性配置 npm Trusted Publisher
 
@@ -42,7 +42,7 @@ npm 发布及摘要校验成功后，独立 `deploy_browser` job 从本次验证
 
 每次稳定发版更新根目录的 `cakeui.min.js` / `cakeui.css`，预发布更新 `next/`，全部 npm 版本保留在 `releases/<版本>/`。默认 URL 会变化，长期保存的 HTML 建议锁定版本。首次建立分发时可运行 `npm run deploy:browser -- --preview`，仅发布当前源码预览到 `previews/<摘要>/`，未有稳定发布时同时初始化默认地址；它不能替换已有 npm 稳定版，CI 禁止使用 preview。详见 [部署说明](deployment.md)。
 
-验证 job 只有 `contents: read`，不授予 OIDC 权限。依次检查包名、作者、仓库、public / registry、manifest 与锁文件版本、tag；运行文档一致性、类型、DOM 单元测试、发布保护测试、库 / Gallery 构建、格式、真实浏览器交互与 axe 检查；最后安装实际 tgz，验证两个 ESM、CSS / 声明入口、SSR、全部标注 example 的 TSX 文档示例及消费项目构建。CDN 的 HTML 文档示例由浏览器测试直接加载构建后的 JS / CSS，检查渲染与交互。
+验证 job 只有 `contents: read`，不授予 OIDC 权限。依次检查包名、作者、仓库、public / registry、manifest 与锁文件版本、tag；运行文档一致性、类型、DOM 单元测试、发布保护测试、库 / Gallery 构建、格式、真实浏览器交互与 axe 检查；最后安装实际 tgz，验证三个 ESM、CSS / 声明入口、SSR、全部标注 example 的 TSX 文档示例及消费项目构建。CDN 的 HTML 文档示例由浏览器测试直接加载构建后的 JS / CSS，检查渲染与交互。
 
 `npm run test:package -- --artifact-dir .cache/release` 在全部包验证通过后保留同一个 tgz，并写入包名、版本和 SHA-512 integrity。工作流执行发布 dry-run 后上传 `npm-package` artifact，保留 7 天。`package.tgz` 与 `metadata.json` 位于 artifact 内。
 

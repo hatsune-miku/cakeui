@@ -1,0 +1,18 @@
+.cake-slide-tree {
+  min-width: 0;
+  max-height: var(--cake-slide-tree-max-height, none);
+  overflow: auto;
+  scrollbar-width: thin;
+  color: var(--cake-presentation-muted, #596572);
+  font: 12px / 1.5 var(--cake-presentation-font, 'Segoe UI', system-ui, sans-serif);
+}
+.cake-slide-tree-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+}
+@media print {
+  .cake-slide-tree {
+    display: none;
+  }
+}

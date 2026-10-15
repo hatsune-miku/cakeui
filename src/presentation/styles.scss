@@ -1,4 +1,9 @@
 @use './components/SlideDeck';
+@use './components/SlideNavigator';
+@use './components/SlideTree';
+@use './components/SlideTreeItem';
+@use './components/SlidePlaybackMenu';
+@use './components/SlideSubmenu';
 @use './components/Slide';
 @use './components/SlideHeader';
 @use './components/SlideTitle';

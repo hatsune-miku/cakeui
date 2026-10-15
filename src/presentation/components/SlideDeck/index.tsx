@@ -8,10 +8,19 @@ import {
   isValidElement,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react'
 
+import {
+  type ThemeConfig,
+  type ThemeForeground,
+  type ThemePreset,
+  createThemeConfig,
+  resolveThemeOptions,
+} from '../../../theme'
+import { themeStyle } from '../../../theme/style'
 import { cx } from '../../../utils'
 import { Slide, type SlideProps, type SlideRatio } from '../Slide'
 
@@ -31,10 +40,14 @@ export interface SlideDeckProps extends ComponentPropsWithRef<'div'> {
   onIndexChange?: (index: number) => void
   view?: 'presentation' | 'document'
   ratio?: SlideRatio
-  theme?: 'blue' | 'pink' | 'gold'
+  theme?: ThemePreset
   mode?: 'light' | 'dark' | 'system'
+  config?: ThemeConfig
+  accentColor?: string
+  foreground?: ThemeForeground
   keyboard?: boolean
   controls?: boolean
+  focusIndicator?: 'outline' | 'none'
   loop?: boolean
   fullscreen?: boolean
   labels?: Partial<SlideDeckLabels>
@@ -79,8 +92,12 @@ export function SlideDeck({
   ratio = '16:9',
   theme = 'blue',
   mode = 'light',
+  config,
+  accentColor,
+  foreground = 'auto',
   keyboard = true,
   controls = true,
+  focusIndicator = 'outline',
   loop = false,
   fullscreen = true,
   labels,
@@ -93,6 +110,18 @@ export function SlideDeck({
   onFocusCapture,
   ...props
 }: SlideDeckProps) {
+  const configured = Boolean(
+    config || accentColor || foreground !== 'auto' || !['blue', 'pink', 'gold'].includes(theme)
+  )
+  const themeConfig = useMemo(
+    () =>
+      configured
+        ? (config ??
+          createThemeConfig({ scheme: accentColor ? 'custom' : theme, customColor: accentColor, mode, foreground }))
+        : null,
+    [configured, config, accentColor, theme, mode, foreground]
+  )
+  const variables = useMemo(() => (themeConfig ? themeStyle(themeConfig) : {}), [themeConfig])
   const slides = collectSlides(children)
   const [internalIndex, setInternalIndex] = useState(defaultIndex)
   const current = clampIndex(index ?? internalIndex, slides.length)
@@ -158,9 +187,11 @@ export function SlideDeck({
       ref={root}
       className={cx('cake-slide-deck', className)}
       data-view={view}
-      data-theme={theme}
-      data-mode={mode}
-      style={{ '--cake-slide-ratio': ratio.replace(':', ' / '), ...style } as CSSProperties}
+      data-focus-indicator={focusIndicator}
+      data-theme={themeConfig?.scheme ?? theme}
+      data-mode={themeConfig ? resolveThemeOptions(themeConfig).mode : mode}
+      data-cake-theme-config={configured ? 'true' : undefined}
+      style={{ ...variables, '--cake-slide-ratio': ratio.replace(':', ' / '), ...style } as CSSProperties}
       onFocusCapture={(event) => {
         lastFocused.current = event.target
         onFocusCapture?.(event)

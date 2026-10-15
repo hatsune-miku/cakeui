@@ -4,7 +4,7 @@
   gap: 10px;
   cursor: pointer;
   &:has(:disabled) {
-    opacity: 0.5;
+    opacity: var(--cake-disabled-opacity, 0.5);
     cursor: not-allowed;
   }
   .cake-switch-input {
@@ -31,13 +31,14 @@
       transition: transform var(--cake-fast) var(--cake-ease);
     }
     &:checked {
-      background: var(--cake-accent);
+      background: var(--cake-switch-fill);
       &::after {
+        background: var(--cake-switch-thumb);
         transform: translateX(14px);
       }
     }
     &:focus-visible {
-      outline: 2px solid var(--cake-accent);
+      outline: 2px solid var(--cake-focus);
       outline-offset: 3px;
     }
   }

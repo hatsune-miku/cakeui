@@ -1,6 +1,6 @@
 # CakeUI
 
-React 19 组件库，使用 TypeScript 和 SCSS，提供 48 个基础组件、15 个 HTML 幻灯片组件、蓝 / 粉 / 金主题及明暗模式。
+React 19 组件库，使用 TypeScript 和 SCSS，提供 49 个基础组件、20 个 HTML 幻灯片组件、六种预设和单强调色自定义主题。
 
 [Gallery](https://gallery.vanillacake.cn) · [技术文档](https://gallery.vanillacake.cn/?page=docs) · [npm](https://www.npmjs.com/package/@a1knla/cakeui)
 
@@ -27,9 +27,11 @@ export function App() {
 }
 ```
 
-`theme`：`blue` / `pink` / `gold`；`mode`：`light` / `dark` / `system`。组件支持原生 HTML 属性，通过 JSX children 组合。
+`theme`：`blue` / `pink` / `gold` / `dousha` / `dousha-classic` / `grape`；`mode`：`light` / `dark` / `system`。单色主题用 `<CakeProvider accentColor="#70569b">`，可在容器中放入 `ThemeSettings` 预览、应用和取消。纯计算接口从 `@a1knla/cakeui/theme` 导入；[配置、存储适配器和迁移说明](docs/ai.md#6-主题变量与动效)。组件支持原生 HTML 属性，通过 JSX children 组合。
 
-HTML 幻灯片使用独立入口 `@a1knla/cakeui/presentation` 和样式 `@a1knla/cakeui/presentation/style.css`，支持固定比例、连续阅读、键盘翻页、全屏和打印。参见[示例](https://gallery.vanillacake.cn/?page=presentation)与[API / 完整代码](docs/ai.md#41-html-幻灯片组件)。此入口尚未包含于 npm `0.3.0`，新版本发布前使用文档中的本地打包安装流程。
+HTML 幻灯片使用独立入口 `@a1knla/cakeui/presentation` 和样式 `@a1knla/cakeui/presentation/style.css`，支持固定比例、连续阅读、键盘翻页、全屏和打印。参见[示例](https://gallery.vanillacake.cn/?page=presentation)与[API / 完整代码](docs/ai.md#41-html-幻灯片组件)。
+
+需要把可维护的 React / TypeScript 工程交付为单个离线 HTML，可使用本仓库独立的 [Presentation Toolkit](presentation-toolkit/README.md)。
 
 ## CDN
 
@@ -45,7 +47,7 @@ HTML 幻灯片使用独立入口 `@a1knla/cakeui/presentation` 和样式 `@a1knl
 </script>
 ```
 
-基础组件从 `CakeUI` 取用，幻灯片从 `CakeUI.presentation` 取用；样式包含两者。[完整示例](https://gallery.vanillacake.cn/browser.html) · [CDN / npm 用法对照](docs/ai.md#2-安装入口与执行环境)。默认 CDN 地址随稳定发版更新，目前为源码预览；长期保存的演示可在正式发布后使用固定版本地址。
+基础组件从 `CakeUI` 取用，幻灯片从 `CakeUI.presentation` 取用，纯主题接口从 `CakeUI.theme` 取用；样式包含两类组件。[完整示例](https://gallery.vanillacake.cn/browser.html) · [CDN / npm 用法对照](docs/ai.md#2-安装入口与执行环境)。默认 CDN 地址随稳定发版更新；长期保存的演示可用 `releases/0.4.0/` 固定 JS 和 CSS。
 
 ## 文档
 

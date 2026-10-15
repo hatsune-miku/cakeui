@@ -4,13 +4,18 @@
   max-height: calc(100dvh - 48px);
   padding: 26px;
   border: 0;
-  border-radius: var(--cake-radius-dialog);
-  color: var(--cake-text);
+  border-radius: var(--cake-radius-dialog, 32px);
+  color: var(--cake-popup-text);
   background: var(--cake-popup);
   box-shadow: var(--cake-shadow);
   font: inherit;
   overflow: auto;
   overscroll-behavior: contain;
+  outline: none;
+  &:focus-visible {
+    outline: 2px solid var(--cake-focus);
+    outline-offset: 3px;
+  }
   &[open] {
     animation: cake-dialog-enter var(--cake-normal) var(--cake-ease);
   }

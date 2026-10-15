@@ -1,0 +1,97 @@
+.cake-slide-tree-item {
+  position: relative;
+  min-width: 0;
+  list-style: none;
+}
+.cake-slide-tree-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  margin-bottom: 10px;
+}
+.cake-slide-tree-toggle,
+.cake-slide-tree-spacer {
+  flex: 0 0 16px;
+  width: 16px;
+  box-sizing: border-box;
+}
+.cake-slide-tree-toggle {
+  padding: 3px 0;
+  border: 0;
+  border-radius: 4px;
+  color: inherit;
+  background: transparent;
+  font: 18px / 1.2 var(--cake-presentation-font, 'Segoe UI', system-ui, sans-serif);
+  cursor: pointer;
+  &:hover {
+    color: var(--cake-presentation-accent, #3d658f);
+    background: var(--cake-presentation-accent-soft, #d6e7f7);
+  }
+}
+.cake-slide-tree-link {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  padding: 4px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  &:hover {
+    background: var(--cake-presentation-accent-soft, #d6e7f7);
+  }
+  &[aria-current='page'] {
+    color: var(--cake-presentation-ink, #29313a);
+    border-color: var(--cake-presentation-accent, #3d658f);
+    background: var(--cake-presentation-accent-soft, #d6e7f7);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+.cake-slide-tree-link:focus-visible,
+.cake-slide-tree-toggle:focus-visible {
+  outline: 2px solid var(--cake-presentation-accent, #3d658f);
+  outline-offset: -2px;
+}
+.cake-slide-tree-thumbnail {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--cake-presentation-paper, #fdfefe);
+  pointer-events: none;
+}
+.cake-slide-tree-label {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.cake-slide-tree-children {
+  box-sizing: border-box;
+  margin: 0 0 0 8px;
+  padding: 0 0 0 var(--cake-slide-tree-indent, 16px);
+  border-left: 1px solid var(--cake-presentation-line, #c8d2dc);
+  list-style: none;
+  &[hidden] {
+    display: none;
+  }
+}
+.cake-slide-tree-children > .cake-slide-tree-item::before {
+  content: '';
+  position: absolute;
+  width: var(--cake-slide-tree-indent, 16px);
+  top: 13px;
+  right: 100%;
+  border-top: 1px solid var(--cake-presentation-line, #c8d2dc);
+  pointer-events: none;
+}

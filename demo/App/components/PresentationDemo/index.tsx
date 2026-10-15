@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
 import { createExampleSlides, slideNames } from './slides'
 
 import { SlideDeck, type SlideDeckProps, type SlideRatio } from '../../../../src/presentation'
+import { ThemeContext } from '../../../../src/theme/context'
 
 import '../../../../src/presentation/styles.scss'
 import './index.scss'
@@ -22,6 +23,7 @@ export function PresentationDemo({
   mode = 'light',
   standalone = false,
 }: Pick<SlideDeckProps, 'theme' | 'mode'> & { standalone?: boolean }) {
+  const themeScope = useContext(ThemeContext)
   const [index, setIndex] = useState(0)
   const [view, setView] = useState<'presentation' | 'document'>('presentation')
   const [ratio, setRatio] = useState<SlideRatio>('16:9')
@@ -75,6 +77,7 @@ export function PresentationDemo({
         )}
       </div>
       <SlideDeck
+        config={standalone ? undefined : themeScope?.current}
         aria-label="HTML 幻灯片示例"
         index={index}
         onIndexChange={setIndex}

@@ -23,6 +23,9 @@ const result = JSON.parse(
 const tarball = resolve(consumer, result[0].filename)
 assert(result[0].files.some((file) => file.path === 'dist/cakeui.css'))
 assert(result[0].files.some((file) => file.path === 'dist/index.d.ts'))
+for (const name of ['index.js', 'index.d.ts']) {
+  assert(result[0].files.some((file) => file.path === `dist/theme/${name}`))
+}
 for (const name of ['index.js', 'index.d.ts', 'style.css']) {
   assert(result[0].files.some((file) => file.path === `dist/presentation/${name}`))
 }
@@ -58,9 +61,17 @@ const documentation = readFileSync(resolve(consumer, 'node_modules/@a1knla/cakeu
 const browserScript = readFileSync(resolve(consumer, 'node_modules/@a1knla/cakeui/dist/browser/cakeui.min.js'), 'utf8')
 const browserGlobal = runInNewContext(browserScript + '\nCakeUI', { console }, { timeout: 5000 })
 assert.equal(typeof browserGlobal.Button, 'function')
+assert.equal(typeof browserGlobal.ThemeSettings, 'function')
+assert.equal(typeof browserGlobal.theme.generateTheme, 'function')
+assert.equal(browserGlobal.theme.themePresets.length, 6)
 assert.equal(typeof browserGlobal.createRoot, 'function')
 assert.equal(typeof browserGlobal.React.useState, 'function')
-assert.equal(Object.keys(browserGlobal.presentation).length, 15)
+assert.equal(Object.keys(browserGlobal.presentation).length, 20)
+assert.equal(typeof browserGlobal.presentation.SlideNavigator, 'function')
+assert.equal(typeof browserGlobal.presentation.SlidePlaybackMenu, 'function')
+assert.equal(typeof browserGlobal.presentation.SlideSubmenu, 'function')
+assert.equal(typeof browserGlobal.presentation.SlideTree, 'function')
+assert.equal(typeof browserGlobal.presentation.SlideTreeItem, 'function')
 assert.equal(browserGlobal.version, JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version)
 writeFileSync(
   resolve(consumer, 'browser-types.tsx'),
@@ -124,10 +135,13 @@ writeFileSync(
   `import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import * as ui from '@a1knla/cakeui'
+import { createThemeConfig, generateTheme } from '@a1knla/cakeui/theme'
 import assert from 'node:assert/strict'
-assert.equal(Object.keys(ui).length, 48)
+assert.equal(Object.keys(ui).length, 49)
+assert.equal(generateTheme(createThemeConfig({ scheme: 'custom', customColor: '#fff' })).contrastIssues.length, 0)
+assert.match(renderToStaticMarkup(createElement(ui.CakeProvider, { accentColor: '#70569b' }, createElement(ui.ThemeSettings))), /--cake-config-dark-primary/)
 assert.match(renderToStaticMarkup(createElement(ui.Button, { variant: 'primary' }, 'Save')), /cake-button/)
-console.log('All 48 packed exports load; server rendering works.')
+console.log('All 49 packed exports and the theme entry load; server rendering works.')
 `
 )
 execFileSync(process.execPath, [resolve(consumer, 'ssr.mjs')], { cwd: consumer, stdio: 'inherit' })
@@ -137,10 +151,10 @@ writeFileSync(
 import { renderToStaticMarkup } from 'react-dom/server'
 import * as presentation from '@a1knla/cakeui/presentation'
 import assert from 'node:assert/strict'
-assert.equal(Object.keys(presentation).length, 15)
+assert.equal(Object.keys(presentation).length, 20)
 assert.match(renderToStaticMarkup(createElement(presentation.SlideDeck, null, createElement(presentation.Slide, null, 'Hello slides'))), /cake-slide-deck/)
 assert.equal(presentation.CakeProvider, undefined)
-console.log('All 15 presentation exports load independently; server rendering works.')
+console.log('All 20 presentation exports load independently; server rendering works.')
 `
 )
 execFileSync(process.execPath, [resolve(consumer, 'presentation-ssr.mjs')], { cwd: consumer, stdio: 'inherit' })

@@ -10,14 +10,14 @@
   overflow: auto;
   overscroll-behavior: contain;
   padding: var(--cake-log-padding);
-  border-radius: var(--cake-radius-medium);
+  border-radius: var(--cake-radius-large);
   background: var(--cake-log-background);
   font-family: var(--cake-mono);
   font-variant-ligatures: none;
   font-size: var(--cake-log-font-size);
   line-height: var(--cake-log-line-height);
   &:focus-visible {
-    outline: 2px solid var(--cake-accent);
+    outline: 2px solid var(--cake-focus);
     outline-offset: 3px;
   }
 }

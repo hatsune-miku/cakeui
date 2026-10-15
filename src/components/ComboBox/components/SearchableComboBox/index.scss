@@ -76,16 +76,21 @@
     }
 
     &[aria-selected='true'] {
+      background: var(--cake-accent-soft);
       color: var(--cake-accent-ink);
+
+      .cake-combobox-search-group {
+        color: inherit;
+      }
 
       &::after {
         content: '✓';
-        color: var(--cake-accent);
+        color: currentColor;
       }
     }
 
     &[aria-disabled='true'] {
-      opacity: 0.45;
+      opacity: var(--cake-disabled-opacity, 0.45);
       cursor: not-allowed;
     }
   }

@@ -1,3 +1,5 @@
+@use '../../../theme/generated' as palette;
+
 @mixin dark-presentation {
   --cake-presentation-paper: #24282e;
   --cake-presentation-ink: #edf0f3;
@@ -22,6 +24,7 @@
 }
 
 .cake-slide-deck {
+  --cake-presentation-radius: 28px;
   --cake-presentation-paper: #fdfefe;
   --cake-presentation-ink: #29313a;
   --cake-presentation-muted: #596572;
@@ -68,7 +71,30 @@
     }
   }
 
-  &:focus-visible {
+  &[data-cake-theme-config='true'] {
+    @include palette.configured('light');
+    &[data-mode='dark'] {
+      @include palette.configured('dark');
+    }
+    @media (prefers-color-scheme: dark) {
+      &[data-mode='system'] {
+        @include palette.configured('dark');
+      }
+    }
+    color-scheme: var(--cake-color-scheme);
+    --cake-presentation-paper: var(--cake-surface);
+    --cake-presentation-ink: var(--cake-surface-text);
+    --cake-presentation-muted: var(--cake-muted);
+    --cake-presentation-surface: var(--cake-control);
+    --cake-presentation-line: var(--cake-border);
+    --cake-presentation-accent: var(--cake-accent);
+    --cake-presentation-accent-fill: var(--cake-primary);
+    --cake-presentation-accent-ink: var(--cake-primary-ink);
+    --cake-presentation-accent-soft: var(--cake-accent-soft);
+    --cake-presentation-accent-soft-ink: var(--cake-accent-ink);
+  }
+
+  &[data-focus-indicator='outline']:focus-visible {
     outline: 2px solid var(--cake-presentation-accent);
     outline-offset: 5px;
   }

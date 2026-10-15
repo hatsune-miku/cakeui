@@ -1,12 +1,13 @@
-import { Button, CakeProvider, type CakeTheme, Card, CheckBox, Dot, Switch, Tag, TextBox } from '../../../../src'
+import { Button, CakeProvider, Card, CheckBox, Dot, Switch, Tag, TextBox } from '../../../../src'
+import { themePresets } from '../../../../src/theme'
 
 import './index.scss'
 
-const themes: { value: CakeTheme; label: string; hex: string }[] = [
-  { value: 'pink', label: '粉', hex: '#D15776' },
-  { value: 'blue', label: '蓝', hex: '#D6E7F7' },
-  { value: 'gold', label: '金', hex: '#F3D3B9' },
-]
+const themes = [themePresets[1], themePresets[0], ...themePresets.slice(2)].map((preset) => ({
+  value: preset.id,
+  label: preset.name,
+  hex: preset.reference,
+}))
 export function Tokens() {
   return (
     <div className="demo-tokens">
@@ -45,18 +46,18 @@ export function Tokens() {
       </div>
       <div className="demo-token-detail">
         <Card>
-          <h2 className="demo-card-title">圆角有层次</h2>
+          <h2 className="demo-card-title">默认圆角</h2>
           <div className="demo-radius-row">
-            {[10, 14, 20, 26].map((radius) => (
+            {[10, 16, 28, 32].map((radius) => (
               <div key={radius} className="demo-radius-sample" style={{ borderRadius: radius }}>
                 {radius}
               </div>
             ))}
           </div>
-          <p className="demo-panel-text">从输入控件到对话框，尺寸越大，转角越舒展。</p>
+          <p className="demo-panel-text">控件 10px，浮层 16px，大容器 28px，弹窗 32px；通过半径变量覆盖。</p>
         </Card>
         <Card>
-          <h2 className="demo-card-title">动效跟得上操作</h2>
+          <h2 className="demo-card-title">动效时长与曲线</h2>
           <div className="demo-motion-track">
             <Button className="demo-motion-button" variant="primary">
               按下试试

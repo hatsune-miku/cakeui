@@ -35,7 +35,7 @@ test('classic external script works from a local HTML file with no npm, import m
     'font-size',
     '16px'
   )
-  expect(await page.evaluate(() => Object.keys(window.CakeUI.presentation).length)).toBe(15)
+  expect(await page.evaluate(() => Object.keys(window.CakeUI.presentation).length)).toBe(20)
   expect(await page.evaluate(() => typeof window.CakeUI.React.useState)).toBe('function')
   expect(requests.sort()).toEqual(['cakeui.css', 'cakeui.min.js'])
   expect(failures).toEqual([])

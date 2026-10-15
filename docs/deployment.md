@@ -40,7 +40,7 @@ HTML 每次重新验证缓存；带哈希的资源长期缓存。工作台无需
 
 初始化由 `deploy/install-browser.sh <上传目录>` 完成，上传目录必须位于 `/home/miku/.cache/cakeui-browser-setup/` 下，并包含接收器、Nginx snippet 和专用 `deploy-key.pub`。脚本需要一次 sudo，将 root 所有的接收器安装到 `/usr/local/libexec/cakeui-dist-receive`，使 miku 可写指定分发目录，并添加带 forced command 的部署公钥；保留其他 authorized_keys。Nginx 主站仅增加 `/cakeui-dist/` location，配置检查通过后重载，资源返回正确 MIME、`Access-Control-Allow-Origin: *` 与 no-cache；缺失资源返回 404。已有主站证书沿用现有 Certbot 配置。
 
-接收器仅接受明确的两个文件名，校验版本格式、体积和 SHA-256，将版本目录完整落盘后原子切换 current / next 软链接。根目录的两个文件链接到 current；固定版本目录不覆盖，重复部署相同产物可重试。preview 可初始化空目录，但不会覆盖 npm 稳定版。当前 bootstrap 的 manifest.source 为 preview，直到下一次稳定 npm 发布。
+接收器仅接受明确的两个文件名，校验版本格式、体积和 SHA-256，将版本目录完整落盘后原子切换 current / next 软链接。根目录的两个文件链接到 current；固定版本目录不覆盖，重复部署相同产物可重试。preview 可初始化空目录，但不会覆盖 npm 稳定版。稳定发布的 manifest.source 为 npm，version 与对应 npm 包一致。
 
 本机使用免密 SSH 运行 `npm.cmd run deploy:browser -- --artifact-dir <已发布artifact目录>`；日常自动化使用 Actions Secrets 中专用密钥，无需 sudo 或账户密码。只需要检查连接时运行 `npm run deploy:browser -- --check`。Linux 接收器的验证命令为 `python3 -m unittest discover -s tests -p browser_receiver_test.py`，在 Ubuntu 执行；Windows 本机的原子软链接替换行为不作为服务端兼容目标。
 
@@ -50,7 +50,7 @@ HTML 每次重新验证缓存；带哈希的资源长期缓存。工作台无需
 - 完整纯文本：[llms-full.txt](https://gallery.vanillacake.cn/llms-full.txt)
 - 简短索引：[llms.txt](https://gallery.vanillacake.cn/llms.txt)
 
-正文在 `docs/ai.md` 维护。运行 `npm run docs:build` 从正文、公开类型与主题 SCSS 生成 `public/llms.txt` 和 `public/llms-full.txt`，`npm run docs:check` 检查内容是否一致以及公开组件是否遗漏。`build:demo` 在构建前检查，Vite 将生成文件复制到 `demo-dist`。`-SkipBuild` 也会检查文档与构建目录是否一致，避免上线旧文档。
+正文在 `docs/ai.md` 维护。运行 `npm run docs:build` 先从纯主题计算器生成主题 SCSS，再从正文、公开类型与十二套预设生成 `public/llms.txt` 和 `public/llms-full.txt`；`npm run docs:check` 检查主题生成物、文档一致性与公开组件是否遗漏。`build:demo` 在构建前检查，Vite 将生成文件复制到 `demo-dist`。`-SkipBuild` 也会检查文档与构建目录是否一致，避免上线旧文档。新主题发布时同步验证 Gallery 的 ThemeSettings、六预设与自定义颜色，以及浏览器构建中的 CakeUI.theme。
 
 Nginx 为 `/llms.txt` 与 `/llms-*.txt` 使用专门的静态文件规则，响应 `Content-Type: text/plain; charset=utf-8` 与 `Cache-Control: no-cache`，缺失文件返回 404，不回退到 SPA HTML。客户端无需登录或执行 JavaScript，即可 GET 完整文档。阅读页加载同一个全文文件，库 API、站点与文档按同一发布目录切换。
 

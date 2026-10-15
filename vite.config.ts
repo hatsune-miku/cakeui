@@ -62,13 +62,22 @@ export default defineConfig(({ mode }) => ({
         : {
             copyPublicDir: false,
             lib: {
-              entry: { index: 'src/index.ts', 'presentation/index': 'src/presentation/index.ts' },
+              entry: {
+                index: 'src/index.ts',
+                'presentation/index': 'src/presentation/index.ts',
+                'theme/index': 'src/theme/index.ts',
+              },
               formats: ['es'],
               fileName: (_format, entryName) => `${entryName}.js`,
             },
             rollupOptions: {
               external: ['react', 'react-dom', 'react/jsx-runtime'],
-              output: { banner: "'use client';" },
+              output: {
+                banner: (chunk) =>
+                  /\/src\/(?:index|presentation\/index)\.ts$/.test(chunk.facadeModuleId?.replaceAll('\\', '/') ?? '')
+                    ? "'use client';"
+                    : '',
+              },
             },
           },
 }))

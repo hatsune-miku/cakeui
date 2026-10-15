@@ -14,6 +14,7 @@
   color: var(--cake-text);
   text-align: start;
   cursor: pointer;
+  outline: none;
   &:hover:not(:disabled),
   &:focus-visible {
     outline: none;
@@ -21,11 +22,17 @@
     color: var(--cake-accent-ink);
   }
   &:disabled {
-    opacity: 0.4;
+    opacity: var(--cake-disabled-opacity, 0.4);
+    color: var(--cake-disabled-color, var(--cake-text));
     cursor: not-allowed;
   }
   &[data-danger='true'] {
     color: var(--cake-danger);
+    &:hover:not(:disabled),
+    &:focus-visible {
+      background: var(--cake-danger-hover);
+      color: var(--cake-danger-hover-ink);
+    }
   }
   .cake-menuitem-label {
     display: inline-flex;
@@ -36,5 +43,11 @@
     font-family: var(--cake-mono);
     color: var(--cake-muted);
     font-size: 11px;
+  }
+  &:hover:not(:disabled),
+  &:focus-visible {
+    .cake-menuitem-shortcut {
+      color: inherit;
+    }
   }
 }

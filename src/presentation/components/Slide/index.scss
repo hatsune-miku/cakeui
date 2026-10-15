@@ -3,6 +3,8 @@
   --cake-slide-ink: var(--cake-presentation-ink, #29313a);
   --cake-slide-muted: var(--cake-presentation-muted, #596572);
   --cake-slide-surface: var(--cake-presentation-surface, #eef2f6);
+  --cake-slide-surface-ink: var(--cake-slide-ink);
+  --cake-slide-accent-soft-ink: var(--cake-presentation-accent-soft-ink, var(--cake-slide-ink));
   --cake-slide-line: var(--cake-presentation-line, #c8d2dc);
   --cake-slide-accent: var(--cake-presentation-accent, #3d658f);
   --cake-slide-accent-soft: var(--cake-presentation-accent-soft, #d6e7f7);
@@ -11,7 +13,7 @@
   width: 100%;
   min-width: 0;
   aspect-ratio: var(--cake-slide-ratio, 16 / 9);
-  border-radius: var(--cake-presentation-radius, 16px);
+  border-radius: var(--cake-presentation-radius, 28px);
   background: var(--cake-slide-paper);
   color: var(--cake-slide-ink);
   font-family: var(
@@ -31,16 +33,28 @@
 
   &[data-tone='accent'] {
     --cake-slide-paper: var(--cake-slide-accent-soft);
+    --cake-slide-ink: var(--cake-presentation-accent-soft-ink, var(--cake-presentation-ink, #29313a));
+    --cake-slide-muted: var(--cake-slide-ink);
   }
   &[data-tone='inverted'] {
-    --cake-slide-paper: var(--cake-presentation-accent, #3d658f);
+    --cake-slide-paper: var(--cake-presentation-accent-fill, var(--cake-presentation-accent, #3d658f));
     --cake-slide-ink: var(--cake-presentation-accent-ink, #fff);
     --cake-slide-muted: var(--cake-slide-ink);
     --cake-slide-accent: var(--cake-slide-ink);
+    --cake-slide-accent-soft-ink: var(--cake-slide-ink);
     --cake-slide-accent-soft: color-mix(in srgb, var(--cake-slide-ink) 14%, transparent);
     --cake-slide-surface: color-mix(in srgb, var(--cake-slide-ink) 10%, transparent);
     --cake-slide-line: color-mix(in srgb, var(--cake-slide-ink) 35%, transparent);
   }
+}
+.cake-slide-deck[data-cake-theme-config='true']
+  > .cake-slide-deck-stage
+  > .cake-slide-deck-page
+  > .cake-slide[data-tone='inverted'] {
+  --cake-slide-surface: var(--cake-primary-hover);
+  --cake-slide-surface-ink: var(--cake-primary-hover-ink);
+  --cake-slide-accent-soft: var(--cake-primary-active);
+  --cake-slide-accent-soft-ink: var(--cake-primary-active-ink);
 }
 .cake-slide-content {
   --cake-slide-column-layout: initial;

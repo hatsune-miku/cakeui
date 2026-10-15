@@ -17,7 +17,27 @@ import { PresentationDemo } from './components/PresentationDemo'
 import { Tokens } from './components/Tokens'
 
 import { version } from '../../package.json'
-import { Button, type CakeMode, CakeProvider, type CakeTheme, Dot, HoverTips, TextBox, Toast } from '../../src'
+import {
+  Button,
+  type CakeMode,
+  CakeProvider,
+  type CakeTheme,
+  Dot,
+  HoverTips,
+  TextBox,
+  ThemeSettings,
+  Toast,
+} from '../../src'
+import {
+  type ThemeConfig,
+  type ThemeStorageAdapter,
+  createThemeConfig,
+  resolveThemeOptions,
+  serializeThemeConfig,
+  themePresets,
+  updateThemeConfig,
+} from '../../src/theme'
+import { themeLabels } from '../theme-labels'
 
 import './components/Icon/index.scss'
 import './index.scss'
@@ -57,8 +77,21 @@ function readSettings() {
     return { theme: 'blue' as CakeTheme, themeChosen: false, mode: 'light' as CakeMode }
   }
 }
+const themeStorage: ThemeStorageAdapter = {
+  load: () => {
+    const saved = localStorage.getItem('cakeui-theme-settings')
+    if (saved) return saved
+    const previous = readSettings()
+    return createThemeConfig({ scheme: previous.theme, mode: previous.mode })
+  },
+  save: (config) => localStorage.setItem('cakeui-theme-settings', serializeThemeConfig(config)),
+}
 export function App() {
-  const [settings, setSettings] = useState(readSettings)
+  const [themeConfig, setThemeConfig] = useState(() => {
+    const previous = readSettings()
+    return createThemeConfig({ scheme: previous.theme, mode: previous.mode })
+  })
+  const settings = { theme: themeConfig.scheme, mode: resolveThemeOptions(themeConfig).mode }
   const [page, setPage] = useState<Page>(readPage)
   const [category, setCategory] = useState<Category>('all')
   const [query, setQuery] = useState('')
@@ -83,13 +116,6 @@ export function App() {
     return () => previous?.focus()
   }, [mobile, sidebar])
   useEffect(() => {
-    try {
-      localStorage.setItem('cakeui-demo-settings', JSON.stringify(settings))
-    } catch {
-      /* Storage is optional in the playground. */
-    }
-  }, [settings])
-  useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault()
@@ -112,6 +138,14 @@ export function App() {
   }
   function notify(message: string) {
     setToast((current) => ({ open: true, message, key: current.key + 1 }))
+  }
+  function applyThemeConfig(next: ThemeConfig) {
+    setThemeConfig(next)
+    try {
+      themeStorage.save(next)
+    } catch {
+      notify('主题保存失败，当前外观已保留。')
+    }
   }
   const sections = [
     { id: 'actions', category: 'basic', search: '按钮 提示 Button HoverTips WhatsThis', content: <ActionsDemo /> },
@@ -166,8 +200,8 @@ export function App() {
   )
   return (
     <CakeProvider
-      theme={settings.theme}
-      mode={settings.mode}
+      config={themeConfig}
+      onThemeChange={setThemeConfig}
       density={compact ? 'compact' : 'comfortable'}
       className="demo-app"
     >
@@ -285,7 +319,11 @@ export function App() {
               <Button
                 variant="ghost"
                 aria-label={settings.mode === 'dark' ? '切换浅色模式' : '切换深色模式'}
-                onClick={() => setSettings({ ...settings, mode: settings.mode === 'dark' ? 'light' : 'dark' })}
+                onClick={() =>
+                  applyThemeConfig(
+                    updateThemeConfig(themeConfig, { mode: settings.mode === 'dark' ? 'light' : 'dark' })
+                  )
+                }
               >
                 <Icon name={settings.mode === 'dark' ? 'sun' : 'moon'} size={17} />
               </Button>
@@ -300,27 +338,26 @@ export function App() {
             <div className="demo-row">
               <span className="demo-control-label">配色</span>
               <div className="demo-theme-options" role="group" aria-label="主题配色">
-                {(
-                  [
-                    { theme: 'pink', label: '粉' },
-                    { theme: 'blue', label: '蓝' },
-                    { theme: 'gold', label: '金' },
-                  ] as const
-                ).map((item) => (
+                {[themePresets[1], themePresets[0], ...themePresets.slice(2)].map((item) => (
                   <button
                     className="demo-theme-button"
-                    data-theme={item.theme}
-                    aria-pressed={settings.theme === item.theme}
-                    onClick={() => setSettings({ ...settings, theme: item.theme, themeChosen: true })}
-                    key={item.theme}
+                    data-theme={item.id}
+                    aria-pressed={settings.theme === item.id}
+                    onClick={() => applyThemeConfig(updateThemeConfig(themeConfig, { scheme: item.id }))}
+                    key={item.id}
                   >
-                    <span className="demo-theme-swatch" />
-                    {item.label}
-                    {settings.theme === item.theme && <Icon name="check" size={12} />}
+                    <span className="demo-theme-swatch" style={{ background: item.reference }} />
+                    {item.name}
+                    {settings.theme === item.id && <Icon name="check" size={12} />}
                   </button>
                 ))}
               </div>
             </div>
+            <ThemeSettings
+              labels={themeLabels}
+              storage={themeStorage}
+              onStorageError={() => notify('主题存储不可用，当前外观已保留。')}
+            />
             <button type="button" className="demo-density" aria-pressed={compact} onClick={() => setCompact(!compact)}>
               <Icon name="sliders" size={14} />
               {compact ? '紧凑间距' : '舒适间距'}
@@ -339,7 +376,7 @@ export function App() {
                     onClick={() => setCategory(item.id)}
                   >
                     {item.label}
-                    {item.id === 'all' && <span className="demo-category-count">48</span>}
+                    {item.id === 'all' && <span className="demo-category-count">49</span>}
                   </button>
                 ))}
               </div>
@@ -367,7 +404,9 @@ export function App() {
             </>
           )}
           {page === 'example' && <Example />}
-          {page === 'presentation' && <PresentationDemo theme={settings.theme} mode={settings.mode} />}
+          {page === 'presentation' && (
+            <PresentationDemo theme={settings.theme === 'custom' ? 'blue' : settings.theme} mode={settings.mode} />
+          )}
           {page === 'tokens' && <Tokens />}
           {page === 'guide' && <Guide />}
           {page === 'docs' && <AiDocs />}

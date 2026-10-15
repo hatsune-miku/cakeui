@@ -1,0 +1,28 @@
+.cake-slide-playback-menu {
+  display: grid;
+  min-width: 0;
+}
+.cake-slide-playback-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    background: var(--cake-presentation-accent-soft, #d6e7f7);
+  }
+}
+.cake-slide-playback-menu-check {
+  width: 1em;
+  flex-shrink: 0;
+}

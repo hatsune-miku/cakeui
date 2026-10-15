@@ -2,6 +2,7 @@ import * as React from 'react'
 
 export * from '../index'
 export * as presentation from '../presentation'
+export * as theme from '../theme'
 export { React }
 export { createRoot } from 'react-dom/client'
 
