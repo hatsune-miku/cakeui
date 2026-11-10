@@ -116,6 +116,32 @@ describe('theme colors and semantics', () => {
           )
         }
   })
+
+  it('keeps computed card edges quieter than control outlines in light and dark themes', () => {
+    for (const scheme of ['dousha', 'dousha-classic', 'grape', 'custom'] as const)
+      for (const mode of ['light', 'dark'] as const)
+        for (const customColor of ['#000000', '#ffffff', '#524396']) {
+          const result = generateTheme(createThemeConfig({ scheme, mode, customColor }))
+          const edge = result.variables['--cake-hairline'].match(/#[\da-f]{6}$/)?.[0]
+          expect(edge).toBeDefined()
+          const contrast = themeContrast(edge!, result.pairs.surface.background)
+          expect(contrast).toBeGreaterThan(1)
+          expect(contrast).toBeLessThan(1.3)
+          expect(contrast).toBeLessThan(themeContrast(result.variables['--cake-line'], result.pairs.surface.background))
+          expect(themeContrast(result.variables['--cake-focus'], result.pairs.input.background)).toBeGreaterThanOrEqual(
+            3
+          )
+        }
+    const overridden = generateTheme(
+      createThemeConfig({
+        scheme: 'grape',
+        mode: 'light',
+        pairs: { light: { surface: { background: '#000000', foreground: '#ffffff' } } },
+      })
+    )
+    const edge = overridden.variables['--cake-hairline'].match(/#[\da-f]{6}$/)![0]
+    expect(themeContrast(edge, overridden.pairs.surface.background)).toBeLessThan(1.3)
+  })
 })
 
 describe('theme configuration and migration', () => {

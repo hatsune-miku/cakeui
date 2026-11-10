@@ -223,6 +223,12 @@ export function generateTheme(config: ThemeConfig, systemMode: ResolvedThemeMode
     pairs[name as ThemePairName] = { ...override }
     setPair(variables, name as ThemePairName, override)
   }
+  if (!legacy) {
+    // Compact cards need the quiet edge used by AnyDrop, separately from the
+    // stronger control outline. Composite against the final surface, including overrides.
+    const hairline = mix(pairs.surface.foreground, pairs.surface.background, dark ? 0.95 : 0.94)
+    variables['--cake-hairline'] = `inset 0 0 0 1px ${hairline}`
+  }
   // Native accent-color chooses its own mark color. Computed themes paint the same native
   // inputs with explicit paired marks; untouched legacy palettes retain their UA appearance.
   const pairedChoices = !legacy || foreground !== 'auto' || Boolean(options.pairs?.[mode]?.accent)

@@ -322,7 +322,7 @@ export function ThemedApp() {
 
 ### Card
 
-原生 div。`padding='medium'`，可取 none / small / medium / large。只提供表面、圆角、间距，不自带 header / footer / title / selectable / onSelect 等接口。按业务需要放普通元素，不将有点击事件的 div 当作天然可键盘操作的按钮。
+原生 div。`padding='medium'`，可取 none / small / medium / large。只提供表面、圆角、间距；紧凑密度使用独立的柔和内轮廓线，新配色与自定义颜色不沿用较强的控件边线。不自带 header / footer / title / selectable / onSelect 等接口。按业务需要放普通元素，不将有点击事件的 div 当作天然可键盘操作的按钮。
 
 ### Separator
 
@@ -1285,6 +1285,8 @@ export function ActivityLog() {
 | dousha         | #B37D87 | 暖粉基底、红豆沙强调，不使用绿色页面背景    |
 | dousha-classic | #ADC89E | 暖粉基底、绿色强调，auto 默认浅色文字和图标 |
 | grape          | #D6C8E5 | 柔和粉色基底、葡萄色强调                    |
+
+新配色与自定义颜色的 `--cake-hairline` 独立于控件 `--cake-line`：按当前卡片表面合成浅色 6% / 深色 5% 的前景色，只用于柔和分区；表面色对覆盖同样参与合成。控件边线、焦点环与文字色对保持各自语义。
 
 参考色是生成种子，不直接填满所有控件。新配色与单色推导生成不透明语义色对，覆盖页面、分层表面、输入、强调、柔和强调、选中、禁用和 hover / active；成功、警告、危险保留独立色相。auto 根据背景选择前景；手动 light / dark 只调整强调区域的文字和图标，同时向白 / 黑适度移动对应背景，尽量保留色相，不改变正文模式。绿豆沙的浅文字需要更深绿色填充，故实际填充不等于参考色。
 
