@@ -322,7 +322,7 @@ export function ThemedApp() {
 
 ### Card
 
-原生 div。`padding='medium'`，可取 none / small / medium / large。只提供表面、圆角、间距；紧凑密度使用独立的柔和内轮廓线，新配色与自定义颜色不沿用较强的控件边线。不自带 header / footer / title / selectable / onSelect 等接口。按业务需要放普通元素，不将有点击事件的 div 当作天然可键盘操作的按钮。
+原生 div。`padding='medium'`，可取 none / small / medium / large。只提供表面、圆角、间距；两种密度默认均无边框和阴影，依靠表面与页面的底色差异分区。不自带 header / footer / title / selectable / onSelect 等接口。按业务需要放普通元素，不将有点击事件的 div 当作天然可键盘操作的按钮。
 
 ### Separator
 
@@ -1286,7 +1286,7 @@ export function ActivityLog() {
 | dousha-classic | #ADC89E | 暖粉基底、绿色强调，auto 默认浅色文字和图标 |
 | grape          | #D6C8E5 | 柔和粉色基底、葡萄色强调                    |
 
-新配色与自定义颜色的 `--cake-hairline` 独立于控件 `--cake-line`：按当前卡片表面合成浅色 6% / 深色 5% 的前景色，只用于柔和分区；表面色对覆盖同样参与合成。控件边线、焦点环与文字色对保持各自语义。
+新配色与自定义颜色的 `--cake-hairline` 独立于控件 `--cake-line`：按当前卡片表面合成浅色 6% / 深色 5% 的前景色，供显式需要细线的业务布局使用；表面色对覆盖同样参与合成。Card 默认不绘制这条细线。控件边线、焦点环与文字色对保持各自语义。
 
 参考色是生成种子，不直接填满所有控件。新配色与单色推导生成不透明语义色对，覆盖页面、分层表面、输入、强调、柔和强调、选中、禁用和 hover / active；成功、警告、危险保留独立色相。auto 根据背景选择前景；手动 light / dark 只调整强调区域的文字和图标，同时向白 / 黑适度移动对应背景，尽量保留色相，不改变正文模式。绿豆沙的浅文字需要更深绿色填充，故实际填充不等于参考色。
 
@@ -1483,11 +1483,11 @@ Gallery 构建会检查文档一致性，再将 public 中两个文件复制到 
 ## 附录 A. 当前构建身份与公开导出
 
 - 包名：@a1knla/cakeui
-- 版本：0.4.1
+- 版本：0.4.2
 - 署名：hatsune-miku
 - React peer：>=19.0.0；React DOM peer：>=19.0.0
 - 公开组件：69 个；下列分组分别与两个公开入口一致。
-- 文档 / package.json / src 内容指纹（SHA-256）：6f65ea02d5494c610846b8fa99f3d444e65737ec1ffda71ff5900011701587fa
+- 文档 / package.json / src 内容指纹（SHA-256）：d2d3bdaebcb535f287d2e45b32968668fbfd116e89773dbfee40f84f31fb0fda
 - 本文为生成结果，请修改 docs/ai.md 或相应源码后运行 npm run docs:build。
 
 - src/index.ts（49 个）：Accordion, AccordionItem, Alert, Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, CakeProvider, Card, CheckBox, ComboBox, ContextMenu, Dialog, Dot, Field, GroupBox, HoverTips, ListItem, ListView, LogEntry, LogView, MenuItem, MenuSeparator, NumberBox, Pagination, ProgressBar, RadioButton, Separator, Skeleton, Slider, Spinner, Switch, Tab, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TabList, TabPanel, Tabs, Tag, TextArea, TextBox, ThemeSettings, Toast, WhatsThis

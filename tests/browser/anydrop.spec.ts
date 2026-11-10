@@ -2,6 +2,10 @@ import { expect, test } from '@playwright/test'
 
 test('AnyDrop compact composition preserves source colors, geometry and native interactions', async ({ page }) => {
   await page.goto('/tests/browser/fixtures/anydrop/')
+  for (const card of await page.locator('.cake-card').all()) {
+    await expect(card).toHaveCSS('box-shadow', 'none')
+    await expect(card).toHaveCSS('border-top-width', '0px')
+  }
   const light = page.getByTestId('light')
   await expect(light).toHaveCSS('background-color', 'rgb(244, 241, 238)')
   await expect(light).toHaveCSS('font-size', '13px')
