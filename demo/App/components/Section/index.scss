@@ -1,6 +1,9 @@
 .demo-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
-  scroll-margin-top: 95px;
+  scroll-margin-top: 80px;
   &[data-wide='true'] {
     grid-column: 1 / -1;
   }
@@ -22,6 +25,7 @@
     font-size: 12px;
   }
   .demo-section-preview {
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -43,7 +47,7 @@
     justify-content: space-between;
     gap: 10px;
     color: var(--cake-muted);
-    font-size: 11px;
+    font-size: 12px;
   }
   .demo-code {
     user-select: text;
@@ -51,6 +55,7 @@
     overflow-x: auto;
     margin: 8px 0 0;
     font: 12px/1.7 var(--cake-mono);
+    font-variant-ligatures: none;
     white-space: pre;
     color: var(--cake-text);
     tab-size: 2;

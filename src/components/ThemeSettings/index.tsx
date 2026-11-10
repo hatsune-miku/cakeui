@@ -2,6 +2,7 @@ import { useContext, useEffect, useId, useRef, useState } from 'react'
 
 import {
   createThemeConfig,
+  generateTheme,
   migrateThemeConfig,
   normalizeThemeColor,
   resetThemeScheme,
@@ -10,7 +11,7 @@ import {
   themePresets,
   updateThemeConfig,
 } from '../../theme'
-import type { ThemeConfig, ThemeStorageAdapter } from '../../theme'
+import type { ThemeConfig, ThemePreset, ThemeStorageAdapter } from '../../theme'
 import { ThemeContext } from '../../theme/context'
 import { Button, type ButtonProps } from '../Button'
 import { Dialog } from '../Dialog'
@@ -37,6 +38,7 @@ export interface ThemeSettingsLabels {
   reset: string
   invalidColor: string
   storageError: string
+  retry: string
   loading: string
 }
 export interface ThemeSettingsProps extends Omit<ButtonProps, 'onClick'> {
@@ -65,7 +67,21 @@ const defaultLabels: ThemeSettingsLabels = {
   reset: 'Reset this scheme',
   invalidColor: 'Enter an opaque HEX or RGB color.',
   storageError: 'Theme storage failed. Your current appearance is kept.',
+  retry: 'Retry',
   loading: 'Loading theme…',
+}
+const swatches = new Map<ThemePreset, string>()
+/** The fill a preset actually paints, which for some presets differs from its generator seed. */
+function presetSwatch(id: ThemePreset) {
+  let color = swatches.get(id)
+  if (!color) {
+    color = generateTheme(createThemeConfig({ scheme: id, mode: 'light' })).pairs.accent.background
+    swatches.set(id, color)
+  }
+  return color
+}
+function describeStorageError(error: unknown) {
+  return error instanceof Error ? error.message : String(error)
 }
 
 /** A native button opens a modal editor. Only Apply writes through the optional adapter. */
@@ -89,7 +105,7 @@ export function ThemeSettings({
   const [colorText, setColorText] = useState(draft.customColor)
   const [loading, setLoading] = useState(Boolean(storage))
   const [saving, setSaving] = useState(false)
-  const [storageFailed, setStorageFailed] = useState(false)
+  const [failure, setFailure] = useState<{ message: string; pending?: ThemeConfig } | null>(null)
   const mounted = useRef(true)
   const copy = { ...defaultLabels, ...labels }
   const options = resolveThemeOptions(draft)
@@ -114,7 +130,7 @@ export function ThemeSettings({
           live.current.scope.apply(migrateThemeConfig(value))
       } catch (error) {
         if (active) {
-          setStorageFailed(true)
+          setFailure({ message: describeStorageError(error) })
           live.current.onStorageError?.(error, 'load')
         }
       } finally {
@@ -136,22 +152,25 @@ export function ThemeSettings({
     setOpen(false)
     onOpenChange?.(false)
   }
-  async function apply() {
-    if (invalid) return
-    const next = migrateThemeConfig(draft)
-    scope!.apply(next)
-    close()
-    setStorageFailed(false)
+  async function persist(next: ThemeConfig) {
+    setFailure(null)
     if (!storage) return
     setSaving(true)
     try {
       await storage.save(next)
     } catch (error) {
-      if (mounted.current) setStorageFailed(true)
+      if (mounted.current) setFailure({ message: describeStorageError(error), pending: next })
       live.current.onStorageError?.(error, 'save')
     } finally {
       if (mounted.current) setSaving(false)
     }
+  }
+  async function apply() {
+    if (invalid) return
+    const next = migrateThemeConfig(draft)
+    scope!.apply(next)
+    close()
+    await persist(next)
   }
   return (
     <>
@@ -172,9 +191,14 @@ export function ThemeSettings({
       >
         {children ?? (loading ? copy.loading : copy.open)}
       </Button>
-      {storageFailed && (
+      {failure && (
         <span className="cake-theme-settings-status" role="status">
-          {copy.storageError}
+          {copy.storageError} {failure.message}
+          {failure.pending && (
+            <Button size="small" variant="ghost" disabled={saving} onClick={() => void persist(failure.pending!)}>
+              {copy.retry}
+            </Button>
+          )}
         </span>
       )}
       <Dialog
@@ -220,7 +244,7 @@ export function ThemeSettings({
               >
                 <span
                   className="cake-theme-settings-swatch"
-                  style={{ background: preset.reference }}
+                  style={{ background: presetSwatch(preset.id) }}
                   aria-hidden="true"
                 />
                 {preset.name}

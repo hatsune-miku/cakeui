@@ -10,9 +10,7 @@ export function AccordionItem({ title, children, className, ...props }: Accordio
     <details {...props} className={cx('cake-accordion-item', className)}>
       <summary className="cake-accordion-summary">
         {title}
-        <span className="cake-accordion-arrow" aria-hidden="true">
-          ›
-        </span>
+        <span className="cake-accordion-arrow" aria-hidden="true" />
       </summary>
       <div className="cake-accordion-content">{children}</div>
     </details>

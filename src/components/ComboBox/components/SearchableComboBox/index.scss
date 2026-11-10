@@ -31,7 +31,12 @@
     border-right: 1.5px solid var(--cake-muted);
     border-bottom: 1.5px solid var(--cake-muted);
     transform: rotate(45deg);
+    transition: transform var(--cake-fast) var(--cake-ease);
     pointer-events: none;
+  }
+
+  .cake-combobox-search-input[aria-expanded='true'] ~ .cake-combobox-search-arrow {
+    transform: translateY(3px) rotate(225deg);
   }
 
   .cake-combobox-search-popup {
@@ -62,17 +67,12 @@
     min-height: 34px;
     padding: 7px 10px;
     margin: 1px 0;
-    border-radius: 8px;
+    border-radius: var(--cake-radius-item);
     font-size: 13px;
     cursor: pointer;
 
     &[data-active='true'] {
-      background: var(--cake-accent-soft);
-      color: var(--cake-accent-ink);
-
-      .cake-combobox-search-group {
-        color: inherit;
-      }
+      background: var(--cake-item-hover);
     }
 
     &[aria-selected='true'] {
@@ -102,7 +102,7 @@
 
   .cake-combobox-search-group {
     color: var(--cake-muted);
-    font-size: 11px;
+    font-size: 12px;
     overflow-wrap: anywhere;
   }
 

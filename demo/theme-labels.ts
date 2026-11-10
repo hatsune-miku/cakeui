@@ -19,6 +19,7 @@ export const themeLabels: ThemeSettingsLabels = {
   cancel: '取消',
   reset: '恢复当前方案默认',
   invalidColor: '请输入有效的不透明 HEX 或 RGB 颜色。',
-  storageError: '主题保存失败，当前外观已保留。',
+  storageError: '主题未保存，当前外观已保留。',
+  retry: '重试',
   loading: '正在读取主题…',
 }

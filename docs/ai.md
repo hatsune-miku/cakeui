@@ -274,7 +274,7 @@ Provider 是可嵌套的 CSS 容器，产生实际 DOM，设置背景、文字�
 
 `config?: ThemeConfig` 是受控配置，优先于快捷属性；`onThemeChange?: (config: ThemeConfig) => void` 请求应用或加载配置，受控方必须回写。`defaultConfig?: ThemeConfig` 提供非受控基准；未提供时由 theme / mode / accentColor / foreground 建立。非受控设置保存在当前 Provider，基准配置改变时重新采用新基准。预览不触发 onThemeChange，取消后恢复当前已应用配置。style 中显式设置的 CSS 变量优先，不会被配置切换清除。
 
-默认舒适密度字号 14px、控件高度变量 38px，圆角 small / medium / large / dialog 为 10 / 16 / 28 / 32px。紧凑密度以 AnyDrop 尺寸为基准：字号 13px、normal 行高、控件高度变量 32px，圆角 8 / 12 / 24 / 32px；按钮常规字重 400、水平 padding 12px，输入 padding 5px 8px。紧凑卡片间距为 0 并使用内描边，复选框为原生 16px 输入，进度条为 5px；日志使用 11px / 1.55 行高。个别组件有固定尺寸、padding、最小高度或触屏规则，不保证最终高度等于该变量。Provider 不访问持久化存储。
+默认舒适密度字号 14px、控件高度变量 38px，圆角 small / medium / large / dialog 为 10 / 16 / 28 / 32px。紧凑密度以 AnyDrop 尺寸为基准：字号 13px、1.45 行高、控件高度变量 32px，圆角 8 / 12 / 24 / 32px；按钮常规字重 400、水平 padding 12px，输入 padding 5px 8px。紧凑卡片间距为 10px，复选框与单选框为 16px，进度条为 5px；日志使用 12px / 1.55 行高。两种密度使用同一字体栈。个别组件有固定尺寸、padding、最小高度或触屏规则，不保证最终高度等于该变量。Provider 不访问持久化存储。
 
 ### ThemeSettings
 
@@ -282,7 +282,7 @@ Provider 是可嵌套的 CSS 容器，产生实际 DOM，设置背景、文字�
 
 弹窗包含六预设、自定义颜色选择器与 HEX / RGB 文本框、system / light / dark 背景、auto / light / dark 强调前景。模式和前景按方案分别记忆；切换预设不清除自定义颜色。每次打开从已应用配置建立草稿，修改立即在当前 Provider 预览。应用提交；取消、Esc、关闭按钮、遮罩和卸载撤销预览；恢复默认只重置当前方案，仍需应用才提交。无效输入显示错误，保留最后有效预览并禁用应用。打开聚焦当前方案，原生 radio 支持方向键，Dialog 约束 Tab 并在关闭时恢复入口焦点；窄屏弹窗滚动，默认圆角 32px，继承可覆盖的 --cake-radius-dialog。
 
-`storage?: ThemeStorageAdapter` 可同步或异步，load 返回配置、JSON 字符串、旧配置或 null，save 接收规范化 ThemeConfig。挂载及 adapter 更换时读取并迁移；加载期间禁用入口，读取尚未完成而宿主已更换配置时忽略旧结果。只有应用调用 save；没有适配器就只在内存中使用。保存期间入口用 aria-disabled 阻止再次打开并保留焦点停靠，失败保留已应用效果并显示 status，通过 `onStorageError?: (error: unknown, operation: 'load' | 'save') => void` 通知原始错误。读取失败不改变当前配置。适配器应保持引用稳定，避免重复加载；建议同一 Provider 使用一个设置入口。
+`storage?: ThemeStorageAdapter` 可同步或异步，load 返回配置、JSON 字符串、旧配置或 null，save 接收规范化 ThemeConfig。挂载及 adapter 更换时读取并迁移；加载期间禁用入口，读取尚未完成而宿主已更换配置时忽略旧结果。只有应用调用 save；没有适配器就只在内存中使用。保存期间入口用 aria-disabled 阻止再次打开并保留焦点停靠，失败保留已应用效果并显示 status，文字由 labels.storageError 与原始错误信息组成；保存失败时附带重试按钮（labels.retry），重试只再次调用 save。通过 `onStorageError?: (error: unknown, operation: 'load' | 'save') => void` 通知原始错误。读取失败不改变当前配置。适配器应保持引用稳定，避免重复加载；建议同一 Provider 使用一个设置入口。
 
 ```tsx example=theme-settings
 import { useMemo, useState } from 'react'
@@ -318,7 +318,7 @@ export function ThemedApp() {
 
 原生 button，ref 指向按钮。`variant='default'` 可取 default / primary / ghost / danger；`size='medium'` 使用 Size；`loading=false`；默认 `type='button'`。
 
-默认按钮常态为中性背景，按下时染上 accent-soft 并下移 1px；各 variant 均保留 1px 下移反馈。primary 使用 primary / primary-ink，粉色主题为 AnyDrop 的玫红底白字，悬停与按下使用 accent-hover；ghost 透明；danger 用危险色。动画使用 fast / ease 变量，默认 150ms 与 cubic-bezier(0.29, 0, 0, 1)。loading 显示小 Spinner、保留 children、设置 aria-busy 并禁用按钮。图标由应用传 children；纯图标按钮必须有可访问名称。
+默认按钮常态为中性背景，按下时染上 accent-soft 并下移 1px；各 variant 均保留 1px 下移反馈。primary 使用 primary / primary-ink，粉色主题为 AnyDrop 的玫红底白字，悬停与按下使用 accent-hover；ghost 透明；danger 用危险色，悬停和按下保持危险色。动画使用 fast / ease 变量，默认 150ms 与 cubic-bezier(0.29, 0, 0, 1)。loading 显示小 Spinner、保留 children、设置 aria-busy 并禁用按钮。图标由应用传 children；纯图标按钮必须有可访问名称。
 
 ### Card
 
@@ -348,7 +348,7 @@ export function ThemedApp() {
 
 单选使用 value / defaultValue 和 `onChange(event)`。可以传原生 multiple 或 size，相关选择与提交仍由 select 负责；已验证的定制弹出菜单主要是单选下拉路径，不保证 multiple / size 列表框具有相同弹出外观。disabled、禁用 option / optgroup、required、form、重置和键盘操作保留原生规则。选项值使用字符串。
 
-下拉表面与 ContextMenu 共用圆角、padding、颜色、阴影；实现使用 `appearance: base-select`、`::picker(select)`、`::picker-icon`、`::checkmark` 和 anchor-size。支持时显示自定义菜单，picker 最大高度为 min(320px, 视口高度减 16px)，选中项有标记。不支持时降级为浏览器原生选择器，不是运行时切换到另一个 JS 组件。
+下拉表面与 ContextMenu 共用圆角、padding、颜色、阴影；实现使用 `appearance: base-select`、`::picker(select)`、`::picker-icon`、`::checkmark` 和 anchor-size。支持时显示自定义菜单，picker 最大高度为 min(320px, 视口高度减 16px)，选中项有强调底色和标记，悬停与键盘候选只用中性底色 `--cake-item-hover`，两者不会混淆。不支持时降级为浏览器原生选择器，不是运行时切换到另一个 JS 组件。
 
 可选 `searchable=false` 开启单选搜索，增加 `searchPlaceholder='Search…'` 和 `emptyText='No matching options'`。仍然接受 option / optgroup，不引入 options 数组或 onValueChange。搜索匹配选项的文字和 value，忽略大小写；分组名称显示在选项旁，禁用项不能选择，hidden 项不参与结果。multiple 或 size > 1 时保留原生 select，不开启搜索。
 
@@ -362,7 +362,7 @@ export function ThemedApp() {
 
 外层 label，内部固定 checkbox input，children 是标签文字。输入类型排除 type / size，增加 `indeterminate=false`。className 属于外层，ref 及其他原生 input 属性属于内部输入。
 
-indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；它是混合外观与语义，不等于 checked，也不自动控制全选逻辑。浏览器在用户操作时可能清除 DOM 的混合状态，应用应同步自己的 indeterminate 与 checked 状态。无文字 children 时提供 aria-label。新主题和手动前景用 CSS 绘制配对的勾号 / 横线；旧预设 auto 保留原生外观，forced-colors 恢复系统绘制。
+indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；它是混合外观与语义，不等于 checked，也不自动控制全选逻辑。浏览器在用户操作时可能清除 DOM 的混合状态，应用应同步自己的 indeterminate 与 checked 状态。无文字 children 时提供 aria-label。所有主题都用 CSS 绘制未选中底色和配对的勾号 / 横线，深色模式下不会出现浅色系统方块；forced-colors 恢复系统绘制。
 
 ### RadioButton
 
@@ -370,11 +370,13 @@ indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；
 
 ### Switch
 
-外层 label，内部固定 checkbox input 并带 role='switch'。children 是标签，类型排除 type / size。沿用 checked / defaultChecked / onChange，参与 FormData，没有独立的 onCheckedChange。使用原生 disabled，不仅仅改透明度。
+外层 label，内部固定 checkbox input 并带 role='switch'。children 是标签，类型排除 type / size。沿用 checked / defaultChecked / onChange，参与 FormData，没有独立的 onCheckedChange。使用原生 disabled，不仅仅改透明度。滑块与轨道始终不透明且至少 3:1，颜色来自 `--cake-switch-fill` / `--cake-switch-thumb` 与未选中的 `--cake-switch-off-fill` / `--cake-switch-off-thumb`；forced-colors 使用系统色。
 
 ### Slider
 
 固定 `input type='range'`，类型去掉 type。支持原生 min、max、step、value、defaultValue、onChange、ref。默认数值范围由浏览器决定，建议业务中明确指定。没有 marks、双滑块、值提示或自动格式化；用旁边的 output / 文本显示值，并提供可访问名称。
+
+轨道和滑块由组件样式绘制，未填充部分使用 `--cake-track`，填充部分与滑块使用 `--cake-switch-fill`。组件把当前比例写入 input 的 `--cake-slider-ratio`（0 到 1），支持 SSR 首屏、受控更新、用户拖动和表单重置；不要在 style 中覆盖这个变量。onInput 在内部更新后调用。
 
 ### Field
 
@@ -384,7 +386,7 @@ indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；
 
 ### GroupBox
 
-原生 fieldset，必填 `label: ReactNode` 用作 legend，children 为分组内容。disabled 使用原生 fieldset 的禁用规则，ref 指向 fieldset。布局和每个控件的标签仍由调用方负责。
+原生 fieldset，必填 `label: ReactNode` 用作 legend，children 为分组内容。disabled 使用原生 fieldset 的禁用规则，ref 指向 fieldset。默认无边框，以 `--cake-hover` 底色和 medium 圆角分区，legend 位于内容流顶部而不是压在边框上。布局和每个控件的标签仍由调用方负责。
 
 ### Tabs
 
@@ -394,7 +396,7 @@ indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；
 
 ### TabList
 
-原生 div，必须放在 Tabs 中，输出 role='tablist' 与 aria-orientation。提供 aria-label 或 aria-labelledby。横向 Left / Right，纵向 Up / Down，Home / End 选首尾；跳过原生 disabled 项并循环，横向考虑 RTL。键盘移动焦点时会同时激活新标签。自定义 onKeyDown 先执行，preventDefault 可阻止内置导航。
+原生 div，必须放在 Tabs 中，输出 role='tablist' 与 aria-orientation。提供 aria-label 或 aria-labelledby。横向 Left / Right，纵向 Up / Down，Home / End 选首尾；跳过原生 disabled 项并循环，横向考虑 RTL。键盘移动焦点时会同时激活新标签。自定义 onKeyDown 先执行，preventDefault 可阻止内置导航。标签过多时可横向滚动，滚动条默认隐藏。
 
 ### Tab
 
@@ -428,7 +430,7 @@ indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；
 
 ### Table
 
-真正的 table，没有额外包裹层，ref 指向 HTMLTableElement。接受原生 caption、colgroup 及下列结构组件。需要水平滚动时由应用在外层添加 overflow 容器。没有 columns、dataSource、rowKey、排序或选择配置。
+真正的 table，没有额外包裹层，ref 指向 HTMLTableElement。接受原生 caption、colgroup 及下列结构组件。需要水平滚动时由应用在外层添加 overflow 容器。没有 columns、dataSource、rowKey、排序或选择配置。使用 `border-collapse: separate`，默认只有表头下方一条分隔线，数据行靠间距与悬停底色区分，悬停底色两端带圆角；需要行线时在单元格上设置 border-bottom，tr 上的 border 不生效。
 
 ### TableHead
 
@@ -488,7 +490,7 @@ indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；
 
 渲染外层 span 与原生手动 Popover，提示 role='tooltip'。克隆唯一子元素，将生成的说明 id 合并到其 aria-describedby，不增加额外的 Tab 停靠点。子组件必须将该属性传到实际可聚焦元素；不要传纯文本、数组或不能接收此属性的 Fragment。禁用按钮无法正常接收键盘焦点，需要额外的可聚焦帮助入口。
 
-悬停按 delay 打开，焦点或点击立即请求打开，离开使用 100ms 宽限，光标可进入提示层阅读，Escape 关闭。顶部空间不足时显示在下方；水平与垂直位置限制在视口 8px 边距内。单个 DOM 触发元素以自身边界居中，不把它的 margin 当作可视宽度；自定义组件产生多个 DOM 元素时按包装层定位。提示文字的 letter-spacing 为 normal，避免继承触发标题的字距。与触发元素间距由 `--cake-tip-offset` 控制，舒适密度 8px、紧凑密度 6px；紧凑提示为 11px / 1.45 行高、6px 9px padding、最大宽度 220px。滚动和 resize 重新定位。内容应为简短说明，不放表单、链接或其他必须操作的控件；它不是通用交互 Popover。
+悬停按 delay 打开，焦点或点击立即请求打开，离开使用 100ms 宽限，光标可进入提示层阅读，Escape 关闭。顶部空间不足时显示在下方；水平与垂直位置限制在视口 8px 边距内。单个 DOM 触发元素以自身边界居中，不把它的 margin 当作可视宽度；自定义组件产生多个 DOM 元素时按包装层定位。提示文字的 letter-spacing 为 normal，避免继承触发标题的字距。与触发元素间距由 `--cake-tip-offset` 控制，舒适密度 8px、紧凑密度 6px；紧凑提示为 12px / 1.45 行高、6px 9px padding、最大宽度 220px。滚动和 resize 重新定位。内容应为简短说明，不放表单、链接或其他必须操作的控件；它不是通用交互 Popover。
 
 ### WhatsThis
 
@@ -498,7 +500,7 @@ indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；
 
 原生 dialog，必填 `open: boolean`、`onOpenChange(open: boolean)`、`title: ReactNode`；可选 description、footer、`closeLabel='Close'`、`closeOnBackdrop=true`、`initialFocus: RefObject<HTMLElement | null>`。其余 Props 来自去掉 open / title / ref 的原生 dialog 类型。
 
-open 是受控状态，应用必须接受关闭请求并更新状态。组件使用 showModal / close，保留原生顶层、背景 inert 与焦点恢复。标题始终渲染为 h2 并与 dialog 关联；description 存在时由组件关联说明 id。组件内部有标题栏、关闭按钮、正文与可选 footer；不提供 footer 默认保存操作。默认圆角 32px，可通过 --cake-radius-dialog 配置，两种密度相同。
+open 是受控状态，应用必须接受关闭请求并更新状态。组件使用 showModal / close，保留原生顶层、背景 inert 与焦点恢复。标题始终渲染为 h2 并与 dialog 关联；description 存在时由组件关联说明 id。组件内部有标题栏、关闭按钮、正文与可选 footer；不提供 footer 默认保存操作。默认圆角 32px，可通过 --cake-radius-dialog 配置，两种密度相同。打开与关闭对 dialog 和遮罩使用过渡，关闭过渡依赖浏览器对 `overlay` / `allow-discrete` 的支持，不支持时直接消失；open 状态、close 事件和焦点恢复不等待过渡。
 
 初始焦点顺序：initialFocus.current；其次 autofocus 或 data-cake-autofocus='true'；其次正文内第一个未禁用 input / select / textarea / button；没有指定目标时保留浏览器初始焦点行为。目标必须位于 dialog 内。初始目标不可聚焦或被隐藏时应由应用修正，不把任意 div ref 当成可聚焦目标。
 
@@ -561,7 +563,7 @@ onClick 先执行；未 preventDefault 时通过内部 context 请求关闭菜�
 
 ### AccordionItem
 
-原生 details，必填 `title: ReactNode` 替代原生字符串 title，用于内部 summary。支持原生 open、onToggle、name、ref。正文位于内部 div；summary 已带折叠箭头。浏览器支持时，用相同 name 的 details 实现互斥组，Accordion 自身不模拟该功能。没有 defaultOpen / onOpenChange 属性；需要受控同步时按原生 onToggle 读取 currentTarget.open。
+原生 details，必填 `title: ReactNode` 替代原生字符串 title，用于内部 summary。支持原生 open、onToggle、name、ref。正文位于内部 div；summary 已带折叠箭头，最后一项不绘制底部分隔线。浏览器支持 `::details-content` 与 `interpolate-size` 时展开和收起带高度过渡，否则立即切换。浏览器支持时，用相同 name 的 details 实现互斥组，Accordion 自身不模拟该功能。没有 defaultOpen / onOpenChange 属性；需要受控同步时按原生 onToggle 读取 currentTarget.open。
 
 ### LogView
 
@@ -573,7 +575,7 @@ onClick 先执行；未 preventDefault 时通过内部 context 请求关闭菜�
 
 ### LogEntry
 
-原生 div，可选 time、dateTime、`level='info'`，level 为 info / success / warning / error / debug。渲染 time、级别、正文三个部分。time 是显示字符串；dateTime 写入 time.dateTime 和 title；children 为内容。不会解析日期、补充当前时间、国际化级别或省略相邻重复时间。省略 time 会保留时间列布局，适合应用自己合并连续相同时间的显示。
+原生 div，可选 time、dateTime、`level='info'`，level 为 info / success / warning / error / debug。渲染 time、级别、正文三个部分。info 与 debug 的级别文字使用辅助色，success / warning / error 使用对应状态色。time 是显示字符串；dateTime 写入 time.dateTime 和 title；children 为内容。不会解析日期、补充当前时间、国际化级别或省略相邻重复时间。省略 time 会保留时间列布局，适合应用自己合并连续相同时间的显示。
 
 ## 4.1 HTML 幻灯片组件
 
@@ -616,7 +618,7 @@ children 只接受直接的 Slide、它们的数组、任意层 Fragment，以�
 
 原生 nav，ref 指向 HTMLElement，默认 aria-label="Slide navigation"。受控 `index: number` 和 `onIndexChange: (index: number) => void` 必填；索引从 0 开始，越界会限制在现有范围，非有限数按 0 处理。children 的每个非空直接子项是一个按钮标签，可用带 key 的 JSX 数组；标签内不要放交互元素或 Fragment 分组。组件不读取 SlideDeck 或业务数据，应用决定每个标签对应单页还是章节。
 
-当前项居中、放大 1.08 倍，以 aria-current="step" 标记。前后各两项逐级弱化，其他项透明、inert、aria-hidden 且不进入 Tab 顺序；边界不循环。只有 index 改变才移动数轴，过渡为 360ms cubic-bezier(0.29, 0, 0, 1)，减少动态效果偏好下取消过渡。长标签截断，当前项最多两行，辅助技术可读取完整名称。按钮可点击，← / →、Home / End 请求切换并在受控值更新后跟随焦点；先调用原生 onKeyDown，preventDefault 可取消。消费的按键阻止冒泡，避免同时驱动外层 Deck。
+当前项居中、放大 1.08 倍，以 aria-current="step" 标记。前后各两项逐级弱化，其他项透明、inert、aria-hidden 且不进入 Tab 顺序；边界不循环。只有 index 改变才移动数轴，过渡为 250ms cubic-bezier(0.29, 0, 0, 1)，减少动态效果偏好下取消过渡。长标签截断，当前项最多两行，辅助技术可读取完整名称。按钮可点击，← / →、Home / End 请求切换并在受控值更新后跟随焦点；先调用原生 onKeyDown，preventDefault 可取消。消费的按键阻止冒泡，避免同时驱动外层 Deck。
 
 可选 `context: ReactNode` 放在数轴下方，适合当前进度、子页路径与侧栏说明。由应用提供语言和层级信息；组件不自动推断总页数。树形演示将 index 绑定到根节点序号，进入子页时仅更新 context，数轴保持位置。独立使用时主题 CSS 变量有蓝色回退；放在 Deck 外时可在公共父节点或自身传入 presentation 变量。打印隐藏整个导航。
 
@@ -1332,11 +1334,11 @@ applyTheme 只管理自己写入的变量；update 用完整语义集合替换�
 
 旧 `theme` / `mode` 用法无需修改。migrateThemeConfig 接受裸预设字符串、JSON 字符串、无 version 的 `{ theme, mode }` 或 `{ scheme, mode, foreground, customColor }`、version=1 的同名字段及 `overrides[scheme].mode/foreground`，转为 version=2 的 options。null 表示初始默认值；未知方案、非法值、未来版本和损坏 JSON 抛错，调用者决定恢复默认或提示。只提取主题字段，不迁入顶栏、工具、登录或更新逻辑。Gallery 另按旧 themeChosen 标记迁移历史选择；通用迁移器不解释该业务标记。
 
-新推导方案的所有内置文本色对（含禁用）以至少 4.5:1 为目标，焦点环相对输入背景至少 3:1。计算验证针对明确色对；实际页面、图片、透明叠层和消费方覆盖仍需浏览器检查，不能由此声称整页符合 WCAG。普通文字阈值见 [WCAG 对比度说明](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)。旧三预设 auto 保持原始色值、半透明表面和禁用透明度；generateTheme.contrastIssues 列出当前配置中低于阈值的旧色对，详细基线见设计记录。手动前景只修复强调区，不会自动修复旧方案全部辅助与状态颜色。
+新推导方案的所有内置文本色对（含禁用）以至少 4.5:1 为目标，焦点环相对输入背景至少 3:1。计算验证针对明确色对；实际页面、图片、透明叠层和消费方覆盖仍需浏览器检查，不能由此声称整页符合 WCAG。普通文字阈值见 [WCAG 对比度说明](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)。旧三预设 auto 的强调色固定不变，并保留半透明表面和禁用透明度；辅助文字、危险色和选中文字已校正到至少 4.5:1。generateTheme.contrastIssues 列出当前配置中低于阈值的色对，详细基线见设计记录。
 
-新方案、手动强调前景或 accent 色对覆盖下，CheckBox / RadioButton 仍是原生 input，使用 CSS 绘制与填充配对的勾选标记，避免浏览器自行选择相反的图标色；旧预设 auto 保留原生外观。forced-colors 恢复系统控件绘制。SlideDeck 的新主题反色页内面板使用不透明交互色对，避免叠加固定透明度后降低文字对比度。
+所有主题下 CheckBox / RadioButton 仍是原生 input，使用 CSS 绘制底色与配对的勾选标记，避免浏览器自行选择相反的图标色或在深色模式下显示浅色方块。forced-colors 恢复系统控件绘制。SlideDeck 的新主题反色页内面板使用不透明交互色对，避免叠加固定透明度后降低文字对比度。
 
-粉色主题以 AnyDrop 为最终样式基准：强调色 #d15776、悬停 #be476a、浅色背景 #f4f1ee、深色背景 #16151a。卡片是半透明表面，弹层使用独立的不透明 `--cake-popup`；不要把卡片直接当浮层底色。发生参考项目间的样式冲突时优先修正 CakeUI，使其与 AnyDrop 一致。蓝 / 金仍保留各自配色；默认 theme 仍为 blue。粉色主按钮白字与浅色辅助文字保留原样，存在小字号对比度低于 WCAG AA 的已知边界，见 `docs/design.md`；不要宣称该主题通过完整 AA。
+粉色主题以 AnyDrop 为最终样式基准：强调色 #d15776、悬停 #be476a、浅色背景 #f4f1ee、深色背景 #16151a。卡片是半透明表面，弹层使用独立的不透明 `--cake-popup`；不要把卡片直接当浮层底色。发生参考项目间的样式冲突时优先修正 CakeUI，使其与 AnyDrop 一致。蓝 / 金仍保留各自配色；默认 theme 仍为 blue。粉色主按钮白字由固定强调色决定，存在小字号对比度低于 WCAG AA 的已知边界，见 `docs/design.md`；不要宣称该主题通过完整 AA。
 
 | 变量组                                                                       | 用途                                                       |
 | ---------------------------------------------------------------------------- | ---------------------------------------------------------- |
@@ -1347,7 +1349,10 @@ applyTheme 只管理自己写入的变量；update 用完整语义集合替换�
 | --cake-hover / --cake-backdrop / --cake-shadow                               | 轻悬停背景、模态遮罩、弹层阴影                             |
 | --cake-accent / --cake-accent-soft / --cake-accent-hover / --cake-accent-ink | 主题色、填充、悬停填充与填充上的文字                       |
 | --cake-success / --cake-warning / --cake-danger 及各自 -soft                 | 状态前景与背景                                             |
+| --cake-item-hover / --cake-track                                             | 菜单与候选项的中性悬停底色、滑块未填充轨道                 |
+| --cake-switch-fill / -thumb / -off-fill / -off-thumb                         | Switch 选中与未选中的轨道和滑块，均不透明                  |
 | --cake-radius-small / -medium / -large / -dialog                             | 圆角，默认 10 / 16 / 28 / 32px；compact 8 / 12 / 24 / 32px |
+| --cake-radius-item                                                           | 菜单项圆角，等于 medium 减去 6px 浮层内边距                |
 | --cake-control-height                                                        | 普通控件高度基线，comfortable 38px / compact 32px          |
 | --cake-font / --cake-mono                                                    | 普通字体与日志、代码等宽字体                               |
 | --cake-fast / --cake-normal / --cake-slow / --cake-ease                      | 150 / 200 / 250ms 与缓出曲线                               |
@@ -1370,9 +1375,11 @@ applyTheme 只管理自己写入的变量；update 用完整语义集合替换�
 }
 ```
 
-字体按本机已安装字体回退，不下载远程字体。默认顺序包含 Inter Variable、SF Pro Text、Noto Sans SC、PingFang SC、Segoe UI Variable Text、system-ui；紧凑密度使用 Segoe UI Variable Text / Segoe UI / PingFang SC / system-ui。等宽字体使用 Cascadia Code / Consolas / JetBrains Mono / Menlo / monospace。
+字体按本机已安装字体回退，不下载远程字体。两种密度共用一个字体栈：拉丁字形优先 Segoe UI Variable Text、Segoe UI、-apple-system、SF Pro Text、Inter Variable，中文依次为 PingFang SC、HarmonyOS Sans SC、MiSans、Noto Sans SC、Noto Sans CJK SC、Source Han Sans SC、DengXian，最后是 system-ui；中文字体列在 system-ui 之前，避免 Windows 回退到矮字形的微软雅黑。等宽字体使用 Cascadia Mono / Cascadia Code / Consolas / JetBrains Mono / Menlo / monospace，并关闭连字。使用 `font` 简写的业务样式会重置连字设置，需要时补上 `font-variant-ligatures: none`。
 
 默认 Button 的按压与 Interactive 区域下陷幅度均为 1px，不能为了加重效果给它们再叠加独立 transform 而不检查命中与定位。输入 focus 和 focus-visible 显式取消浏览器 outline，只保留一圈内描边；按钮保留单圈键盘 outline。forced-colors 下输入用系统 Highlight outline 替代阴影，避免失去焦点指示。如果集成后出现双边框，检查消费项目更高优先级的 focus / outline / box-shadow 规则。
+
+动效只使用 cubic-bezier(0.29, 0, 0, 1) 与 linear 两种曲线和 150 / 200 / 250ms 三档时长；Spinner、Skeleton 和不确定进度条是循环动画，使用 linear。阴影只有两种形式：模拟实线描边的 1px 扩散，以及大半径的氛围阴影。
 
 prefers-reduced-motion: reduce 将三个时长变量设为 0，并关闭 Spinner / Skeleton 的持续动画。业务状态与事件不等待 transitionend 或 animationend；即使动画关闭也应立即完成选择、关闭、提交和焦点恢复。
 

@@ -24,7 +24,7 @@
   }
   &:indeterminate {
     background: var(--cake-accent-soft);
-    animation: cake-progress-pulse 1s ease-in-out infinite alternate;
+    animation: cake-progress-pulse 1s linear infinite alternate;
   }
   @media (prefers-reduced-motion: reduce) {
     animation: none;

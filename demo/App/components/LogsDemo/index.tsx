@@ -31,6 +31,7 @@ export function LogsDemo() {
             <option value="warning">警告</option>
             <option value="success">成功</option>
             <option value="info">信息</option>
+            <option value="debug">调试</option>
           </ComboBox>
         </div>
         <Switch checked={follow} onChange={(event) => setFollow(event.target.checked)}>

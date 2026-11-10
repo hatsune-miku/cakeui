@@ -44,7 +44,7 @@ export function App() {
   )
 }`}</code>
         </pre>
-        <a className="demo-link" href="/?page=docs">
+        <a className="demo-text-link" href="/?page=docs">
           配置 API、持久化与迁移说明
         </a>
       </Card>
@@ -93,11 +93,11 @@ export function Slides() {
           需要内嵌脚本、样式和媒体。
         </p>
         <div className="demo-row">
-          <a className="demo-link" href="/browser.html" target="_blank" rel="noreferrer">
-            打开 CDN 完整示例 ↗
+          <a className="demo-text-link" href="/browser.html" target="_blank" rel="noreferrer">
+            打开 CDN 完整示例
           </a>
-          <a className="demo-link" href="/?page=docs">
-            npm / CDN 用法对照与完整代码 ↗
+          <a className="demo-text-link" href="/?page=docs">
+            npm / CDN 用法对照与完整代码
           </a>
         </div>
       </Card>
@@ -129,11 +129,11 @@ export function Slides() {
       <Card padding="large">
         <h2 className="demo-card-title">技术文档</h2>
         <div className="demo-row">
-          <a className="demo-link" href="/?page=docs">
-            阅读 AI 技术文档 ↗
+          <a className="demo-text-link" href="/?page=docs">
+            阅读 AI 技术文档
           </a>
-          <a className="demo-link" href="/llms-full.txt">
-            打开完整纯文本 ↗
+          <a className="demo-text-link" href="/llms-full.txt">
+            打开完整纯文本
           </a>
         </div>
       </Card>

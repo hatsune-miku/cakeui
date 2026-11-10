@@ -1,5 +1,6 @@
 import type { ComponentPropsWithRef } from 'react'
 
+import { CloseGlyph } from '../../glyphs'
 import { type Tone, cx } from '../../utils'
 
 export interface TagProps extends ComponentPropsWithRef<'span'> {
@@ -13,7 +14,7 @@ export function Tag({ tone = 'neutral', className, onRemove, removeLabel = 'Remo
       {children}
       {onRemove && (
         <button type="button" className="cake-tag-remove" aria-label={removeLabel} onClick={onRemove}>
-          ×
+          <CloseGlyph size={10} />
         </button>
       )}
     </span>

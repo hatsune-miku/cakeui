@@ -2,7 +2,19 @@
   margin: 0;
   background: #eef2f6;
   color: #29313a;
-  font-family: 'Segoe UI', 'PingFang SC', system-ui, sans-serif;
+  font-family:
+    'Segoe UI Variable Text',
+    'Segoe UI',
+    -apple-system,
+    'PingFang SC',
+    'HarmonyOS Sans SC',
+    'MiSans',
+    'Noto Sans SC',
+    'Noto Sans CJK SC',
+    'Source Han Sans SC',
+    'DengXian',
+    system-ui,
+    sans-serif;
 }
 .presentation-standalone {
   max-width: 1280px;
@@ -12,10 +24,14 @@
 @mixin dark-page {
   background: #191d22;
   color: #edf0f3;
+  color-scheme: dark;
   --cake-accent: #a4cafa;
   --cake-accent-soft: #303e51;
-  --cake-border: #4c5764;
-  --cake-text-secondary: #b7c0ca;
+  --cake-selected-ink: #a4cafa;
+  --cake-focus: #a4cafa;
+  --cake-hover: #ffffff0b;
+  --cake-text: #edf0f3;
+  --cake-muted: #b7c0ca;
 }
 .presentation-body[data-mode='dark'] {
   @include dark-page;

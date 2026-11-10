@@ -16,6 +16,7 @@ import {
   NumberBox,
   Pagination,
   RadioButton,
+  Slider,
   Switch,
   Tab,
   TabList,
@@ -127,6 +128,21 @@ describe('native contracts', () => {
     expect(submit).not.toHaveBeenCalled()
     await user.click(screen.getByRole('button', { name: 'Submit' }))
     expect(submit).toHaveBeenCalledTimes(1)
+  })
+
+  it('mirrors the slider value into its fill for server, controlled and uncontrolled use', () => {
+    expect(renderToString(<Slider min={0} max={50} defaultValue={25} />)).toContain('--cake-slider-ratio:0.5')
+    const ref = createRef<HTMLInputElement>()
+    const { rerender } = render(<Slider ref={ref} min={10} max={20} value={12} onChange={() => {}} />)
+    expect(ref.current!.style.getPropertyValue('--cake-slider-ratio')).toBe('0.2')
+    rerender(<Slider ref={ref} min={10} max={20} value={20} onChange={() => {}} />)
+    expect(ref.current!.style.getPropertyValue('--cake-slider-ratio')).toBe('1')
+    const onInput = vi.fn()
+    render(<Slider aria-label="uncontrolled" defaultValue={50} onInput={onInput} />)
+    const uncontrolled = screen.getByRole<HTMLInputElement>('slider', { name: 'uncontrolled' })
+    fireEvent.input(uncontrolled, { target: { value: '75' } })
+    expect(uncontrolled.style.getPropertyValue('--cake-slider-ratio')).toBe('0.75')
+    expect(onInput).toHaveBeenCalledOnce()
   })
 
   it('updates mixed checkbox state and forwards its ref', () => {

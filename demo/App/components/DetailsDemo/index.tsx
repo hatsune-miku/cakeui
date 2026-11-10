@@ -11,7 +11,7 @@ export function DetailsDemo() {
         '<Card>\n  <strong>工作空间</strong>\n  <Separator />\n  <Accordion>\n    <AccordionItem title="高级设置">设置内容</AccordionItem>\n  </Accordion>\n</Card>'
       }
     >
-      <Card padding="none">
+      <Card className="demo-details-card">
         <div className="demo-between">
           <span className="demo-inline">
             工作空间<Tag tone="accent">个人</Tag>

@@ -43,18 +43,18 @@
     padding: 7px 10px;
     margin: 1px 0;
     border: 0;
-    border-radius: 8px;
+    border-radius: var(--cake-radius-item);
     background: transparent;
     color: var(--cake-text);
     font: inherit;
     font-size: 13px;
     font-weight: 400;
     cursor: pointer;
-    &:hover:not(:disabled),
-    &:focus:not(:disabled) {
+    &:focus {
       outline: none;
-      background: var(--cake-accent-soft);
-      color: var(--cake-accent-ink);
+    }
+    &:not(:checked, :disabled):is(:hover, :focus) {
+      background: var(--cake-item-hover);
     }
     &:checked {
       background: var(--cake-accent-soft);

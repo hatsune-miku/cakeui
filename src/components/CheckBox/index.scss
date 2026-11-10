@@ -6,16 +6,15 @@
   cursor: pointer;
   &:has(:disabled) {
     opacity: var(--cake-disabled-opacity, 0.5);
+    color: var(--cake-disabled-color, inherit);
     cursor: not-allowed;
   }
   .cake-checkbox-input {
     @include choice;
     border-radius: var(--cake-choice-radius, revert);
-    box-sizing: border-box;
-    color-scheme: var(--cake-checkbox-color-scheme);
     width: var(--cake-checkbox-size);
     height: var(--cake-checkbox-size);
-    margin: var(--cake-checkbox-margin, revert);
+    margin: 0;
     accent-color: var(--cake-check-accent);
     cursor: inherit;
     &::after {

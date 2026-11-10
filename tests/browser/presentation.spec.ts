@@ -91,6 +91,7 @@ test('editable content, nested decks, overflowing pages, focus recovery and per-
   })
   await expect(page.getByRole('textbox', { name: 'Last field' })).toBeInViewport()
   await deck.getByRole('button', { name: 'Enter fullscreen', exact: true }).click()
+  await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true)
   const box = await body.locator('..').boundingBox()
   expect(box!.width / box!.height).toBeCloseTo(4 / 3, 2)
   expect(box!.y + box!.height).toBeLessThanOrEqual(1050)

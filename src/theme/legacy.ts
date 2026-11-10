@@ -1,4 +1,4 @@
-// Compatibility snapshot of the original CakeUI palettes. Do not normalize these colors.
+// The original CakeUI palettes. Accent values are fixed; neutral and status values may be corrected.
 export const legacyPalettes = {
   blue: {
     light: {
@@ -62,7 +62,7 @@ export const legacyPalettes = {
       '--cake-primary': 'var(--cake-accent-soft)',
       '--cake-primary-ink': 'var(--cake-accent-ink)',
       '--cake-hairline': 'var(--cake-edge)',
-      '--cake-atmosphere': '0 36px 100px #2b38451f',
+      '--cake-atmosphere': '0 36px 100px #0005',
       '--cake-atmosphere-strong': 'var(--cake-atmosphere)',
       '--cake-shadow-strong': 'var(--cake-shadow)',
       '--cake-edge': 'inset 0 0 0 1px var(--cake-line)',
@@ -75,13 +75,13 @@ export const legacyPalettes = {
       '--cake-control': 'rgba(255, 255, 255, 0.7)',
       '--cake-control-hover': 'rgba(255, 255, 255, 0.98)',
       '--cake-text': '#2a2521',
-      '--cake-muted': '#8a807a',
+      '--cake-muted': '#746b66',
       '--cake-line': 'rgba(38, 34, 31, 0.09)',
       '--cake-hover': 'rgba(38, 34, 31, 0.04)',
       '--cake-backdrop': 'rgba(31, 27, 22, 0.2)',
       '--cake-success': '#46654e',
       '--cake-success-soft': '#dce9df',
-      '--cake-danger': '#c0453f',
+      '--cake-danger': '#b2403b',
       '--cake-danger-soft': 'rgba(192, 69, 63, 0.12)',
       '--cake-warning': '#80602d',
       '--cake-warning-soft': '#f3e7ce',
@@ -114,7 +114,7 @@ export const legacyPalettes = {
       '--cake-backdrop': 'rgba(0, 0, 0, 0.5)',
       '--cake-success': '#a9c8af',
       '--cake-success-soft': '#7b9b8233',
-      '--cake-danger': '#c0453f',
+      '--cake-danger': '#d37f7a',
       '--cake-danger-soft': 'rgba(192, 69, 63, 0.2)',
       '--cake-warning': '#e2c18f',
       '--cake-warning-soft': '#b68c4133',
@@ -198,7 +198,7 @@ export const legacyPalettes = {
       '--cake-primary': 'var(--cake-accent-soft)',
       '--cake-primary-ink': 'var(--cake-accent-ink)',
       '--cake-hairline': 'var(--cake-edge)',
-      '--cake-atmosphere': '0 36px 100px #2b38451f',
+      '--cake-atmosphere': '0 36px 100px #0005',
       '--cake-atmosphere-strong': 'var(--cake-atmosphere)',
       '--cake-shadow-strong': 'var(--cake-shadow)',
       '--cake-edge': 'inset 0 0 0 1px var(--cake-line)',

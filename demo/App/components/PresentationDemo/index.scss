@@ -19,31 +19,44 @@
   appearance: none;
   background: transparent;
   color: inherit;
-  border: 1px solid transparent;
-  border-radius: 8px;
+  border: 0;
+  border-radius: var(--cake-radius-small, 8px);
   padding: 8px 10px;
   min-height: 36px;
   font: inherit;
   font-size: 13px;
   cursor: pointer;
+  transition: background 150ms cubic-bezier(0.29, 0, 0, 1);
+  &:hover {
+    background: var(--cake-hover, #2b384509);
+  }
   &[aria-pressed='true'] {
     background: var(--cake-accent-soft, #d6e7f7);
-    border-color: var(--cake-border, #c8d2dc);
+    color: var(--cake-accent-ink, inherit);
   }
   &:focus-visible {
-    outline: 2px solid var(--cake-accent, #416b97);
+    outline: 2px solid var(--cake-focus, #416b97);
     outline-offset: 3px;
   }
 }
 .presentation-demo-link {
-  color: var(--cake-accent, #416b97);
+  color: color-mix(in srgb, var(--cake-selected-ink, #416b97) 85%, var(--cake-text, #29313a));
   font-size: 13px;
-  text-underline-offset: 4px;
+  font-weight: 500;
+  text-decoration: none;
+  &:hover {
+    color: var(--cake-text, #29313a);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--cake-focus, #416b97);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
 }
 .presentation-demo-outline {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
+  gap: 4px;
 }
 .presentation-demo-page {
   display: flex;
@@ -52,22 +65,17 @@
   gap: 8px;
   padding: 12px;
   text-align: left;
-  border-color: var(--cake-border, #c8d2dc);
 }
 .presentation-demo-page-number {
   font-size: 12px;
   font-variant-numeric: tabular-nums;
-  opacity: 0.65;
+  color: var(--cake-muted, #626d79);
 }
 .presentation-demo-help {
   margin: 0;
   font-size: 13px;
   line-height: 1.6;
-  color: var(--cake-text-secondary, #626d79);
-}
-.presentation-demo-source {
-  padding: 16px 0;
-  border-top: 1px solid var(--cake-border, #c8d2dc);
+  color: var(--cake-muted, #626d79);
 }
 .presentation-demo-summary {
   cursor: pointer;
@@ -76,10 +84,13 @@
 .presentation-demo-code {
   overflow: auto;
   font:
-    13px / 1.7 Consolas,
+    13px / 1.7 'Cascadia Mono',
+    'Cascadia Code',
+    Consolas,
     monospace;
+  font-variant-ligatures: none;
   padding: 16px;
-  border-radius: 8px;
+  border-radius: var(--cake-radius-small, 8px);
   background: var(--cake-surface, #eef2f6);
   user-select: text;
 }

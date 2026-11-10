@@ -2,7 +2,6 @@ import { useState } from 'react'
 
 import {
   Alert,
-  Avatar,
   Badge,
   Button,
   Card,
@@ -52,20 +51,13 @@ export function Example() {
       <div className="demo-example-main">
         <Card padding="large">
           <div className="demo-between">
-            <div>
-              <span className="demo-eyebrow">个人工作空间</span>
-              <h2 className="demo-example-title">任务列表</h2>
-            </div>
-            <Avatar name="hatsune-miku" size="large" />
-          </div>
-          <div className="demo-between">
-            <span className="demo-muted">CakeUI 开发</span>
+            <h2 className="demo-example-title">任务列表</h2>
             <Button variant="primary" onClick={() => setOpen(true)}>
               <Icon name="plus" size={16} />
               新建任务
             </Button>
           </div>
-          <Tabs value={filter} defaultValue="all" onValueChange={setFilter}>
+          <Tabs value={filter} onValueChange={setFilter}>
             <TabList aria-label="任务筛选">
               <Tab value="all">
                 全部<Badge>{tasks.length}</Badge>
@@ -75,27 +67,29 @@ export function Example() {
             </TabList>
             {['all', 'active', 'done'].map((key) => (
               <TabPanel key={key} value={key}>
-                <ListView aria-label="任务列表">
-                  {visible.map((task) => (
-                    <ListItem key={task.id}>
-                      <CheckBox
-                        checked={task.done}
-                        onChange={(event) =>
-                          setTasks((current) =>
-                            current.map((item) =>
-                              item.id === task.id ? { ...item, done: event.target.checked } : item
+                {key === filter && (
+                  <ListView aria-label="任务列表">
+                    {visible.map((task) => (
+                      <ListItem key={task.id}>
+                        <CheckBox
+                          checked={task.done}
+                          onChange={(event) =>
+                            setTasks((current) =>
+                              current.map((item) =>
+                                item.id === task.id ? { ...item, done: event.target.checked } : item
+                              )
                             )
-                          )
-                        }
-                      >
-                        {task.title}
-                      </CheckBox>
-                      <span className="demo-grow" />
-                      <Tag tone={task.done ? 'success' : 'neutral'}>{task.done ? '已完成' : task.category}</Tag>
-                    </ListItem>
-                  ))}
-                </ListView>
-                {!visible.length && <p className="demo-empty">这里暂时没有任务。</p>}
+                          }
+                        >
+                          {task.title}
+                        </CheckBox>
+                        <span className="demo-grow" />
+                        <Tag tone={task.done ? 'success' : 'neutral'}>{task.done ? '已完成' : task.category}</Tag>
+                      </ListItem>
+                    ))}
+                  </ListView>
+                )}
+                {key === filter && !visible.length && <p className="demo-empty">没有任务</p>}
               </TabPanel>
             ))}
           </Tabs>
@@ -103,7 +97,6 @@ export function Example() {
         <Alert tone="neutral">任务仅保存在内存中，刷新后重置。</Alert>
       </div>
       <Card>
-        <span className="demo-eyebrow">当前进度</span>
         <div className="demo-example-progress">
           {completed}
           <span className="demo-muted"> / {tasks.length}</span>

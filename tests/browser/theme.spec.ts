@@ -52,14 +52,12 @@ test('preset and custom state colors match their foregrounds in the actual brows
         if (!legacy) await check('disabled', page.getByTestId('disabled'))
         await check('inverted surface', page.getByTestId('inverted-panel'))
         await check('inverted accent surface', page.getByTestId('inverted-accent-panel'))
-        if (!legacy || foreground !== 'auto') {
-          for (const choice of [
-            page.getByRole('checkbox', { name: 'Check', exact: true }),
-            page.getByRole('radio', { name: 'Radio', exact: true }),
-          ]) {
-            await expect(choice).toHaveCSS('appearance', 'none')
-            await check('choice mark', choice)
-          }
+        for (const choice of [
+          page.getByRole('checkbox', { name: 'Check', exact: true }),
+          page.getByRole('radio', { name: 'Radio', exact: true }),
+        ]) {
+          await expect(choice).toHaveCSS('appearance', 'none')
+          await check('choice mark', choice)
         }
       }
   await expect(page.getByTestId('nested')).toHaveAttribute('data-theme', 'blue')

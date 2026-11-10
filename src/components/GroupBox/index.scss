@@ -4,11 +4,14 @@
   gap: 12px;
   min-width: 0;
   margin: 0;
-  padding: 16px;
-  border: 1px solid var(--cake-line);
-  border-radius: var(--cake-radius-large);
+  padding: 14px 16px 16px;
+  border: 0;
+  border-radius: var(--cake-radius-medium);
+  background: var(--cake-hover);
   .cake-groupbox-legend {
-    padding: 0 6px;
+    // A floated legend joins the content flow instead of breaking the top edge of the fieldset.
+    float: inline-start;
+    padding: 0;
     font-size: 13px;
     font-weight: 500;
   }

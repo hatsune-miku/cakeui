@@ -1,5 +1,6 @@
 import { type ComponentPropsWithoutRef, useEffect, useRef, useState } from 'react'
 
+import { CloseGlyph } from '../../glyphs'
 import { type Tone, cx } from '../../utils'
 import { Button } from '../Button'
 
@@ -70,7 +71,7 @@ export function Toast({
         <>
           <span className="cake-toast-content">{children}</span>
           <Button variant="ghost" size="small" aria-label={closeLabel} onClick={() => onOpenChange(false)}>
-            ×
+            <CloseGlyph />
           </Button>
         </>
       )}

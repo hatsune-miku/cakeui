@@ -72,7 +72,7 @@ export function PresentationDemo({
             target="_blank"
             rel="noreferrer"
           >
-            独立演示 / 打印 ↗
+            独立演示 / 打印
           </a>
         )}
       </div>
@@ -111,7 +111,7 @@ export function PresentationDemo({
       </p>
       {!standalone && (
         <a className="presentation-demo-link" href="/browser.html" target="_blank" rel="noreferrer">
-          普通 HTML / 外部 script 引用示例 ↗
+          普通 HTML / 外部 script 引用示例
         </a>
       )}
       {!standalone && (
@@ -121,7 +121,7 @@ export function PresentationDemo({
             <code>{`import { SlideDeck, Slide, SlideHeader, SlideText } from '@a1knla/cakeui/presentation'\nimport '@a1knla/cakeui/presentation/style.css'\n\n<SlideDeck aria-label="项目汇报">\n  <Slide aria-label="本周进展">\n    <SlideHeader title="本周进展" />\n    <SlideText>完成组件与文档。</SlideText>\n  </Slide>\n</SlideDeck>`}</code>
           </pre>
           <a className="presentation-demo-link" href="/?page=docs">
-            完整 API 与维护文档 ↗
+            完整 API 与维护文档
           </a>
         </details>
       )}

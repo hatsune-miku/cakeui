@@ -12,11 +12,9 @@
   .cake-logentry-time {
     color: var(--cake-muted);
     font-variant-numeric: tabular-nums;
-    font-size: 11px;
   }
   .cake-logentry-level {
-    color: var(--cake-accent);
-    font-size: 10px;
+    color: var(--cake-muted);
     text-transform: uppercase;
   }
   .cake-logentry-text {
@@ -38,7 +36,6 @@
     }
   }
   &[data-level='debug'] {
-    .cake-logentry-level,
     .cake-logentry-text {
       color: var(--cake-muted);
     }

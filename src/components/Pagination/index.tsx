@@ -1,5 +1,6 @@
 import type { ComponentPropsWithRef } from 'react'
 
+import { ChevronGlyph } from '../../glyphs'
 import { cx } from '../../utils'
 import { Button } from '../Button'
 
@@ -38,7 +39,7 @@ export function Pagination({
         disabled={current === 1}
         onClick={() => onPageChange(current - 1)}
       >
-        ‹
+        <ChevronGlyph direction="left" />
       </Button>
       {pages.map((value, index) => (
         <span className="cake-pagination-part" key={value}>
@@ -65,7 +66,7 @@ export function Pagination({
         disabled={current === total}
         onClick={() => onPageChange(current + 1)}
       >
-        ›
+        <ChevronGlyph direction="right" />
       </Button>
     </nav>
   )

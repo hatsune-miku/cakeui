@@ -6,9 +6,11 @@
   background: var(--cake-slide-surface, #eef2f6);
   color: var(--cake-slide-ink, #29313a);
   font:
-    var(--cake-slide-small, 16px) / 1.65 'Cascadia Code',
+    var(--cake-slide-small, 16px) / 1.65 'Cascadia Mono',
+    'Cascadia Code',
     Consolas,
     monospace;
+  font-variant-ligatures: none;
   white-space: pre;
   overflow: auto;
   user-select: text;

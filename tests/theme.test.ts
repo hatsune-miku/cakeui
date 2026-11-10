@@ -50,6 +50,43 @@ describe('theme colors and semantics', () => {
     expect(blue.variables['--cake-accent-soft']).toBe('#d6e7f7')
   })
 
+  it('limits legacy contrast exceptions to the fixed accent fill and disabled text', () => {
+    for (const scheme of ['blue', 'pink', 'gold'] as const)
+      for (const mode of ['light', 'dark'] as const) {
+        const { contrastIssues } = generateTheme(createThemeConfig({ scheme, mode }))
+        expect(
+          contrastIssues.map((issue) => issue.pair).filter((pair) => pair !== 'accent' && pair !== 'disabled'),
+          `${scheme}/${mode}`
+        ).toEqual([])
+      }
+  })
+
+  it('paints visible selection controls for every preset and mode', () => {
+    for (const preset of themePresets)
+      for (const mode of ['light', 'dark'] as const) {
+        const { variables } = generateTheme(createThemeConfig({ scheme: preset.id, mode }))
+        expect(variables['--cake-choice-appearance'], preset.id).toBe('none')
+        expect(
+          themeContrast(variables['--cake-switch-off-thumb'], variables['--cake-switch-off-fill']),
+          `${preset.id}/${mode}`
+        ).toBeGreaterThanOrEqual(3)
+      }
+    // Pink's surface is translucent and must never become the mark on its accent fill.
+    for (const mode of ['light', 'dark'] as const)
+      expect(generateTheme(createThemeConfig({ scheme: 'pink', mode })).variables['--cake-switch-thumb']).toBe(
+        'var(--cake-primary-ink)'
+      )
+  })
+
+  it('uses only the shadow forms CakeDesign allows', () => {
+    for (const preset of themePresets)
+      for (const mode of ['light', 'dark'] as const) {
+        const { variables } = generateTheme(createThemeConfig({ scheme: preset.id, mode }))
+        expect(variables['--cake-atmosphere'], `${preset.id}/${mode}`).toMatch(/^0 (?:0|\d{2}px) \d{2,3}px/)
+        if (mode === 'dark') expect(variables['--cake-atmosphere'], preset.id).not.toContain('#2b3845')
+      }
+  })
+
   it('covers all six presets, both background modes and every foreground choice', () => {
     expect(themePresets.map((preset) => preset.id)).toEqual([
       'blue',

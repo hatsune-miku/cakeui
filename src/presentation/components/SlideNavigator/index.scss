@@ -30,8 +30,8 @@
   transform: translateX(calc(var(--cake-slide-navigator-offset) * 100%)) scale(0.85);
   opacity: 0.24;
   transition:
-    transform 360ms cubic-bezier(0.29, 0, 0, 1),
-    opacity 360ms cubic-bezier(0.29, 0, 0, 1);
+    transform 250ms cubic-bezier(0.29, 0, 0, 1),
+    opacity 250ms cubic-bezier(0.29, 0, 0, 1);
 
   &[data-distance='1'] {
     transform: translateX(calc(var(--cake-slide-navigator-offset) * 100%)) scale(0.94);

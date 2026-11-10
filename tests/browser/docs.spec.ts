@@ -70,7 +70,7 @@ test('plain reference needs no JavaScript and the gallery can recover from a fai
     })
   )
   await page.goto('/?page=docs')
-  await expect(page.getByText('文档暂时无法加载。')).toBeVisible()
+  await expect(page.getByText('文档加载失败，因为服务器返回 HTTP 503。')).toBeVisible()
   available = true
   await page.getByRole('button', { name: '重新加载' }).click()
   await expect(page.getByLabel('CakeUI 完整技术文档', { exact: true })).toHaveText(reference)

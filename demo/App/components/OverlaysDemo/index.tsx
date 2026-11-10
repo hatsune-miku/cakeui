@@ -25,7 +25,7 @@ export function OverlaysDemo({ notify }: OverlaysDemoProps) {
           <Icon name="layers" size={16} />
           打开对话框
         </Button>
-        <Button variant="ghost" onClick={() => notify('这是一条可关闭的通知。')}>
+        <Button variant="ghost" onClick={() => notify('已同步 3 个资源。')}>
           显示通知
         </Button>
       </div>
@@ -58,16 +58,12 @@ export function OverlaysDemo({ notify }: OverlaysDemoProps) {
               {interactive ? '按住右键，移到选项后松开' : '右键，或聚焦后按 Shift + F10'}
             </span>
           </span>
-          <span className="demo-context-dots" aria-hidden="true">
-            ···
-          </span>
         </div>
       </ContextMenu>
       <Dialog
         open={dialog}
         onOpenChange={setDialog}
         title="重命名资源"
-        description="一个清楚的名字，让文件更容易被找到。"
         closeLabel="关闭重命名"
         footer={
           <>
@@ -84,7 +80,7 @@ export function OverlaysDemo({ notify }: OverlaysDemoProps) {
             event.preventDefault()
             if (!name.trim()) return
             setDialog(false)
-            notify('名称已保存为「' + name.trim() + '」。')
+            notify('名称已保存：' + name.trim())
           }}
         >
           <Field label="资源名称" htmlFor="rename-input">

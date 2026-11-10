@@ -12,15 +12,40 @@
   overflow: auto;
   overscroll-behavior: contain;
   outline: none;
+  // Closing keeps the dialog in the top layer for the exit transition where the browser supports it.
+  opacity: 0;
+  transform: translateY(6px) scale(0.98);
+  transition:
+    opacity var(--cake-fast) var(--cake-ease),
+    transform var(--cake-fast) var(--cake-ease),
+    overlay var(--cake-fast) allow-discrete,
+    display var(--cake-fast) allow-discrete;
   &:focus-visible {
     outline: 2px solid var(--cake-focus);
     outline-offset: 3px;
   }
   &[open] {
-    animation: cake-dialog-enter var(--cake-normal) var(--cake-ease);
+    opacity: 1;
+    transform: none;
+    transition-duration: var(--cake-normal);
+    @starting-style {
+      opacity: 0;
+      transform: translateY(6px) scale(0.98);
+    }
   }
   &::backdrop {
     background: var(--cake-backdrop);
+    opacity: 0;
+    transition:
+      opacity var(--cake-fast) var(--cake-ease),
+      overlay var(--cake-fast) allow-discrete,
+      display var(--cake-fast) allow-discrete;
+  }
+  &[open]::backdrop {
+    opacity: 1;
+    @starting-style {
+      opacity: 0;
+    }
   }
   .cake-dialog-header {
     display: flex;
@@ -51,15 +76,5 @@
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 26px;
-  }
-}
-@keyframes cake-dialog-enter {
-  from {
-    opacity: 0;
-    transform: translateY(6px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: none;
   }
 }

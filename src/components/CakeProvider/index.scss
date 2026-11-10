@@ -9,14 +9,21 @@
   --cake-radius-medium: 16px;
   --cake-radius-large: 28px;
   --cake-radius-dialog: 32px;
+  // Menu rows nest inside a 6px popup padding, so their corners follow the popup's.
+  --cake-radius-item: max(4px, calc(var(--cake-radius-medium) - 6px));
   --cake-fast: 150ms;
   --cake-normal: 200ms;
   --cake-slow: 250ms;
   --cake-ease: cubic-bezier(0.29, 0, 0, 1);
   --cake-control-height: 38px;
+  // Latin faces first, then CJK faces that avoid the short Microsoft YaHei system fallback.
   --cake-font:
-    'Inter Variable', 'SF Pro Text', 'Noto Sans SC', 'PingFang SC', 'Segoe UI Variable Text', system-ui, sans-serif;
-  --cake-mono: 'Cascadia Code', 'Consolas', 'JetBrains Mono', 'Menlo', monospace;
+    'Segoe UI Variable Text', 'Segoe UI', -apple-system, 'SF Pro Text', 'Inter Variable', 'PingFang SC',
+    'HarmonyOS Sans SC', 'MiSans', 'Noto Sans SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'DengXian', system-ui,
+    sans-serif;
+  --cake-mono: 'Cascadia Mono', 'Cascadia Code', 'Consolas', 'JetBrains Mono', 'Menlo', monospace;
+  --cake-item-hover: color-mix(in srgb, var(--cake-text) 8%, transparent);
+  --cake-track: color-mix(in srgb, var(--cake-muted) 28%, transparent);
   --cake-button-gap: 7px;
   --cake-button-padding: 7px 14px;
   --cake-button-weight: 500;
@@ -26,8 +33,6 @@
   --cake-card-gap: 14px;
   --cake-card-edge: none;
   --cake-checkbox-size: 17px;
-  --cake-checkbox-margin: 0;
-  --cake-checkbox-color-scheme: inherit;
   --cake-progress-height: 6px;
   --cake-progress-track: var(--cake-hover);
   --cake-log-gap: 2px;
@@ -82,37 +87,31 @@
     --cake-radius-small: 8px;
     --cake-radius-medium: 12px;
     --cake-radius-large: 24px;
-    --cake-radius-dialog: 32px;
-    --cake-font: 'Segoe UI Variable Text', 'Segoe UI', 'PingFang SC', system-ui, sans-serif;
     --cake-button-gap: 6px;
     --cake-button-padding: 0 12px;
     --cake-button-weight: 400;
     --cake-input-padding: 5px 8px;
     --cake-input-focus-width: 1px;
     --cake-input-hover: var(--cake-control);
-    --cake-card-gap: 0px;
+    --cake-card-gap: 10px;
     --cake-checkbox-size: 16px;
-    // An invalid custom property invokes the consumer fallback to the UA margin.
-    --cake-checkbox-margin: initial;
-    --cake-checkbox-color-scheme: normal;
     --cake-progress-height: 5px;
     --cake-progress-track: var(--cake-accent-soft);
     --cake-log-gap: 0px;
     --cake-log-padding: 6px 10px 8px;
     --cake-log-background: transparent;
-    --cake-log-font-size: 11px;
+    --cake-log-font-size: 12px;
     --cake-log-line-height: 1.55;
     --cake-tip-padding: 6px 9px;
     --cake-tip-width: 220px;
-    --cake-tip-font-size: 11px;
+    --cake-tip-font-size: 12px;
     --cake-tip-line-height: 1.45;
     --cake-tip-offset: 6px;
     --cake-help-size: 14px;
-    --cake-help-font-size: 10px;
-    --cake-help-background: rgba(138, 128, 122, 0.24);
-    --cake-help-color: var(--cake-text);
+    --cake-help-font-size: 11px;
+    --cake-help-background: color-mix(in srgb, var(--cake-muted) 24%, transparent);
     font-size: 13px;
-    line-height: normal;
+    line-height: 1.45;
     font-synthesis: none;
     text-rendering: geometricPrecision;
   }

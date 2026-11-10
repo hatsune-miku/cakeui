@@ -1,47 +1,36 @@
-import { Button, CakeProvider, Card, CheckBox, Dot, Switch, Tag, TextBox } from '../../../../src'
+import { Button, CakeProvider, Card, CheckBox, Switch, Tag, TextBox } from '../../../../src'
 import { themePresets } from '../../../../src/theme'
 
 import './index.scss'
 
-const themes = [themePresets[1], themePresets[0], ...themePresets.slice(2)].map((preset) => ({
-  value: preset.id,
-  label: preset.name,
-  hex: preset.reference,
-}))
+const modes = [
+  { value: 'light', label: '浅色' },
+  { value: 'dark', label: '深色' },
+] as const
 export function Tokens() {
   return (
     <div className="demo-tokens">
-      <div className="demo-token-themes">
-        {themes.map((theme) => (
-          <CakeProvider key={theme.value} theme={theme.value} mode="light" className="demo-token-theme">
-            <div className="demo-between">
-              <strong>{theme.label}</strong>
-              <span className="demo-token-value">{theme.hex}</span>
+      <div className="demo-token-list">
+        {themePresets.map((preset) => (
+          <div className="demo-token-row" key={preset.id}>
+            <div className="demo-token-name">
+              <strong>{preset.name}</strong>
+              <span className="demo-token-value">{preset.reference}</span>
             </div>
-            <Button variant="primary">主要操作</Button>
-            <TextBox aria-label={theme.label + '示例输入'} placeholder="输入一些内容" />
-            <div className="demo-between">
-              <Switch aria-label={theme.label + '示例开关'} defaultChecked />
-              <CheckBox defaultChecked>已选择</CheckBox>
-              <Tag tone="accent">进行中</Tag>
-            </div>
-          </CakeProvider>
-        ))}
-      </div>
-      <div className="demo-token-themes">
-        {themes.map((theme) => (
-          <CakeProvider key={theme.value} theme={theme.value} mode="dark" className="demo-token-theme">
-            <div className="demo-between">
-              <strong>{theme.label} · 深色</strong>
-              <Dot tone="accent" />
-            </div>
-            <Button variant="primary">主要操作</Button>
-            <TextBox aria-label={theme.label + '深色示例输入'} placeholder="输入一些内容" />
-            <div className="demo-between">
-              <Switch aria-label={theme.label + '深色示例开关'} defaultChecked />
-              <Tag tone="accent">进行中</Tag>
-            </div>
-          </CakeProvider>
+            {modes.map((mode) => (
+              <CakeProvider key={mode.value} theme={preset.id} mode={mode.value} className="demo-token-theme">
+                <Button variant="primary">主要操作</Button>
+                <TextBox
+                  className="demo-token-input"
+                  aria-label={`${preset.name}${mode.label}示例输入`}
+                  placeholder="输入内容"
+                />
+                <Switch aria-label={`${preset.name}${mode.label}示例开关`} defaultChecked />
+                <CheckBox defaultChecked>已选择</CheckBox>
+                <Tag tone="accent">进行中</Tag>
+              </CakeProvider>
+            ))}
+          </div>
         ))}
       </div>
       <div className="demo-token-detail">
@@ -60,7 +49,7 @@ export function Tokens() {
           <h2 className="demo-card-title">动效时长与曲线</h2>
           <div className="demo-motion-track">
             <Button className="demo-motion-button" variant="primary">
-              按下试试
+              按下
             </Button>
           </div>
           <div className="demo-between">

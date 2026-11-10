@@ -1,4 +1,13 @@
 .cake-table-cell {
   padding: 13px 14px;
   line-height: 1.5;
+  transition: background var(--cake-fast) var(--cake-ease);
+  &:first-child {
+    border-start-start-radius: var(--cake-radius-small);
+    border-end-start-radius: var(--cake-radius-small);
+  }
+  &:last-child {
+    border-start-end-radius: var(--cake-radius-small);
+    border-end-end-radius: var(--cake-radius-small);
+  }
 }

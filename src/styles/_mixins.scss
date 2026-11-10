@@ -69,8 +69,12 @@
   padding: 0;
   border: var(--cake-choice-border, revert);
   background: var(--cake-choice-background, revert);
+  transition:
+    background var(--cake-fast) var(--cake-ease),
+    border-color var(--cake-fast) var(--cake-ease);
   &:checked,
   &:indeterminate {
+    border-color: transparent;
     background: var(--cake-choice-fill, revert);
     color: var(--cake-choice-ink, inherit);
   }
@@ -85,8 +89,12 @@
     display: block;
   }
   &:disabled {
-    background: var(--cake-disabled-background, revert);
+    background: var(--cake-disabled-background, var(--cake-choice-background, revert));
     color: var(--cake-disabled-color, inherit);
+  }
+  &:disabled:is(:checked, :indeterminate) {
+    background: var(--cake-disabled-background, var(--cake-choice-fill, revert));
+    color: var(--cake-disabled-color, var(--cake-choice-ink, inherit));
   }
   @media (forced-colors: active) {
     appearance: auto;

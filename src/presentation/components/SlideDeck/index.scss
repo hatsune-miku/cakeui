@@ -33,7 +33,9 @@
   --cake-presentation-accent: #3d658f;
   --cake-presentation-accent-soft: #d6e7f7;
   --cake-presentation-accent-ink: #fff;
-  --cake-presentation-font: 'Segoe UI Variable Text', 'Segoe UI', 'PingFang SC', system-ui, sans-serif;
+  --cake-presentation-font:
+    'Segoe UI Variable Text', 'Segoe UI', -apple-system, 'PingFang SC', 'HarmonyOS Sans SC', 'MiSans', 'Noto Sans SC',
+    'Noto Sans CJK SC', 'Source Han Sans SC', 'DengXian', system-ui, sans-serif;
 
   container: cake-deck / inline-size;
   display: flex;

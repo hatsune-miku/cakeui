@@ -26,7 +26,7 @@ function derivedPairs(seed: string, mode: ResolvedThemeMode, scheme: ThemeConfig
           : '#faf7f9'
         : mix(seed, neutral, dark ? 0.91 : 0.96)
   const text = dark ? '#f4f3f7' : '#25232a'
-  const surface = mix(canvas, dark ? '#ffffff' : '#ffffff', dark ? 0.045 : 0.55)
+  const surface = mix(canvas, '#ffffff', dark ? 0.045 : 0.55)
   const raised = mix(canvas, '#ffffff', dark ? 0.085 : 0.85)
   const input = mix(canvas, '#ffffff', dark ? 0.07 : 0.8)
   const inputHover = mix(input, dark ? '#ffffff' : seed, dark ? 0.035 : 0.04)
@@ -86,6 +86,7 @@ function legacyPairs(variables: Variables): Pairs {
   const text = color('text'),
     accentInk = color('accent-ink'),
     primaryInk = color('primary-ink')
+  const dangerHover = mix(color('danger-soft'), color('danger'), 0.15)
   const result: Pairs = {
     canvas: pair(canvas, text),
     surface: pair(surface, text),
@@ -99,14 +100,14 @@ function legacyPairs(variables: Variables): Pairs {
     accentActive: pair(color('accent-hover'), primaryInk),
     accentSoft: pair(color('accent-soft'), accentInk),
     accentSoftHover: pair(color('accent-soft'), accentInk),
-    selected: pair(surface, color('accent')),
+    selected: pair(surface, readable(color('accent'), surface)),
     disabled: pair(surface, mix(surface, text, 0.5)),
     success: pair(color('success-soft'), color('success')),
     warning: pair(color('warning-soft'), color('warning')),
     danger: pair(color('danger-soft'), color('danger')),
     successHover: pair(color('success-soft'), color('success')),
     warningHover: pair(color('warning-soft'), color('warning')),
-    dangerHover: pair(mix(color('danger-soft'), color('danger'), 0.15), color('danger')),
+    dangerHover: pair(dangerHover, readable(color('danger'), dangerHover)),
   }
   return result
 }
@@ -191,13 +192,15 @@ export function generateTheme(config: ThemeConfig, systemMode: ResolvedThemeMode
       '--cake-accent-soft-hover': 'var(--cake-accent-soft)',
       '--cake-accent-soft-hover-ink': 'var(--cake-accent-ink)',
       '--cake-selected': 'var(--cake-surface)',
-      '--cake-selected-ink': 'var(--cake-accent)',
+      '--cake-selected-ink': pairs.selected.foreground,
       '--cake-disabled-opacity': 'initial',
       '--cake-disabled-background': 'initial',
       '--cake-disabled-color': 'initial',
       '--cake-placeholder-opacity': '0.85',
       '--cake-switch-fill': 'var(--cake-accent)',
-      '--cake-switch-thumb': 'var(--cake-surface)',
+      // Pink's surface is translucent, so its mark uses the opaque ink already paired with the accent fill.
+      '--cake-switch-thumb':
+        old['--cake-primary'] === 'var(--cake-accent)' ? 'var(--cake-primary-ink)' : 'var(--cake-surface)',
       '--cake-check-accent': 'var(--cake-accent)',
     })
   }
@@ -229,17 +232,19 @@ export function generateTheme(config: ThemeConfig, systemMode: ResolvedThemeMode
     const hairline = mix(pairs.surface.foreground, pairs.surface.background, dark ? 0.95 : 0.94)
     variables['--cake-hairline'] = `inset 0 0 0 1px ${hairline}`
   }
-  // Native accent-color chooses its own mark color. Computed themes paint the same native
-  // inputs with explicit paired marks; untouched legacy palettes retain their UA appearance.
-  const pairedChoices = !legacy || foreground !== 'auto' || Boolean(options.pairs?.[mode]?.accent)
+  // Every theme paints its own selection controls: a native control ignores the palette, and on
+  // dark schemes it can fall back to a bright white box. The off state needs a visible thumb too.
+  const offThumb = dark ? pairs.canvas.foreground : '#ffffff'
   Object.assign(variables, {
-    '--cake-choice-appearance': pairedChoices ? 'none' : 'auto',
-    '--cake-choice-border': pairedChoices ? '1px solid var(--cake-border)' : 'initial',
-    '--cake-choice-background': pairedChoices ? 'var(--cake-control)' : 'initial',
-    '--cake-choice-fill': pairedChoices ? 'var(--cake-primary)' : 'initial',
-    '--cake-choice-ink': pairedChoices ? 'var(--cake-primary-ink)' : 'initial',
-    '--cake-choice-radius': pairedChoices ? '3px' : 'initial',
-    '--cake-choice-mark': pairedChoices ? "''" : 'none',
+    '--cake-switch-off-fill': readable(mix(pairs.surface.background, pairs.muted.foreground, 0.55), offThumb, 3),
+    '--cake-switch-off-thumb': offThumb,
+    '--cake-choice-appearance': 'none',
+    '--cake-choice-border': '1px solid color-mix(in srgb, var(--cake-muted) 70%, transparent)',
+    '--cake-choice-background': 'var(--cake-control)',
+    '--cake-choice-fill': 'var(--cake-switch-fill)',
+    '--cake-choice-ink': 'var(--cake-switch-thumb)',
+    '--cake-choice-radius': '4px',
+    '--cake-choice-mark': "''",
   })
   // Public semantic aliases and state pairs work with both original and computed themes.
   Object.assign(variables, {

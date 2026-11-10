@@ -5,6 +5,7 @@
   cursor: pointer;
   &:has(:disabled) {
     opacity: var(--cake-disabled-opacity, 0.5);
+    color: var(--cake-disabled-color, inherit);
     cursor: not-allowed;
   }
   .cake-switch-input {
@@ -16,7 +17,7 @@
     width: 34px;
     height: 20px;
     border-radius: 20px;
-    background: color-mix(in srgb, var(--cake-muted) 30%, var(--cake-surface));
+    background: var(--cake-switch-off-fill);
     cursor: inherit;
     transition: background var(--cake-fast) var(--cake-ease);
     &::after {
@@ -27,8 +28,10 @@
       width: 14px;
       height: 14px;
       border-radius: 50%;
-      background: var(--cake-surface);
-      transition: transform var(--cake-fast) var(--cake-ease);
+      background: var(--cake-switch-off-thumb);
+      transition:
+        transform var(--cake-fast) var(--cake-ease),
+        background var(--cake-fast) var(--cake-ease);
     }
     &:checked {
       background: var(--cake-switch-fill);
@@ -37,9 +40,35 @@
         transform: translateX(14px);
       }
     }
+    &:disabled {
+      background: var(--cake-disabled-background, var(--cake-switch-off-fill));
+      &::after {
+        background: var(--cake-disabled-color, var(--cake-switch-off-thumb));
+      }
+      &:checked {
+        background: var(--cake-disabled-color, var(--cake-switch-fill));
+        &::after {
+          background: var(--cake-disabled-background, var(--cake-switch-thumb));
+        }
+      }
+    }
     &:focus-visible {
       outline: 2px solid var(--cake-focus);
       outline-offset: 3px;
+    }
+    @media (forced-colors: active) {
+      forced-color-adjust: none;
+      background: Canvas;
+      box-shadow: inset 0 0 0 1px ButtonText;
+      &::after {
+        background: ButtonText;
+      }
+      &:checked {
+        background: Highlight;
+        &::after {
+          background: HighlightText;
+        }
+      }
     }
   }
   .cake-switch-label {

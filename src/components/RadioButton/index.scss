@@ -6,13 +6,14 @@
   cursor: pointer;
   &:has(:disabled) {
     opacity: var(--cake-disabled-opacity, 0.5);
+    color: var(--cake-disabled-color, inherit);
     cursor: not-allowed;
   }
   .cake-radio-input {
     @include choice;
     border-radius: 50%;
-    width: 17px;
-    height: 17px;
+    width: var(--cake-checkbox-size);
+    height: var(--cake-checkbox-size);
     margin: 0;
     accent-color: var(--cake-check-accent);
     cursor: inherit;

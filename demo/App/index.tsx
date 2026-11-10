@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { ActionsDemo } from './components/ActionsDemo'
 import { AiDocs } from './components/AiDocs'
@@ -24,6 +24,7 @@ import {
   type CakeTheme,
   Dot,
   HoverTips,
+  Switch,
   TextBox,
   ThemeSettings,
   Toast,
@@ -32,6 +33,8 @@ import {
   type ThemeConfig,
   type ThemeStorageAdapter,
   createThemeConfig,
+  generateTheme,
+  migrateThemeConfig,
   resolveThemeOptions,
   serializeThemeConfig,
   themePresets,
@@ -60,6 +63,14 @@ const categories: { id: Category; label: string }[] = [
   { id: 'data', label: '数据展示' },
   { id: 'feedback', label: '反馈与浮层' },
 ]
+const swatches = new Map(
+  themePresets.map((preset) => [
+    preset.id,
+    generateTheme(createThemeConfig({ scheme: preset.id, mode: 'light' })).pairs.accent.background,
+  ])
+)
+const searchShortcut = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘ K' : 'Ctrl K'
+const themeStorageKey = 'cakeui-theme-settings'
 function readPage(): Page {
   const page = new URLSearchParams(window.location.search).get('page')
   return nav.find((item) => item.page === page)?.page ?? 'components'
@@ -77,30 +88,64 @@ function readSettings() {
     return { theme: 'blue' as CakeTheme, themeChosen: false, mode: 'light' as CakeMode }
   }
 }
+function defaultThemeConfig() {
+  const previous = readSettings()
+  return createThemeConfig({ scheme: previous.theme, mode: previous.mode })
+}
+function readInitialTheme() {
+  try {
+    const saved = localStorage.getItem(themeStorageKey)
+    if (saved) return migrateThemeConfig(saved)
+  } catch {
+    // ThemeSettings loads the same value next and reports why it could not be read.
+  }
+  return defaultThemeConfig()
+}
 const themeStorage: ThemeStorageAdapter = {
-  load: () => {
-    const saved = localStorage.getItem('cakeui-theme-settings')
-    if (saved) return saved
-    const previous = readSettings()
-    return createThemeConfig({ scheme: previous.theme, mode: previous.mode })
-  },
-  save: (config) => localStorage.setItem('cakeui-theme-settings', serializeThemeConfig(config)),
+  load: () => localStorage.getItem(themeStorageKey) ?? defaultThemeConfig(),
+  save: (config) => localStorage.setItem(themeStorageKey, serializeThemeConfig(config)),
+}
+function describeStorageFailure(error: unknown) {
+  if (error instanceof DOMException && error.name === 'QuotaExceededError') return '浏览器存储空间已满'
+  if (error instanceof DOMException && error.name === 'SecurityError') return '浏览器禁止此页面使用本地存储'
+  return error instanceof Error ? error.message : String(error)
+}
+function useSystemDark() {
+  const [dark, setDark] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches)
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    function update() {
+      setDark(media.matches)
+    }
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+  return dark
 }
 export function App() {
-  const [themeConfig, setThemeConfig] = useState(() => {
-    const previous = readSettings()
-    return createThemeConfig({ scheme: previous.theme, mode: previous.mode })
-  })
+  const [themeConfig, setThemeConfig] = useState(readInitialTheme)
   const settings = { theme: themeConfig.scheme, mode: resolveThemeOptions(themeConfig).mode }
+  const systemDark = useSystemDark()
+  const dark = settings.mode === 'dark' || (settings.mode === 'system' && systemDark)
   const [page, setPage] = useState<Page>(readPage)
   const [category, setCategory] = useState<Category>('all')
   const [query, setQuery] = useState('')
   const [compact, setCompact] = useState(false)
   const [sidebar, setSidebar] = useState(false)
   const [mobile, setMobile] = useState(() => window.matchMedia('(max-width: 700px)').matches)
+  const app = useRef<HTMLDivElement>(null)
   const sidebarElement = useRef<HTMLElement>(null)
   const [toast, setToast] = useState({ open: false, message: '', key: 0 })
   const search = useRef<HTMLInputElement>(null)
+  const pageLabel = nav.find((item) => item.page === page)?.label
+  useLayoutEffect(() => {
+    // Scrollbars, overscroll and the browser toolbar sit outside the provider's element.
+    if (!app.current) return
+    const style = getComputedStyle(app.current)
+    document.documentElement.style.colorScheme = style.colorScheme
+    document.body.style.background = style.backgroundColor
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', style.backgroundColor)
+  }, [serializeThemeConfig(themeConfig), systemDark])
   useEffect(() => {
     const media = window.matchMedia('(max-width: 700px)')
     function update() {
@@ -108,6 +153,14 @@ export function App() {
     }
     media.addEventListener('change', update)
     return () => media.removeEventListener('change', update)
+  }, [])
+  useEffect(() => {
+    function restorePage() {
+      setPage(readPage())
+      setQuery('')
+    }
+    window.addEventListener('popstate', restorePage)
+    return () => window.removeEventListener('popstate', restorePage)
   }, [])
   useEffect(() => {
     if (!mobile || !sidebar) return
@@ -127,14 +180,16 @@ export function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
   function navigate(next: Page) {
-    const url = new URL(window.location.href)
-    if (next === 'components') url.searchParams.delete('page')
-    else url.searchParams.set('page', next)
-    window.history.replaceState(null, '', url)
-    setPage(next)
+    if (next !== page) {
+      const url = new URL(window.location.href)
+      if (next === 'components') url.searchParams.delete('page')
+      else url.searchParams.set('page', next)
+      window.history.pushState(null, '', url)
+      setPage(next)
+      window.scrollTo({ top: 0 })
+    }
     setQuery('')
     setSidebar(false)
-    window.scrollTo({ top: 0 })
   }
   function notify(message: string) {
     setToast((current) => ({ open: true, message, key: current.key + 1 }))
@@ -143,12 +198,19 @@ export function App() {
     setThemeConfig(next)
     try {
       themeStorage.save(next)
-    } catch {
-      notify('主题保存失败，当前外观已保留。')
+    } catch (error) {
+      notify(`主题未保存，因为${describeStorageFailure(error)}。当前外观已保留。`)
     }
   }
   const sections = [
+    // Cells in a row stretch to one height, so sections of similar content height sit side by side.
     { id: 'actions', category: 'basic', search: '按钮 提示 Button HoverTips WhatsThis', content: <ActionsDemo /> },
+    {
+      id: 'navigation',
+      category: 'navigation',
+      search: '导航 标签页 Tabs TabList TabPanel Breadcrumb Pagination',
+      content: <NavigationDemo />,
+    },
     {
       id: 'forms',
       category: 'input',
@@ -160,12 +222,6 @@ export function App() {
       category: 'input',
       search: '开关 选项 CheckBox Switch RadioButton Slider GroupBox',
       content: <ChoicesDemo />,
-    },
-    {
-      id: 'navigation',
-      category: 'navigation',
-      search: '导航 标签页 Tabs TabList TabPanel Breadcrumb Pagination',
-      content: <NavigationDemo />,
     },
     {
       id: 'feedback',
@@ -200,6 +256,7 @@ export function App() {
   )
   return (
     <CakeProvider
+      ref={app}
       config={themeConfig}
       onThemeChange={setThemeConfig}
       density={compact ? 'compact' : 'comfortable'}
@@ -228,15 +285,6 @@ export function App() {
           }
         }}
       >
-        <a className="demo-brand" href="#main" onClick={() => navigate('components')}>
-          <span className="demo-brand-mark">
-            <Icon name="cake" size={22} />
-          </span>
-          <span>
-            CakeUI<span className="demo-brand-version">{version}</span>
-          </span>
-        </a>
-        <span className="demo-sidebar-caption">组件工作台</span>
         <nav className="demo-nav">
           {nav.map((item) => (
             <button
@@ -248,16 +296,15 @@ export function App() {
             >
               <Icon name={item.icon} size={17} />
               {item.label}
-              {page === item.page && <span className="demo-nav-dot" />}
             </button>
           ))}
         </nav>
         <div className="demo-sidebar-group">
-          <span className="demo-sidebar-caption">组件索引</span>
           {categories.slice(1).map((item) => (
             <button
               type="button"
               className="demo-index-link"
+              aria-current={page === 'components' && category === item.id ? 'true' : undefined}
               key={item.id}
               onClick={() => {
                 navigate('components')
@@ -265,15 +312,10 @@ export function App() {
               }}
             >
               {item.label}
-              <Icon name="chevron" size={12} />
             </button>
           ))}
         </div>
-        <div className="demo-sidebar-bottom">
-          <div className="demo-sidebar-status">
-            <span>React · TypeScript · SCSS</span>
-          </div>
-        </div>
+        <span className="demo-sidebar-version">{version}</span>
       </aside>
       {sidebar && (
         <button
@@ -285,20 +327,16 @@ export function App() {
       )}
       <div className="demo-workspace" inert={mobile && sidebar}>
         <header className="demo-topbar">
-          <div className="demo-topbar-location">
-            <Button
-              className="demo-mobile-toggle"
-              variant="ghost"
-              aria-label="展开导航"
-              aria-expanded={sidebar}
-              onClick={() => setSidebar(!sidebar)}
-            >
-              <Icon name="menu" />
-            </Button>
-            <span className="demo-muted">工作台</span>
-            <span className="demo-slash">/</span>
-            <span>{nav.find((item) => item.page === page)?.label}</span>
-          </div>
+          <Button
+            className="demo-mobile-toggle"
+            variant="ghost"
+            aria-label="展开导航"
+            aria-expanded={sidebar}
+            onClick={() => setSidebar(!sidebar)}
+          >
+            <Icon name="menu" />
+          </Button>
+          <h1 className="demo-title">{pageLabel}</h1>
           <div className="demo-topbar-tools">
             <div className="demo-search">
               <Icon name="search" size={15} />
@@ -308,61 +346,49 @@ export function App() {
                 placeholder="搜索组件…"
                 value={query}
                 onChange={(event) => {
-                  navigate('components')
+                  if (page !== 'components') navigate('components')
                   setCategory('all')
                   setQuery(event.target.value)
                 }}
               />
-              <kbd className="demo-shortcut">⌘ K</kbd>
+              <kbd className="demo-shortcut">{searchShortcut}</kbd>
             </div>
             <HoverTips content="切换明暗模式">
               <Button
                 variant="ghost"
-                aria-label={settings.mode === 'dark' ? '切换浅色模式' : '切换深色模式'}
-                onClick={() =>
-                  applyThemeConfig(
-                    updateThemeConfig(themeConfig, { mode: settings.mode === 'dark' ? 'light' : 'dark' })
-                  )
-                }
+                aria-label={dark ? '切换浅色模式' : '切换深色模式'}
+                onClick={() => applyThemeConfig(updateThemeConfig(themeConfig, { mode: dark ? 'light' : 'dark' }))}
               >
-                <Icon name={settings.mode === 'dark' ? 'sun' : 'moon'} size={17} />
+                <Icon name={dark ? 'sun' : 'moon'} size={17} />
               </Button>
             </HoverTips>
           </div>
         </header>
         <main className="demo-main" id="main" tabIndex={-1}>
-          <div className="demo-intro">
-            <h1 className="demo-title">{nav.find((item) => item.page === page)?.label}</h1>
-          </div>
           <div className="demo-controls">
-            <div className="demo-row">
-              <span className="demo-control-label">配色</span>
-              <div className="demo-theme-options" role="group" aria-label="主题配色">
-                {[themePresets[1], themePresets[0], ...themePresets.slice(2)].map((item) => (
-                  <button
-                    className="demo-theme-button"
-                    data-theme={item.id}
-                    aria-pressed={settings.theme === item.id}
-                    onClick={() => applyThemeConfig(updateThemeConfig(themeConfig, { scheme: item.id }))}
-                    key={item.id}
-                  >
-                    <span className="demo-theme-swatch" style={{ background: item.reference }} />
-                    {item.name}
-                    {settings.theme === item.id && <Icon name="check" size={12} />}
-                  </button>
-                ))}
-              </div>
+            <div className="demo-theme-options" role="group" aria-label="主题配色">
+              {themePresets.map((item) => (
+                <button
+                  type="button"
+                  className="demo-theme-button"
+                  data-theme={item.id}
+                  aria-pressed={settings.theme === item.id}
+                  onClick={() =>
+                    applyThemeConfig(updateThemeConfig(themeConfig, { scheme: item.id, mode: settings.mode }))
+                  }
+                  key={item.id}
+                >
+                  <span className="demo-theme-swatch" style={{ background: swatches.get(item.id) }} />
+                  {item.name}
+                </button>
+              ))}
             </div>
-            <ThemeSettings
-              labels={themeLabels}
-              storage={themeStorage}
-              onStorageError={() => notify('主题存储不可用，当前外观已保留。')}
-            />
-            <button type="button" className="demo-density" aria-pressed={compact} onClick={() => setCompact(!compact)}>
-              <Icon name="sliders" size={14} />
-              {compact ? '紧凑间距' : '舒适间距'}
-              <Icon name="chevron" size={11} />
-            </button>
+            <div className="demo-control-tools">
+              <ThemeSettings labels={themeLabels} storage={themeStorage} />
+              <Switch checked={compact} onChange={(event) => setCompact(event.target.checked)}>
+                紧凑间距
+              </Switch>
+            </div>
           </div>
           {page === 'components' && (
             <>
@@ -390,7 +416,7 @@ export function App() {
               {!filtered.length && (
                 <div className="demo-empty">
                   <Icon name="search" size={24} />
-                  <p>没有找到「{query}」相关组件。</p>
+                  <p>没有匹配 {query} 的组件。</p>
                   <Button
                     onClick={() => {
                       setQuery('')
