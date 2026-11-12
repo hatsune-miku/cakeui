@@ -52,7 +52,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "npm run docs:check && npm run typecheck && npm test && npm run test:release && npm run build && npm run build:demo && npm run format:check",
-    "prepack": "npm run docs:check && npm run build"
+    "prepack": "npm run docs:check && npm run build",
+    "native:tokens": "node scripts/native-tokens.mjs",
+    "native:tokens:check": "node scripts/native-tokens.mjs --check"
   },
   "peerDependencies": {
     "react": ">=19.0.0",

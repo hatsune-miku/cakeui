@@ -47,3 +47,5 @@ npm run dev
 ```
 
 提交前运行 `npm run check`、`npm run test:browser` 和 `npm run test:package`。
+
+React Native 基础子集正在独立包中开发，见 [CakeUI Native](packages/native/README.md)。

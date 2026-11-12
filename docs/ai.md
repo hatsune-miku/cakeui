@@ -897,3 +897,9 @@ Gallery 构建会检查文档一致性，再将 public 中两个文件复制到 
 部署到 https://gallery.vanillacake.cn，复用 Ubuntu 上的 Nginx 和 Certbot / Let's Encrypt。Windows 使用 `./scripts/deploy-gallery.ps1`；已构建且内容未变化时可用 -SkipBuild。详细目录、证书续期和回退步骤见 `docs/deployment.md`。发布后验证 Gallery 链接可见、两条纯文本链接返回 200、Content-Type 正确、正文与本地生成结果一致。
 
 以上记录的是当前实现，不承诺未验证浏览器或未来版本的相同行为。修改库时同时修改描述；集成不同版本时以所安装包的类型与该版本源码为准。
+
+## React Native 独立包
+
+`packages/native` 提供 `@a1knla/cakeui-native` 基础组件源码包，由 Metro 编译；当前用于 AnyDrop 本地开发，尚未发布 npm。Web 的包名、入口、CSS 和运行依赖保持不变。原生接口见 [CakeUI Native 文档](../packages/native/README.md)。
+
+原生 CakeProvider 提供 React context；Button 使用 onPress，TextBox 使用 onChangeText，Switch 使用 value / onValueChange，CheckBox 使用 checked / onValueChange。这些与本文 Web DOM 属性不可混用。原生组件使用 StyleSheet，不要求 SCSS；系统 Widget 由应用实现。原生颜色由现有粉色主题 mixins 生成，运行 `npm run native:tokens` 和 `npm run native:tokens:check` 保持一致。

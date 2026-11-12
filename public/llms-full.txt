@@ -898,6 +898,12 @@ Gallery 构建会检查文档一致性，再将 public 中两个文件复制到 
 
 以上记录的是当前实现，不承诺未验证浏览器或未来版本的相同行为。修改库时同时修改描述；集成不同版本时以所安装包的类型与该版本源码为准。
 
+## React Native 独立包
+
+`packages/native` 提供 `@a1knla/cakeui-native` 基础组件源码包，由 Metro 编译；当前用于 AnyDrop 本地开发，尚未发布 npm。Web 的包名、入口、CSS 和运行依赖保持不变。原生接口见 [CakeUI Native 文档](../packages/native/README.md)。
+
+原生 CakeProvider 提供 React context；Button 使用 onPress，TextBox 使用 onChangeText，Switch 使用 value / onValueChange，CheckBox 使用 checked / onValueChange。这些与本文 Web DOM 属性不可混用。原生组件使用 StyleSheet，不要求 SCSS；系统 Widget 由应用实现。原生颜色由现有粉色主题 mixins 生成，运行 `npm run native:tokens` 和 `npm run native:tokens:check` 保持一致。
+
 ## 附录 A. 当前构建身份与公开导出
 
 - 包名：@a1knla/cakeui
@@ -905,7 +911,7 @@ Gallery 构建会检查文档一致性，再将 public 中两个文件复制到 
 - 署名：hatsune-miku
 - React peer：>=19.0.0；React DOM peer：>=19.0.0
 - 公开组件：48 个；下列列表与 src/index.ts 一致。
-- 文档 / package.json / src 内容指纹（SHA-256）：e1f270104d43d7cf3e0910df39b312b396ef5df18941e328c4cb81dea28d1f27
+- 文档 / package.json / src 内容指纹（SHA-256）：3ea481fd2a2ecf0683031cd0cca39c97b2cc9aa76a2dd31c53f1907e2178ee90
 - 本文为生成结果，请修改 docs/ai.md 或相应源码后运行 npm run docs:build。
 
 Accordion, AccordionItem, Alert, Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, CakeProvider, Card, CheckBox, ComboBox, ContextMenu, Dialog, Dot, Field, GroupBox, HoverTips, ListItem, ListView, LogEntry, LogView, MenuItem, MenuSeparator, NumberBox, Pagination, ProgressBar, RadioButton, Separator, Skeleton, Slider, Spinner, Switch, Tab, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TabList, TabPanel, Tabs, Tag, TextArea, TextBox, Toast, WhatsThis
