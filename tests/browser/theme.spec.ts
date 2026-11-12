@@ -206,6 +206,18 @@ test('theme choices accept a single pointer click without moving the dialog', as
   }
 })
 
+test('buttons preserve input focus when the consumer cancels mouse or pointer down', async ({ page }) => {
+  await page.goto('/tests/browser/fixtures/theme/')
+  const input = page.getByRole('textbox', { name: 'Keep focus', exact: true })
+  await input.click()
+  for (const [index, name] of ['Keep input focus', 'Keep pointer focus'].entries()) {
+    await page.getByRole('button', { name, exact: true }).click()
+    await expect(input).toBeFocused()
+    await expect(page.getByTestId('focus-blurs')).toHaveText('0')
+    await expect(page.getByTestId('focus-actions')).toHaveText(String(index + 1))
+  }
+})
+
 test('pointer focus restoration has no button ring and keyboard navigation restores it', async ({
   page,
   browserName,

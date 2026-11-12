@@ -44,6 +44,8 @@ function Fixture() {
   const [error, setError] = useState('')
   const [reversed, setReversed] = useState(false)
   const [contextActions, setContextActions] = useState(0)
+  const [focusActions, setFocusActions] = useState(0)
+  const [focusBlurs, setFocusBlurs] = useState(0)
   const storage = useMemo<ThemeStorageAdapter>(
     () => ({
       load: () => localStorage.getItem('cake-theme-fixture'),
@@ -165,6 +167,15 @@ function Fixture() {
       </CakeProvider>
       <div className="theme-fixture-actions">
         <Button onClick={() => setReversed((value) => !value)}>Reverse sections</Button>
+        <TextBox aria-label="Keep focus" onBlur={() => setFocusBlurs((value) => value + 1)} />
+        <Button onMouseDown={(event) => event.preventDefault()} onClick={() => setFocusActions((value) => value + 1)}>
+          Keep input focus
+        </Button>
+        <Button onPointerDown={(event) => event.preventDefault()} onClick={() => setFocusActions((value) => value + 1)}>
+          Keep pointer focus
+        </Button>
+        <output data-testid="focus-actions">{focusActions}</output>
+        <output data-testid="focus-blurs">{focusBlurs}</output>
         {(reversed ? ['second', 'first'] : ['first', 'second']).map((id) => (
           <section key={id} aria-label={id + ' section'}>
             <Button>Repeated action</Button>

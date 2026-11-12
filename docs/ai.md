@@ -328,6 +328,8 @@ export function ThemedApp() {
 
 原生 button，ref 指向按钮。`variant='default'` 可取 default / primary / ghost / danger；`size='medium'` 使用 Size；`loading=false`；默认 `type='button'`。
 
+指针点击的捕获阶段先调用消费方 onClickCapture；若该点击和此前的 pointerdown / mousedown 均未 preventDefault，则用 preventScroll 聚焦按钮，确保系统 WebKit 能将原生弹窗焦点恢复到入口。消费方或祖先可在 pointerdown / mousedown 阻止焦点转移，以保留输入焦点；键盘与程序化 click 不额外聚焦。指针焦点不会绘制键盘描边。
+
 默认按钮常态无边框或阴影，使用 control 背景与 5% control-text 混合后的中性底色，悬停对 control-hover 做同样处理；输入框仍保留自己的边线。按下时染上 accent-soft 并下移 1px；各 variant 均保留 1px 下移反馈。primary 使用 primary / primary-ink，粉色主题保持 AnyDrop 的玫红底，auto 文字按背景计算，悬停与按下使用 accent-hover；ghost 透明；danger 用危险色，悬停和按下保持危险色。动画使用 fast / ease 变量，默认 150ms 与 cubic-bezier(0.29, 0, 0, 1)。loading 显示小 Spinner、保留 children、设置 aria-busy 并禁用按钮。图标由应用传 children；纯图标按钮必须有可访问名称。
 
 ### Card

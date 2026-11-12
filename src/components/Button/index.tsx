@@ -1,4 +1,4 @@
-import type { ComponentPropsWithRef } from 'react'
+import { type ComponentPropsWithRef, useRef } from 'react'
 
 import { type Size, cx } from '../../utils'
 import { Spinner } from '../Spinner'
@@ -16,9 +16,13 @@ export function Button({
   type = 'button',
   className,
   children,
+  onPointerDown,
+  onMouseDown,
   onClickCapture,
   ...props
 }: ButtonProps) {
+  const mouseDown = useRef<MouseEvent | null>(null)
+  const pointerDown = useRef<PointerEvent | null>(null)
   return (
     <button
       {...props}
@@ -28,10 +32,28 @@ export function Button({
       data-variant={variant}
       data-size={size}
       className={cx('cake-button', className)}
+      onPointerDown={(event) => {
+        onPointerDown?.(event)
+        pointerDown.current = event.nativeEvent
+        mouseDown.current = null
+      }}
+      onMouseDown={(event) => {
+        onMouseDown?.(event)
+        mouseDown.current = event.nativeEvent
+      }}
       onClickCapture={(event) => {
         onClickCapture?.(event)
         // WebKit does not focus pointer-clicked buttons, so native dialogs otherwise lose their opener.
-        if (!event.defaultPrevented) event.currentTarget.focus({ preventScroll: true })
+        // Read finished press events so ancestor handlers and cancelled pointer compatibility events are honored.
+        if (
+          event.detail > 0 &&
+          !event.defaultPrevented &&
+          !pointerDown.current?.defaultPrevented &&
+          !mouseDown.current?.defaultPrevented
+        )
+          event.currentTarget.focus({ preventScroll: true })
+        mouseDown.current = null
+        pointerDown.current = null
       }}
     >
       {loading && <Spinner size="small" aria-hidden="true" />}
