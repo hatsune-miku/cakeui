@@ -1,7 +1,13 @@
 .cake-theme-settings-dialog {
   width: min(560px, calc(100vw - 24px));
+  height: min(640px, calc(100dvh - 48px));
+  .cake-dialog-body {
+    flex: 1;
+    scrollbar-gutter: stable;
+  }
 }
 .cake-theme-settings-group {
+  flex: none;
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -52,6 +58,7 @@
   align-items: center;
 }
 .cake-theme-settings-colors {
+  flex: none;
   display: flex;
   align-items: end;
   flex-wrap: wrap;

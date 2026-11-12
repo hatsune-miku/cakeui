@@ -9,28 +9,22 @@
   background: var(--cake-popup);
   box-shadow: var(--cake-shadow);
   font: inherit;
-  overflow: auto;
+  overflow: hidden;
   overscroll-behavior: contain;
   outline: none;
   // Closing keeps the dialog in the top layer for the exit transition where the browser supports it.
   opacity: 0;
-  transform: translateY(6px) scale(0.98);
   transition:
     opacity var(--cake-fast) var(--cake-ease),
-    transform var(--cake-fast) var(--cake-ease),
     overlay var(--cake-fast) allow-discrete,
     display var(--cake-fast) allow-discrete;
-  &:focus-visible {
-    outline: 2px solid var(--cake-focus);
-    outline-offset: 3px;
-  }
   &[open] {
+    display: flex;
+    flex-direction: column;
     opacity: 1;
-    transform: none;
     transition-duration: var(--cake-normal);
     @starting-style {
       opacity: 0;
-      transform: translateY(6px) scale(0.98);
     }
   }
   &::backdrop {
@@ -48,6 +42,7 @@
     }
   }
   .cake-dialog-header {
+    flex: none;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -60,17 +55,26 @@
     font-weight: 600;
   }
   .cake-dialog-description {
+    flex: none;
     color: var(--cake-muted);
     margin: 10px 0 0;
     font-size: 13px;
   }
   .cake-dialog-body {
+    --cake-scrollbar-inset-block: 2px;
+    --cake-scrollbar-inset-start: initial;
+    --cake-scrollbar-inset-end: initial;
+    min-height: 0;
+    min-width: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
     display: flex;
     flex-direction: column;
     gap: 16px;
     margin-top: 22px;
   }
   .cake-dialog-footer {
+    flex: none;
     display: flex;
     justify-content: flex-end;
     flex-wrap: wrap;

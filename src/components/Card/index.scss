@@ -1,4 +1,6 @@
 .cake-card {
+  --cake-scrollbar-inset-block: var(--cake-radius-large);
+  --cake-scrollbar-inset-inline: var(--cake-radius-large);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

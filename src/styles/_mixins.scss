@@ -1,3 +1,18 @@
+@mixin focus {
+  outline: none;
+  outline-offset: 0;
+  &:focus-visible:not(:disabled) {
+    box-shadow: inset 0 0 0 var(--cake-input-focus-width, 1.5px) var(--cake-focus-color, var(--cake-focus));
+  }
+  @media (forced-colors: active) {
+    &:focus-visible:not(:disabled) {
+      outline: 2px solid Highlight;
+      outline-offset: -2px;
+      box-shadow: none;
+    }
+  }
+}
+
 @mixin control {
   box-sizing: border-box;
   font: inherit;
@@ -6,17 +21,13 @@
   border-radius: var(--cake-radius-small);
   background: var(--cake-control);
   box-shadow: var(--cake-edge);
-  outline: none;
+  @include focus;
   --cake-control-disabled-bg: var(--cake-control);
   --cake-control-disabled-ink: var(--cake-control-text);
   transition:
     background var(--cake-fast) var(--cake-ease),
     box-shadow var(--cake-fast) var(--cake-ease),
     transform var(--cake-fast) var(--cake-ease);
-  &:focus-visible {
-    outline: 2px solid var(--cake-focus);
-    outline-offset: 3px;
-  }
   &:disabled {
     opacity: var(--cake-disabled-opacity, 0.5);
     background: var(--cake-disabled-background, var(--cake-control-disabled-bg));
@@ -62,6 +73,7 @@
 }
 
 @mixin choice {
+  @include focus;
   appearance: var(--cake-choice-appearance, auto);
   position: relative;
   box-sizing: border-box;
@@ -107,6 +119,8 @@
 }
 
 @mixin popup {
+  --cake-scrollbar-inset-block: var(--cake-radius-medium);
+  --cake-scrollbar-inset-inline: var(--cake-radius-medium);
   box-sizing: border-box;
   max-width: calc(100vw - 16px);
   max-height: calc(100dvh - 16px);

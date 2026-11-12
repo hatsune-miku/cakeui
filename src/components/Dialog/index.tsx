@@ -47,7 +47,7 @@ export function Dialog({
         element.querySelector<HTMLElement>(
           '.cake-dialog-body input:not(:disabled):not([type="hidden"]), .cake-dialog-body select:not(:disabled), .cake-dialog-body textarea:not(:disabled), .cake-dialog-body button:not(:disabled)'
         )
-      if (target && element.contains(target)) target.focus()
+      if (target && element.contains(target)) target.focus({ preventScroll: true })
     }
     if (!open && element.open) element.close()
   }, [open, initialFocus])

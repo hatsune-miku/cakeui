@@ -101,7 +101,8 @@ describe('theme colors and semantics', () => {
         for (const foreground of ['auto', 'light', 'dark'] as const) {
           const result = generateTheme(createThemeConfig({ scheme: preset.id, mode, foreground }))
           const legacy = ['blue', 'pink', 'gold'].includes(preset.id)
-          if (!legacy) expect(result.contrastIssues, preset.id + '/' + mode + '/' + foreground).toEqual([])
+          if (!legacy && foreground === 'auto')
+            expect(result.contrastIssues, preset.id + '/' + mode + '/' + foreground).toEqual([])
           if (foreground !== 'auto' || preset.id === 'dousha-classic') {
             for (const name of [
               'accent',
@@ -111,17 +112,46 @@ describe('theme colors and semantics', () => {
               'accentSoftHover',
               'selected',
             ] as const) {
-              expect(
-                themeContrast(result.pairs[name].background, result.pairs[name].foreground)
-              ).toBeGreaterThanOrEqual(4.5)
               expect(result.pairs[name].foreground).toBe(foreground === 'dark' ? '#161b22' : '#ffffff')
             }
           }
           const original = generateTheme(createThemeConfig({ scheme: preset.id, mode }))
           expect(result.pairs.canvas).toEqual(original.pairs.canvas)
+          for (const name of Object.keys(result.pairs) as (keyof typeof result.pairs)[])
+            expect(result.pairs[name].background, `${preset.id}/${mode}/${foreground}/${name}`).toBe(
+              original.pairs[name].background
+            )
           if (preset.id === 'dousha-classic' || preset.id === 'dousha')
             expect(result.pairs.canvas.background).toBe(mode === 'light' ? '#fff5f2' : '#272123')
         }
+  })
+
+  it('changes only foreground variables, preserving translucent fills and legacy aliases', () => {
+    const inks = new Set([
+      '--cake-primary-ink',
+      '--cake-primary-hover-ink',
+      '--cake-primary-active-ink',
+      '--cake-accent-ink',
+      '--cake-accent-soft-hover-ink',
+      '--cake-selected-ink',
+      '--cake-switch-thumb',
+    ])
+    for (const scheme of [...themePresets.map((preset) => preset.id), 'custom'] as const)
+      for (const mode of ['light', 'dark'] as const) {
+        const original = generateTheme(createThemeConfig({ scheme, mode, customColor: '#524396' }))
+        for (const foreground of ['light', 'dark'] as const) {
+          const result = generateTheme(createThemeConfig({ scheme, mode, foreground, customColor: '#524396' }))
+          for (const [name, value] of Object.entries(original.variables))
+            if (!inks.has(name)) expect(result.variables[name as keyof typeof result.variables], name).toBe(value)
+          for (const issue of result.contrastIssues)
+            if (
+              ['accent', 'accentHover', 'accentActive', 'accentSoft', 'accentSoftHover', 'selected'].includes(
+                issue.pair
+              )
+            )
+              expect(issue.reason).toBe('foreground-choice')
+        }
+      }
   })
 
   it('derives readable opaque state pairs even at color gamut extremes', () => {
@@ -143,10 +173,14 @@ describe('theme colors and semantics', () => {
       for (const mode of ['light', 'dark'] as const)
         for (const foreground of ['auto', 'light', 'dark'] as const) {
           const result = generateTheme(createThemeConfig({ scheme: 'custom', customColor, mode, foreground }))
-          expect(result.contrastIssues, customColor + mode + foreground).toEqual([])
+          if (foreground === 'auto') expect(result.contrastIssues, customColor + mode + foreground).toEqual([])
+          const original = generateTheme(createThemeConfig({ scheme: 'custom', customColor, mode }))
+          for (const name of Object.keys(result.pairs) as (keyof typeof result.pairs)[])
+            expect(result.pairs[name].background).toBe(original.pairs[name].background)
           for (const pair of Object.values(result.pairs)) {
             expect(pair.background).toMatch(/^#[\da-f]{6}$/)
-            expect(themeContrast(pair.background, pair.foreground)).toBeGreaterThanOrEqual(4.5)
+            if (foreground === 'auto')
+              expect(themeContrast(pair.background, pair.foreground)).toBeGreaterThanOrEqual(4.5)
           }
           expect(new Set(['success', 'warning', 'danger'].map((name) => result.variables[`--cake-${name}`])).size).toBe(
             3

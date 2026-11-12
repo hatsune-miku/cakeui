@@ -6,6 +6,7 @@ import type { GeneratedTheme, ResolvedThemeMode, ThemeColorPair, ThemeConfig, Th
 
 type Pairs = GeneratedTheme['pairs']
 type Variables = GeneratedTheme['variables']
+const foregroundPairs = ['accent', 'accentHover', 'accentActive', 'accentSoft', 'accentSoftHover', 'selected'] as const
 function pair(background: string, foreground: string): ThemeColorPair {
   return { background, foreground }
 }
@@ -204,22 +205,20 @@ export function generateTheme(config: ThemeConfig, systemMode: ResolvedThemeMode
       '--cake-check-accent': 'var(--cake-accent)',
     })
   }
-  const foreground = options.foreground === 'auto' && current.scheme === 'dousha-classic' ? 'light' : options.foreground
-  if (foreground !== 'auto') {
-    variables['--cake-switch-fill'] = 'var(--cake-primary)'
-    variables['--cake-switch-thumb'] = 'var(--cake-primary-ink)'
-    variables['--cake-check-accent'] = 'var(--cake-primary)'
-    const ink = foreground === 'light' ? '#ffffff' : '#161b22'
-    for (const name of [
-      'accent',
-      'accentHover',
-      'accentActive',
-      'accentSoft',
-      'accentSoftHover',
-      'selected',
-    ] as const) {
-      pairs[name] = accessiblePair(pairs[name].background, ink)
+  // This preset's default white ink defines its base fills, independently of the user's text preference.
+  if (current.scheme === 'dousha-classic')
+    for (const name of foregroundPairs) {
+      pairs[name] = accessiblePair(pairs[name].background, '#ffffff')
       setPair(variables, name, pairs[name])
+    }
+  const foreground = options.foreground
+  if (foreground !== 'auto') {
+    const ink = foreground === 'light' ? '#ffffff' : '#161b22'
+    variables['--cake-switch-thumb'] = ink
+    for (const name of foregroundPairs) {
+      pairs[name] = pair(pairs[name].background, ink)
+      // Preserve legacy translucent fills and aliases as well as generated colors.
+      variables[`--cake-${mapping[name][1]}`] = ink
     }
   }
   for (const [name, override] of Object.entries(options.pairs?.[mode] ?? {})) {
@@ -261,7 +260,16 @@ export function generateTheme(config: ThemeConfig, systemMode: ResolvedThemeMode
   const contrastIssues: GeneratedTheme['contrastIssues'] = []
   for (const [name, colors] of Object.entries(pairs)) {
     const ratio = themeContrast(colors.background, colors.foreground)
-    if (ratio < 4.5) contrastIssues.push({ pair: name as ThemePairName, ratio, minimum: 4.5, reason: 'legacy-palette' })
+    if (ratio < 4.5)
+      contrastIssues.push({
+        pair: name as ThemePairName,
+        ratio,
+        minimum: 4.5,
+        reason:
+          foreground !== 'auto' && foregroundPairs.some((value) => value === name)
+            ? 'foreground-choice'
+            : 'legacy-palette',
+      })
   }
   return { scheme: current.scheme, mode, pairs, variables, contrastIssues }
 }

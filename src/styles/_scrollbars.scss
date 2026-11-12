@@ -1,0 +1,30 @@
+// Remove UA focus decoration within the theme scope. Components own keyboard feedback.
+:where(.cake-theme, .cake-theme *) {
+  outline: none;
+  outline-offset: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(.cake-theme, .cake-theme *)::-webkit-scrollbar {
+  width: var(--cake-scrollbar-size, 6px);
+  height: var(--cake-scrollbar-size, 6px);
+}
+:where(.cake-theme, .cake-theme *)::-webkit-scrollbar-track {
+  background: transparent;
+  margin-block-start: var(--cake-scrollbar-inset-start, var(--cake-scrollbar-inset-block, 0px));
+  margin-block-end: var(--cake-scrollbar-inset-end, var(--cake-scrollbar-inset-block, 0px));
+  margin-inline: var(--cake-scrollbar-inset-inline, 0px);
+}
+:where(.cake-theme, .cake-theme *)::-webkit-scrollbar-thumb {
+  background: var(--cake-scrollbar-thumb, color-mix(in srgb, var(--cake-muted) 35%, transparent));
+  border-radius: 99px;
+}
+:where(.cake-theme, .cake-theme *)::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--cake-muted) 60%, transparent);
+}
+:where(.cake-theme, .cake-theme *)::-webkit-scrollbar-button {
+  display: none;
+}
+:where(.cake-theme, .cake-theme *)::-webkit-scrollbar-corner {
+  background: transparent;
+}

@@ -1,5 +1,7 @@
 @use '../../styles/mixins' as *;
 .cake-textarea {
+  --cake-scrollbar-inset-block: var(--cake-radius-small);
+  --cake-scrollbar-inset-inline: var(--cake-radius-small);
   @include input;
   resize: vertical;
   line-height: 1.6;

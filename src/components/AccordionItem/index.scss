@@ -1,3 +1,5 @@
+@use '../../styles/mixins' as *;
+
 .cake-accordion-item {
   interpolate-size: allow-keywords;
   border-bottom: 1px solid var(--cake-line);
@@ -15,6 +17,7 @@
     block-size: auto;
   }
   .cake-accordion-summary {
+    @include focus;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -25,11 +28,6 @@
     list-style: none;
     &::-webkit-details-marker {
       display: none;
-    }
-    &:focus-visible {
-      outline: 2px solid var(--cake-focus);
-      outline-offset: 2px;
-      border-radius: 4px;
     }
   }
   .cake-accordion-arrow {

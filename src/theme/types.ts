@@ -58,14 +58,14 @@ export interface ThemeContrastIssue {
   pair: ThemePairName
   ratio: number
   minimum: number
-  reason: 'legacy-palette'
+  reason: 'legacy-palette' | 'foreground-choice'
 }
 export interface GeneratedTheme {
   scheme: ThemeScheme
   mode: ResolvedThemeMode
   pairs: Record<ThemePairName, ThemeColorPair>
   variables: Record<`--cake-${string}`, string>
-  /** Actual known legacy exceptions, not a claim of whole-page WCAG conformance. */
+  /** Actual legacy or explicit foreground exceptions, not a whole-page WCAG claim. */
   contrastIssues: ThemeContrastIssue[]
 }
 export type ThemeValidation = { valid: true; config: ThemeConfig; errors: [] } | { valid: false; errors: string[] }

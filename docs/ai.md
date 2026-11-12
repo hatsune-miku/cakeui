@@ -268,7 +268,7 @@ TextBox / TextArea / NumberBox、ComboBox 的搜索输入和 LogView 允许选�
 
 ### CakeProvider
 
-原生 div，ref 指向该 div。可选 `theme='blue'`、`mode='system'`、`density='comfortable'`。theme 为六种 ThemePreset；mode 为 light / dark / system；density 为 comfortable / compact。`accentColor?: string` 启用单色自定义，接受不透明 HEX / RGB；`foreground='auto'` 可取 auto / light / dark，仅控制强调区域前景。无效颜色抛出 TypeError，表单应先用 normalizeThemeColor 校验。
+原生 div，ref 指向该 div。可选 `theme='blue'`、`mode='system'`、`density='comfortable'`。theme 为六种 ThemePreset；mode 为 light / dark / system；density 为 comfortable / compact。`accentColor?: string` 启用单色自定义，接受不透明 HEX / RGB；`foreground='auto'` 可取 auto / light / dark，仅控制强调区域文字与图标，不改变任何填充背景。无效颜色抛出 TypeError，表单应先用 normalizeThemeColor 校验。
 
 Provider 是可嵌套的 CSS 容器，产生实际 DOM，设置背景、文字色、字体、字号与行高。内部 context 为 ThemeSettings 提供已应用配置和临时预览，不创建全局服务或 body portal。嵌套 Provider 按自己的 Props 和默认值重新确定主题，不自动继承外层 Props。system 用 CSS 媒体查询响应系统明暗；SSR 同时输出两套变量，首屏不依赖客户端检测。不使用 Provider 时根变量默认蓝色浅色，不跟随系统变暗。
 
@@ -280,7 +280,7 @@ Provider 是可嵌套的 CSS 容器，产生实际 DOM，设置背景、文字�
 
 必须放在 CakeProvider 内；输出一个原生 Button 入口、可选存储错误 status 和一个 Dialog，ref 指向入口按钮。透传 ButtonProps（除 onClick），children 默认 Theme；disabled / loading 状态不可打开。`labels?: Partial<ThemeSettingsLabels>` 覆盖入口、标题、分组、操作、错误和加载文案；内置预设名称为蓝、粉、金、豆沙、绿豆沙、葡萄。`onOpenChange?: (open: boolean) => void` 通知打开和关闭。
 
-弹窗包含六预设、自定义颜色选择器与 HEX / RGB 文本框、system / light / dark 背景、auto / light / dark 强调前景。模式和前景按方案分别记忆；切换预设不清除自定义颜色。每次打开从已应用配置建立草稿，修改立即在当前 Provider 预览。应用提交；取消、Esc、关闭按钮、遮罩和卸载撤销预览；恢复默认只重置当前方案，仍需应用才提交。无效输入显示错误，保留最后有效预览并禁用应用。打开聚焦当前方案，原生 radio 支持方向键，Dialog 约束 Tab 并在关闭时恢复入口焦点；窄屏弹窗滚动，默认圆角 32px，继承可覆盖的 --cake-radius-dialog。
+弹窗包含六预设、自定义颜色选择器与 HEX / RGB 文本框、system / light / dark 背景、auto / light / dark 强调前景。模式和前景按方案分别记忆；切换预设不清除自定义颜色。每次打开从已应用配置建立草稿，修改立即在当前 Provider 预览。应用提交；取消、Esc、关闭按钮、遮罩和卸载撤销预览；恢复默认只重置当前方案，仍需应用才提交。无效输入显示错误，保留最后有效预览并禁用应用。打开聚焦当前方案，原生 radio 支持方向键，Dialog 约束 Tab 并在关闭时恢复入口焦点；弹窗高度固定为 min(640px, 100dvh - 48px)，切换配色、明暗和自定义颜色时尺寸与位置不变；空间不足时只有正文滚动，标题与底部操作始终可见。默认圆角 32px，继承可覆盖的 --cake-radius-dialog。
 
 `storage?: ThemeStorageAdapter` 可同步或异步，load 返回配置、JSON 字符串、旧配置或 null，save 接收规范化 ThemeConfig。挂载及 adapter 更换时读取并迁移；加载期间禁用入口，读取尚未完成而宿主已更换配置时忽略旧结果。只有应用调用 save；没有适配器就只在内存中使用。保存期间入口用 aria-disabled 阻止再次打开并保留焦点停靠，失败保留已应用效果并显示 status，文字由 labels.storageError 与原始错误信息组成；保存失败时附带重试按钮（labels.retry），重试只再次调用 save。通过 `onStorageError?: (error: unknown, operation: 'load' | 'save') => void` 通知原始错误。读取失败不改变当前配置。适配器应保持引用稳定，避免重复加载；建议同一 Provider 使用一个设置入口。
 
@@ -500,9 +500,9 @@ indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；
 
 原生 dialog，必填 `open: boolean`、`onOpenChange(open: boolean)`、`title: ReactNode`；可选 description、footer、`closeLabel='Close'`、`closeOnBackdrop=true`、`initialFocus: RefObject<HTMLElement | null>`。其余 Props 来自去掉 open / title / ref 的原生 dialog 类型。
 
-open 是受控状态，应用必须接受关闭请求并更新状态。组件使用 showModal / close，保留原生顶层、背景 inert 与焦点恢复。标题始终渲染为 h2 并与 dialog 关联；description 存在时由组件关联说明 id。组件内部有标题栏、关闭按钮、正文与可选 footer；不提供 footer 默认保存操作。默认圆角 32px，可通过 --cake-radius-dialog 配置，两种密度相同。打开与关闭对 dialog 和遮罩使用过渡，关闭过渡依赖浏览器对 `overlay` / `allow-discrete` 的支持，不支持时直接消失；open 状态、close 事件和焦点恢复不等待过渡。
+open 是受控状态，应用必须接受关闭请求并更新状态。组件使用 showModal / close，保留原生顶层、背景 inert 与焦点恢复。标题始终渲染为 h2 并与 dialog 关联；description 存在时由组件关联说明 id。组件内部有标题栏、关闭按钮、正文与可选 footer；不提供 footer 默认保存操作。默认圆角 32px，可通过 --cake-radius-dialog 配置，两种密度相同。正文在高度受限时内部滚动，标题和 footer 不跟随滚动。打开与关闭仅对 dialog 和遮罩使用透明度过渡，不移动或缩放点击目标，关闭过渡依赖浏览器对 `overlay` / `allow-discrete` 的支持，不支持时直接消失；open 状态、close 事件和焦点恢复不等待过渡。
 
-初始焦点顺序：initialFocus.current；其次 autofocus 或 data-cake-autofocus='true'；其次正文内第一个未禁用 input / select / textarea / button；没有指定目标时保留浏览器初始焦点行为。目标必须位于 dialog 内。初始目标不可聚焦或被隐藏时应由应用修正，不把任意 div ref 当成可聚焦目标。
+初始焦点顺序：initialFocus.current；其次 autofocus 或 data-cake-autofocus='true'；其次正文内第一个未禁用 input / select / textarea / button；没有指定目标时保留浏览器初始焦点行为。目标必须位于 dialog 内；组件设置初始焦点时使用 preventScroll，不因聚焦而改变正文滚动位置。初始目标不可聚焦或被隐藏时应由应用修正，不把任意 div ref 当成可聚焦目标。
 
 Tab / Shift+Tab 在可用停靠点间约束；Escape 触发原生 cancel，调用方 onCancel.preventDefault 可阻止关闭请求。右上角关闭按钮请求 onOpenChange(false)。遮罩点击默认关闭，并检查按下是否发生在遮罩，避免从正文拖拽选择到外面时误关。closeOnBackdrop=false 仅关闭遮罩行为，不关闭 Escape 或标题栏按钮。onClick.preventDefault 可阻止内置遮罩关闭。
 
@@ -1290,7 +1290,7 @@ export function ActivityLog() {
 
 新配色与自定义颜色的 `--cake-hairline` 独立于控件 `--cake-line`：按当前卡片表面合成浅色 6% / 深色 5% 的前景色，供显式需要细线的业务布局使用；表面色对覆盖同样参与合成。Card 默认不绘制这条细线。控件边线、焦点环与文字色对保持各自语义。
 
-参考色是生成种子，不直接填满所有控件。新配色与单色推导生成不透明语义色对，覆盖页面、分层表面、输入、强调、柔和强调、选中、禁用和 hover / active；成功、警告、危险保留独立色相。auto 根据背景选择前景；手动 light / dark 只调整强调区域的文字和图标，同时向白 / 黑适度移动对应背景，尽量保留色相，不改变正文模式。绿豆沙的浅文字需要更深绿色填充，故实际填充不等于参考色。
+参考色是生成种子，不直接填满所有控件。新配色与单色推导生成不透明语义色对，覆盖页面、分层表面、输入、强调、柔和强调、选中、禁用和 hover / active；成功、警告、危险保留独立色相。auto 根据背景选择前景；手动 light / dark 只调整强调区域的文字和图标，所有背景、透明度、边线和正文模式保持不变。绿豆沙的基础配色按默认浅文字预先生成较深绿色填充，该填充在前景选择之间保持一致。手动选择可能降低对比度，不会为了补偿而修改背景。
 
 #### 纯计算与配置 API
 
@@ -1334,7 +1334,7 @@ applyTheme 只管理自己写入的变量；update 用完整语义集合替换�
 
 旧 `theme` / `mode` 用法无需修改。migrateThemeConfig 接受裸预设字符串、JSON 字符串、无 version 的 `{ theme, mode }` 或 `{ scheme, mode, foreground, customColor }`、version=1 的同名字段及 `overrides[scheme].mode/foreground`，转为 version=2 的 options。null 表示初始默认值；未知方案、非法值、未来版本和损坏 JSON 抛错，调用者决定恢复默认或提示。只提取主题字段，不迁入顶栏、工具、登录或更新逻辑。Gallery 另按旧 themeChosen 标记迁移历史选择；通用迁移器不解释该业务标记。
 
-新推导方案的所有内置文本色对（含禁用）以至少 4.5:1 为目标，焦点环相对输入背景至少 3:1。计算验证针对明确色对；实际页面、图片、透明叠层和消费方覆盖仍需浏览器检查，不能由此声称整页符合 WCAG。普通文字阈值见 [WCAG 对比度说明](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)。旧三预设 auto 的强调色固定不变，并保留半透明表面和禁用透明度；辅助文字、危险色和选中文字已校正到至少 4.5:1。generateTheme.contrastIssues 列出当前配置中低于阈值的色对，详细基线见设计记录。
+新推导方案在 auto 前景下的内置文本色对（含禁用）以至少 4.5:1 为目标，焦点环相对输入背景至少 3:1。计算验证针对明确色对；实际页面、图片、透明叠层和消费方覆盖仍需浏览器检查，不能由此声称整页符合 WCAG。普通文字阈值见 [WCAG 对比度说明](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)。旧三预设 auto 的强调色固定不变，并保留半透明表面和禁用透明度；辅助文字、危险色和选中文字已校正到至少 4.5:1。generateTheme.contrastIssues 列出当前配置中低于阈值的色对；reason 为 legacy-palette 或手动前景产生的 foreground-choice，详细基线见设计记录。
 
 所有主题下 CheckBox / RadioButton 仍是原生 input，使用 CSS 绘制底色与配对的勾选标记，避免浏览器自行选择相反的图标色或在深色模式下显示浅色方块。forced-colors 恢复系统控件绘制。SlideDeck 的新主题反色页内面板使用不透明交互色对，避免叠加固定透明度后降低文字对比度。
 
@@ -1358,6 +1358,18 @@ applyTheme 只管理自己写入的变量；update 用完整语义集合替换�
 | --cake-fast / --cake-normal / --cake-slow / --cake-ease                      | 150 / 200 / 250ms 与缓出曲线                               |
 
 新增的 `--cake-surface-strong`、`--cake-hover-subtle`、`--cake-accent-subtle`、`--cake-hairline`、`--cake-atmosphere` / `-strong` 和 `--cake-shadow-strong` 为业务布局提供同源颜色与阴影。`--cake-primary` / `--cake-primary-ink` 将主按钮填充与淡色强调背景分开。控件细节通过 button / input / card / checkbox / progress / log / tip / help 前缀变量控制；精确默认值见附录。
+
+`.cake-theme` 作用域内移除浏览器默认 outline，交互组件用内描边表示键盘焦点，可通过 --cake-focus-color 覆盖颜色（默认 --cake-focus，primary 按钮使用 --cake-on-accent），forced-colors 下使用系统 Highlight。Dialog、TabPanel 等结构容器不绘制整框焦点外边线；可聚焦的 LogView 使用滚动条颜色提示。应用自定义交互控件可提供自己的 focus-visible 样式。
+
+Chromium / WebKit 使用原生滚动条与原生滚动行为，通过轨道 margin 避开圆角，不增加容器 padding 或改变可视高度。Card、LogView、TextArea 和浮层分别按圆角预设轨道内缩；正文内部滚动的 Dialog 使用 2px。可在实际滚动元素设置以下变量，覆盖所继承的值；Firefox 等不支持 WebKit 滚动条伪元素的浏览器保留系统滚动条，轨道内缩不生效：
+
+| 变量                                                      | 默认值与用途                                |
+| --------------------------------------------------------- | ------------------------------------------- |
+| --cake-scrollbar-size                                     | 6px，纵向宽度与横向高度                     |
+| --cake-scrollbar-inset-block                              | 0px，纵向两端内缩；组件按圆角覆盖           |
+| --cake-scrollbar-inset-start / --cake-scrollbar-inset-end | 回退到 inset-block，分别覆盖纵向起点 / 终点 |
+| --cake-scrollbar-inset-inline                             | 0px，横向两端内缩；组件按圆角覆盖           |
+| --cake-scrollbar-thumb                                    | muted 的 35% 混合色，可覆盖滑块颜色         |
 
 `--cake-tone` / `--cake-tone-soft` 是组件内部按 tone 计算的派生变量，推荐修改对应主题或状态变量而不是把它们当成全局配色入口。
 

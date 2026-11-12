@@ -21,7 +21,8 @@ test('preset and custom state colors match their foregrounds in the actual brows
     '#fefeff',
   ]
   for (const variant of variants)
-    for (const mode of ['light', 'dark'])
+    for (const mode of ['light', 'dark']) {
+      const backgrounds = new Map<string, string>()
       for (const foreground of ['auto', 'light', 'dark']) {
         await page.getByLabel('Preset', { exact: true }).selectOption(variant.startsWith('#') ? 'custom' : variant)
         if (variant.startsWith('#')) await page.getByLabel('Accent source').fill(variant)
@@ -33,7 +34,9 @@ test('preset and custom state colors match their foregrounds in the actual brows
             const css = getComputedStyle(element)
             return [css.color, css.backgroundColor]
           })
-          if (!(legacy && foreground === 'auto'))
+          if (foreground === 'auto') backgrounds.set(name, colors[1])
+          else expect(colors[1], `${variant}/${mode}/${foreground}/${name} background`).toBe(backgrounds.get(name))
+          if (foreground === 'auto' && !legacy)
             expect(
               themeContrast(colors[0], colors[1]),
               `${variant}/${mode}/${foreground}/${name}`
@@ -60,6 +63,7 @@ test('preset and custom state colors match their foregrounds in the actual brows
           await check('choice mark', choice)
         }
       }
+    }
   await expect(page.getByTestId('nested')).toHaveAttribute('data-theme', 'blue')
 })
 
@@ -86,7 +90,8 @@ test('focus has one managed indicator, dialogs are 32px, and forced colors retai
     await expect(control).toHaveCSS('outline-style', 'none')
   }
   await page.getByTestId('primary').focus()
-  await expect(page.getByTestId('primary')).toHaveCSS('outline-width', '2px')
+  await expect(page.getByTestId('primary')).toHaveCSS('outline-style', 'none')
+  await expect(page.getByTestId('primary')).toHaveCSS('box-shadow', /inset/)
   await page.getByLabel('Preset', { exact: true }).selectOption('grape')
   await page.emulateMedia({ forcedColors: 'active' })
   await page.getByRole('textbox', { name: 'Name', exact: true }).focus()
@@ -157,7 +162,37 @@ test('failed save retains applied preview, system changes update colors, and nar
   expect(dimensions.width).toBeLessThanOrEqual(336)
   expect(dimensions.height).toBeLessThanOrEqual(432)
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth)
-  expect(dimensions.scrollHeight).toBeGreaterThan(dimensions.clientHeight)
+  const body = await dialog.locator('.cake-dialog-body').evaluate((element) => ({
+    scrollHeight: element.scrollHeight,
+    clientHeight: element.clientHeight,
+  }))
+  expect(body.scrollHeight).toBeGreaterThan(body.clientHeight)
+  expect(dimensions.scrollHeight).toBe(dimensions.clientHeight)
   await dialog.getByRole('button', { name: 'Apply', exact: true }).click()
   await expect(dialog).not.toBeVisible()
+})
+
+test('theme choices accept a single pointer click without moving the dialog', async ({ page }) => {
+  for (const viewport of [
+    { width: 1060, height: 770 },
+    { width: 1060, height: 580 },
+    { width: 360, height: 480 },
+  ]) {
+    await page.setViewportSize(viewport)
+    await page.goto('/tests/browser/fixtures/theme/')
+    await page.getByRole('button', { name: 'Theme', exact: true }).click()
+    const dialog = page.getByRole('dialog', { name: 'Theme settings' })
+    const original = await dialog.boundingBox()
+    for (const name of ['葡萄', 'Custom', 'Dark', 'Light text', 'Dark text', '粉']) {
+      const target = dialog.getByRole('radio', { name, exact: true })
+      await target.scrollIntoViewIfNeeded()
+      const bounds = (await target.boundingBox())!
+      await page.mouse.click(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2)
+      await expect(target).toBeChecked()
+      expect(await dialog.boundingBox()).toEqual(original)
+    }
+    await dialog.evaluate((element) => element.focus())
+    await expect(dialog).toHaveCSS('outline-style', 'none')
+    await dialog.getByRole('button', { name: 'Cancel', exact: true }).last().click()
+  }
 })

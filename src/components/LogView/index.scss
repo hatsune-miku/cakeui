@@ -1,4 +1,7 @@
 .cake-logview {
+  --cake-scrollbar-inset-block: var(--cake-radius-medium);
+  --cake-scrollbar-inset-inline: var(--cake-radius-medium);
+  outline: none;
   user-select: text;
   -webkit-user-select: text;
   box-sizing: border-box;
@@ -17,7 +20,6 @@
   font-size: var(--cake-log-font-size);
   line-height: var(--cake-log-line-height);
   &:focus-visible {
-    outline: 2px solid var(--cake-focus);
-    outline-offset: 3px;
+    --cake-scrollbar-thumb: var(--cake-muted);
   }
 }

@@ -1,3 +1,5 @@
+@use '../../styles/mixins' as *;
+
 .cake-switch {
   display: inline-flex;
   align-items: center;
@@ -9,6 +11,7 @@
     cursor: not-allowed;
   }
   .cake-switch-input {
+    @include focus;
     appearance: none;
     box-sizing: border-box;
     position: relative;
@@ -51,10 +54,6 @@
           background: var(--cake-disabled-background, var(--cake-switch-thumb));
         }
       }
-    }
-    &:focus-visible {
-      outline: 2px solid var(--cake-focus);
-      outline-offset: 3px;
     }
     @media (forced-colors: active) {
       forced-color-adjust: none;

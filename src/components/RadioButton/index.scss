@@ -22,10 +22,6 @@
       border-radius: 50%;
       background: currentColor;
     }
-    &:focus-visible {
-      outline: 2px solid var(--cake-focus);
-      outline-offset: 3px;
-    }
   }
   .cake-radio-label {
     font-size: inherit;

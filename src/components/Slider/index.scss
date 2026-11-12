@@ -1,4 +1,7 @@
+@use '../../styles/mixins' as *;
+
 .cake-slider {
+  @include focus;
   --cake-slider-thumb: 16px;
   --cake-slider-track-height: 4px;
   --cake-slider-fill: var(--cake-switch-fill);
@@ -57,11 +60,6 @@
   }
   &:active:not(:disabled)::-moz-range-thumb {
     transform: scale(1.12);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--cake-focus);
-    outline-offset: 3px;
-    border-radius: 4px;
   }
   &:disabled {
     --cake-slider-fill: var(--cake-disabled-color, var(--cake-muted));

@@ -19,6 +19,7 @@
     transform: translateY(1px);
   }
   &[data-variant='primary'] {
+    --cake-focus-color: var(--cake-on-accent);
     background: var(--cake-accent-fill);
     color: var(--cake-on-accent);
     --cake-control-disabled-bg: var(--cake-primary);
