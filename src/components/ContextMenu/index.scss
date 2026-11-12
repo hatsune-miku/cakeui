@@ -9,7 +9,7 @@
     }
   }
   &:focus-visible {
-    outline: 2px solid var(--cake-accent);
+    outline: 2px solid var(--cake-focus);
     outline-offset: 3px;
     border-radius: var(--cake-radius-small);
   }

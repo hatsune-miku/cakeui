@@ -14,12 +14,15 @@
   line-height: 1;
   font-weight: 600;
   cursor: help;
+  transition:
+    background var(--cake-fast) var(--cake-ease),
+    color var(--cake-fast) var(--cake-ease);
   &:hover {
-    background: var(--cake-accent-soft);
-    color: var(--cake-accent-ink);
+    background: var(--cake-item-hover);
+    color: var(--cake-text);
   }
   &:focus-visible {
-    outline: 2px solid var(--cake-accent);
+    outline: 2px solid var(--cake-focus);
     outline-offset: 3px;
   }
 }

@@ -1,148 +1,29 @@
-@mixin light {
-  color-scheme: light;
-  --cake-bg: #f6f8fb;
-  --cake-surface: #fdfefe;
-  --cake-control: #ffffffb8;
-  --cake-control-hover: #fff;
-  --cake-text: #29313a;
-  --cake-muted: #626d79;
-  --cake-line: #2b38451a;
-  --cake-hover: #2b384509;
-  --cake-backdrop: #30394238;
-  --cake-success: #46654e;
-  --cake-success-soft: #dce9df;
-  --cake-danger: #934a53;
-  --cake-danger-soft: #f3dde0;
-  --cake-warning: #80602d;
-  --cake-warning-soft: #f3e7ce;
-  --cake-shadow: 0 0 0 1px #2b384514, 0 36px 100px #2b38451f;
-}
-@mixin dark {
-  color-scheme: dark;
-  --cake-bg: #202226;
-  --cake-surface: #2d3035;
-  --cake-control: #ffffff12;
-  --cake-control-hover: #ffffff1c;
-  --cake-text: #edf0f3;
-  --cake-muted: #aab1b9;
-  --cake-line: #f4f7fa1a;
-  --cake-hover: #ffffff0b;
-  --cake-backdrop: #0007;
-  --cake-success: #a9c8af;
-  --cake-success-soft: #7b9b8233;
-  --cake-danger: #efb8be;
-  --cake-danger-soft: #9a596133;
-  --cake-warning: #e2c18f;
-  --cake-warning-soft: #b68c4133;
-  --cake-shadow: 0 0 0 1px #ffffff14, 0 36px 100px #0005;
-}
-@mixin blue {
-  --cake-accent: #416b97;
-  --cake-accent-soft: #d6e7f7;
-  --cake-accent-hover: #c7ddf2;
-  --cake-accent-ink: #294866;
-}
-// AnyDrop is the source of truth for the pink palette, including translucent surfaces.
-@mixin pink {
-  --cake-bg: #f4f1ee;
-  --cake-surface: rgba(255, 255, 255, 0.66);
-  --cake-surface-strong: rgba(255, 255, 255, 0.9);
-  --cake-popup: #fff;
-  --cake-control: rgba(255, 255, 255, 0.7);
-  --cake-control-hover: rgba(255, 255, 255, 0.98);
-  --cake-text: #2a2521;
-  --cake-muted: #8a807a;
-  --cake-line: rgba(38, 34, 31, 0.09);
-  --cake-hover: rgba(38, 34, 31, 0.04);
-  --cake-hover-subtle: rgba(38, 34, 31, 0.028);
-  --cake-backdrop: rgba(31, 27, 22, 0.2);
-  --cake-danger: #c0453f;
-  --cake-danger-soft: rgba(192, 69, 63, 0.12);
-  --cake-accent: #d15776;
-  --cake-accent-soft: rgba(209, 87, 118, 0.14);
-  --cake-accent-subtle: rgba(209, 87, 118, 0.08);
-  --cake-accent-hover: #be476a;
-  --cake-accent-ink: #2a2521;
-  --cake-primary: var(--cake-accent);
-  --cake-primary-ink: #fff;
-  --cake-hairline: inset 0 0 0 1px rgba(38, 34, 31, 0.06);
-  --cake-atmosphere: 0 0 40px 6px rgba(31, 27, 22, 0.12);
-  --cake-atmosphere-strong: 0 0 56px 10px rgba(31, 27, 22, 0.16);
-  --cake-shadow: var(--cake-edge), var(--cake-atmosphere);
-  --cake-shadow-strong: var(--cake-edge), var(--cake-atmosphere-strong);
-}
-@mixin gold {
-  --cake-bg: #f8f5ef;
-  --cake-accent: #8b654a;
-  --cake-accent-soft: #f3d3b9;
-  --cake-accent-hover: #efc9aa;
-  --cake-accent-ink: #513b2e;
-}
-@mixin blue-dark {
-  --cake-accent: #b5d2ef;
-  --cake-accent-soft: #3e5e7d;
-  --cake-accent-hover: #4a6d90;
-  --cake-accent-ink: #f4f9ff;
-}
-@mixin pink-dark {
-  @include pink;
-  --cake-bg: #16151a;
-  --cake-surface: rgba(255, 255, 255, 0.045);
-  --cake-surface-strong: rgba(40, 38, 46, 0.96);
-  --cake-popup: #26242b;
-  --cake-control: rgba(255, 255, 255, 0.07);
-  --cake-control-hover: rgba(255, 255, 255, 0.13);
-  --cake-text: #e7e2df;
-  --cake-muted: #948b86;
-  --cake-line: rgba(255, 255, 255, 0.08);
-  --cake-hover: rgba(255, 255, 255, 0.055);
-  --cake-hover-subtle: rgba(255, 255, 255, 0.03);
-  --cake-backdrop: rgba(0, 0, 0, 0.5);
-  --cake-accent-soft: rgba(209, 87, 118, 0.2);
-  --cake-accent-subtle: rgba(209, 87, 118, 0.12);
-  --cake-accent-ink: #e7e2df;
-  --cake-danger-soft: rgba(192, 69, 63, 0.2);
-  --cake-hairline: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  --cake-atmosphere: 0 0 40px 6px rgba(0, 0, 0, 0.4);
-  --cake-atmosphere-strong: 0 0 56px 10px rgba(0, 0, 0, 0.5);
-}
-@mixin gold-dark {
-  --cake-bg: #211f1c;
-  --cake-surface: #312e2a;
-  --cake-accent: #e8c8ad;
-  --cake-accent-soft: #715543;
-  --cake-accent-hover: #80614d;
-  --cake-accent-ink: #fff7ef;
-}
-
+@use '../../theme/generated' as palette;
 :root,
 .cake-theme {
   user-select: none;
   -webkit-user-select: none;
-  @include light;
-  @include blue;
-  --cake-surface-strong: var(--cake-surface);
-  --cake-popup: var(--cake-surface);
-  --cake-hover-subtle: var(--cake-hover);
-  --cake-accent-subtle: var(--cake-accent-soft);
-  --cake-primary: var(--cake-accent-soft);
-  --cake-primary-ink: var(--cake-accent-ink);
-  --cake-hairline: var(--cake-edge);
-  --cake-atmosphere: 0 36px 100px #2b38451f;
-  --cake-atmosphere-strong: var(--cake-atmosphere);
-  --cake-shadow-strong: var(--cake-shadow);
+  @include palette.theme('blue', 'light');
+  color-scheme: var(--cake-color-scheme);
   --cake-radius-small: 10px;
-  --cake-radius-medium: 14px;
-  --cake-radius-large: 20px;
-  --cake-radius-dialog: 26px;
+  --cake-radius-medium: 16px;
+  --cake-radius-large: 28px;
+  --cake-radius-dialog: 32px;
+  // Menu rows nest inside a 6px popup padding, so their corners follow the popup's.
+  --cake-radius-item: max(4px, calc(var(--cake-radius-medium) - 6px));
   --cake-fast: 150ms;
   --cake-normal: 200ms;
   --cake-slow: 250ms;
   --cake-ease: cubic-bezier(0.29, 0, 0, 1);
   --cake-control-height: 38px;
+  // Latin faces first, then CJK faces that avoid the short Microsoft YaHei system fallback.
   --cake-font:
-    'Inter Variable', 'SF Pro Text', 'Noto Sans SC', 'PingFang SC', 'Segoe UI Variable Text', system-ui, sans-serif;
-  --cake-mono: 'Cascadia Code', 'Consolas', 'JetBrains Mono', 'Menlo', monospace;
+    'Segoe UI Variable Text', 'Segoe UI', -apple-system, 'SF Pro Text', 'Inter Variable', 'PingFang SC',
+    'HarmonyOS Sans SC', 'MiSans', 'Noto Sans SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'DengXian', system-ui,
+    sans-serif;
+  --cake-mono: 'Cascadia Mono', 'Cascadia Code', 'Consolas', 'JetBrains Mono', 'Menlo', monospace;
+  --cake-item-hover: color-mix(in srgb, var(--cake-text) 8%, transparent);
+  --cake-track: color-mix(in srgb, var(--cake-muted) 28%, transparent);
   --cake-button-gap: 7px;
   --cake-button-padding: 7px 14px;
   --cake-button-weight: 500;
@@ -152,8 +33,6 @@
   --cake-card-gap: 14px;
   --cake-card-edge: none;
   --cake-checkbox-size: 17px;
-  --cake-checkbox-margin: 0;
-  --cake-checkbox-color-scheme: inherit;
   --cake-progress-height: 6px;
   --cake-progress-track: var(--cake-hover);
   --cake-log-gap: 2px;
@@ -179,73 +58,62 @@
   font-variant-ligatures: none;
   color: var(--cake-text);
   background: var(--cake-bg);
-  &[data-theme='pink'] {
-    @include pink;
-  }
-  &[data-theme='gold'] {
-    @include gold;
-  }
-  &[data-mode='dark'] {
-    @include dark;
-    @include blue-dark;
-    &[data-theme='pink'] {
-      @include pink-dark;
+  @each $scheme in 'blue', 'pink', 'gold', 'dousha', 'dousha-classic', 'grape' {
+    &[data-theme='#{$scheme}'] {
+      @include palette.theme($scheme, 'light');
+      &[data-mode='dark'] {
+        @include palette.theme($scheme, 'dark');
+      }
+      @media (prefers-color-scheme: dark) {
+        &[data-mode='system'] {
+          @include palette.theme($scheme, 'dark');
+        }
+      }
     }
-    &[data-theme='gold'] {
-      @include gold-dark;
+  }
+  &[data-cake-theme-config='true'] {
+    @include palette.configured('light');
+    &[data-mode='dark'] {
+      @include palette.configured('dark');
+    }
+    @media (prefers-color-scheme: dark) {
+      &[data-mode='system'] {
+        @include palette.configured('dark');
+      }
     }
   }
   &[data-density='compact'] {
     --cake-control-height: 32px;
     --cake-radius-small: 8px;
-    --cake-radius-medium: 10px;
-    --cake-radius-large: 12px;
-    --cake-radius-dialog: 14px;
-    --cake-font: 'Segoe UI Variable Text', 'Segoe UI', 'PingFang SC', system-ui, sans-serif;
+    --cake-radius-medium: 12px;
+    --cake-radius-large: 24px;
     --cake-button-gap: 6px;
     --cake-button-padding: 0 12px;
     --cake-button-weight: 400;
     --cake-input-padding: 5px 8px;
     --cake-input-focus-width: 1px;
     --cake-input-hover: var(--cake-control);
-    --cake-card-gap: 0px;
-    --cake-card-edge: var(--cake-hairline);
+    --cake-card-gap: 10px;
     --cake-checkbox-size: 16px;
-    // An invalid custom property invokes the consumer fallback to the UA margin.
-    --cake-checkbox-margin: initial;
-    --cake-checkbox-color-scheme: normal;
     --cake-progress-height: 5px;
     --cake-progress-track: var(--cake-accent-soft);
     --cake-log-gap: 0px;
     --cake-log-padding: 6px 10px 8px;
     --cake-log-background: transparent;
-    --cake-log-font-size: 11px;
+    --cake-log-font-size: 12px;
     --cake-log-line-height: 1.55;
     --cake-tip-padding: 6px 9px;
     --cake-tip-width: 220px;
-    --cake-tip-font-size: 11px;
+    --cake-tip-font-size: 12px;
     --cake-tip-line-height: 1.45;
     --cake-tip-offset: 6px;
     --cake-help-size: 14px;
-    --cake-help-font-size: 10px;
-    --cake-help-background: rgba(138, 128, 122, 0.24);
-    --cake-help-color: var(--cake-text);
+    --cake-help-font-size: 11px;
+    --cake-help-background: color-mix(in srgb, var(--cake-muted) 24%, transparent);
     font-size: 13px;
-    line-height: normal;
+    line-height: 1.45;
     font-synthesis: none;
     text-rendering: geometricPrecision;
-  }
-  @media (prefers-color-scheme: dark) {
-    &[data-mode='system'] {
-      @include dark;
-      @include blue-dark;
-      &[data-theme='pink'] {
-        @include pink-dark;
-      }
-      &[data-theme='gold'] {
-        @include gold-dark;
-      }
-    }
   }
 }
 @media (prefers-reduced-motion: reduce) {

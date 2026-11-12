@@ -1,0 +1,39 @@
+{
+  "name": "@a1knla/cakeui-presentation-toolkit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Build a React and CakeUI presentation project into one offline HTML file.",
+  "author": "hatsune-miku",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "docs",
+    "example"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "cake-presentation": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/build-editor.mjs",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "esbuild": "0.28.2",
+    "sass": "1.93.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.0"
+  }
+}

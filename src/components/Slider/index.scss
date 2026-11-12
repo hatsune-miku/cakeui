@@ -1,17 +1,81 @@
 .cake-slider {
+  --cake-slider-thumb: 16px;
+  --cake-slider-track-height: 4px;
+  --cake-slider-fill: var(--cake-switch-fill);
+  --cake-slider-direction: right;
+  appearance: none;
   width: 100%;
   min-width: 0;
   height: 24px;
   margin: 0;
+  background: transparent;
   accent-color: var(--cake-accent);
   cursor: pointer;
+  &:dir(rtl) {
+    --cake-slider-direction: left;
+  }
+  &::-webkit-slider-runnable-track {
+    height: var(--cake-slider-track-height);
+    border-radius: 999px;
+    // The stop sits under the centre of the thumb, which travels one thumb-width less than the track.
+    background: linear-gradient(
+      to var(--cake-slider-direction),
+      var(--cake-slider-fill)
+        calc(var(--cake-slider-thumb) / 2 + (100% - var(--cake-slider-thumb)) * var(--cake-slider-ratio, 0)),
+      var(--cake-track) 0
+    );
+  }
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: var(--cake-slider-thumb);
+    height: var(--cake-slider-thumb);
+    margin-top: calc((var(--cake-slider-track-height) - var(--cake-slider-thumb)) / 2);
+    border-radius: 50%;
+    background: var(--cake-slider-fill);
+    transition: transform var(--cake-fast) var(--cake-ease);
+  }
+  &:active:not(:disabled)::-webkit-slider-thumb {
+    transform: scale(1.12);
+  }
+  &::-moz-range-track {
+    height: var(--cake-slider-track-height);
+    border-radius: 999px;
+    background: var(--cake-track);
+  }
+  &::-moz-range-progress {
+    height: var(--cake-slider-track-height);
+    border-radius: 999px;
+    background: var(--cake-slider-fill);
+  }
+  &::-moz-range-thumb {
+    width: var(--cake-slider-thumb);
+    height: var(--cake-slider-thumb);
+    border: 0;
+    border-radius: 50%;
+    background: var(--cake-slider-fill);
+    transition: transform var(--cake-fast) var(--cake-ease);
+  }
+  &:active:not(:disabled)::-moz-range-thumb {
+    transform: scale(1.12);
+  }
   &:focus-visible {
-    outline: 2px solid var(--cake-accent);
+    outline: 2px solid var(--cake-focus);
     outline-offset: 3px;
     border-radius: 4px;
   }
   &:disabled {
-    opacity: 0.5;
+    --cake-slider-fill: var(--cake-disabled-color, var(--cake-muted));
+    opacity: var(--cake-disabled-opacity, 0.5);
     cursor: not-allowed;
+  }
+  @media (pointer: coarse) {
+    --cake-slider-thumb: 22px;
+    height: 32px;
+  }
+  @media (forced-colors: active) {
+    appearance: auto;
+    &::-webkit-slider-thumb {
+      appearance: auto;
+    }
   }
 }

@@ -1,0 +1,23 @@
+.cake-slide-stat {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--cake-slide-space, 24px) * 0.35);
+  padding: var(--cake-slide-space, 24px) 0;
+  border-top: 2px solid var(--cake-slide-accent, #3d658f);
+}
+.cake-slide-stat-value {
+  color: var(--cake-slide-accent, #3d658f);
+  font-size: var(--cake-slide-display, 72px);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.cake-slide-stat-label {
+  font-size: var(--cake-slide-body, 24px);
+  font-weight: 600;
+}
+.cake-slide-stat-detail {
+  color: var(--cake-slide-muted, #596572);
+  font-size: var(--cake-slide-small, 16px);
+}

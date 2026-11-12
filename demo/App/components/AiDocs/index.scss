@@ -1,26 +1,13 @@
 .demo-ai-docs {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   max-width: 940px;
   min-width: 0;
   .demo-ai-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px 24px;
-  }
-  .demo-ai-link {
-    color: var(--cake-accent-ink);
-    text-underline-offset: 4px;
-    line-height: 2;
-    &:hover {
-      color: var(--cake-accent);
-    }
-    &:focus-visible {
-      outline: 2px solid var(--cake-accent);
-      outline-offset: 4px;
-      border-radius: 3px;
-    }
+    gap: 8px 24px;
   }
   .demo-ai-content {
     box-sizing: border-box;
@@ -28,14 +15,14 @@
     padding: clamp(16px, 3vw, 30px);
     border-radius: var(--cake-radius-large);
     background: var(--cake-surface);
-    box-shadow: var(--cake-edge);
     font: 12px/1.9 var(--cake-mono);
+    font-variant-ligatures: none;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
     user-select: text;
     -webkit-user-select: text;
     &:focus-visible {
-      outline: 2px solid var(--cake-accent);
+      outline: 2px solid var(--cake-focus);
       outline-offset: 3px;
     }
   }

@@ -1,22 +1,42 @@
+@use '../../styles/mixins' as *;
 .cake-checkbox {
   display: inline-flex;
   align-items: center;
   gap: 9px;
   cursor: pointer;
   &:has(:disabled) {
-    opacity: 0.5;
+    opacity: var(--cake-disabled-opacity, 0.5);
+    color: var(--cake-disabled-color, inherit);
     cursor: not-allowed;
   }
   .cake-checkbox-input {
-    box-sizing: border-box;
-    color-scheme: var(--cake-checkbox-color-scheme);
+    @include choice;
+    border-radius: var(--cake-choice-radius, revert);
     width: var(--cake-checkbox-size);
     height: var(--cake-checkbox-size);
-    margin: var(--cake-checkbox-margin, revert);
-    accent-color: var(--cake-accent);
+    margin: 0;
+    accent-color: var(--cake-check-accent);
     cursor: inherit;
+    &::after {
+      width: 35%;
+      height: 62%;
+      top: 12%;
+      left: 33%;
+      border: solid currentColor;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    &:indeterminate::after {
+      width: 60%;
+      height: 2px;
+      top: calc(50% - 1px);
+      left: 20%;
+      background: currentColor;
+      border: 0;
+      transform: none;
+    }
     &:focus-visible {
-      outline: 2px solid var(--cake-accent);
+      outline: 2px solid var(--cake-focus);
       outline-offset: 3px;
     }
   }

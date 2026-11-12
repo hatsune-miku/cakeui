@@ -21,6 +21,6 @@ export function Example() {
 
 Provider 的 mode 为 light / dark / system，默认 system；当前只有 AnyDrop 粉色主题。Button 沿用 RN onPress / disabled，variant 为 default / primary / ghost / danger，loading 禁用操作。Card padding 默认 medium，可设 none。TextBox 沿用 value / onChangeText，invalid 显示错误描边。CheckBox 使用 checked / onValueChange；Switch 保留 RN value / onValueChange。ProgressBar 的 value 为 0–1，非法值显示 0。Dialog 使用 visible / onRequestClose，title 必填；调用者提供关闭操作和内容。Spinner / Separator 分别保留 ActivityIndicator / View 属性。
 
-颜色由 Web CakeProvider mixins 生成：在仓库根运行 `npm run native:tokens`，再用 `npm run native:tokens:check` 校验。不要手动修改 src/tokens.ts。RN 使用原生 StyleSheet，触摸尺寸按手机适配，不复刻桌面 32px 点击框。
+颜色由 Web 主题的 `src/theme/_generated.scss` 中粉色预设生成：更新主题后，在仓库根运行 `npm run themes:build`、`npm run native:tokens`，再用 `npm run native:tokens:check` 校验。不要手动修改 src/tokens.ts。RN 使用原生 StyleSheet，触摸尺寸按手机适配，不复刻桌面 32px 点击框。
 
 此包初期仅通过本地 tarball 接入 AnyDrop；尚未发布 npm。平台系统 Widget 使用各自原生视图，不直接渲染 React Native 组件。

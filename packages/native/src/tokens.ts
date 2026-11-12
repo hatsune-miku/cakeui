@@ -1,4 +1,4 @@
-// Generated from CakeUI Web theme mixins. Run npm run native:tokens.
+// Generated from CakeUI Web pink theme. Run npm run native:tokens.
 export const cakeColors = {
   light: {
     background: '#f4f1ee',
@@ -8,13 +8,13 @@ export const cakeColors = {
     control: 'rgba(255, 255, 255, 0.7)',
     controlHover: 'rgba(255, 255, 255, 0.98)',
     text: '#2a2521',
-    muted: '#8a807a',
+    muted: '#746b66',
     line: 'rgba(38, 34, 31, 0.09)',
     accent: '#d15776',
     accentSoft: 'rgba(209, 87, 118, 0.14)',
     accentHover: '#be476a',
     primaryInk: '#fff',
-    danger: '#c0453f',
+    danger: '#b2403b',
     backdrop: 'rgba(31, 27, 22, 0.2)',
   },
   dark: {
@@ -31,7 +31,7 @@ export const cakeColors = {
     accentSoft: 'rgba(209, 87, 118, 0.2)',
     accentHover: '#be476a',
     primaryInk: '#fff',
-    danger: '#c0453f',
+    danger: '#d37f7a',
     backdrop: 'rgba(0, 0, 0, 0.5)',
   },
 } as const

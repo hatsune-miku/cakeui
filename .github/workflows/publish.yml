@@ -38,6 +38,7 @@ jobs:
         run: node scripts/release.mjs check
       - run: npm ci
       - run: npm run check
+      - run: python3 -m unittest discover -s tests -p browser_receiver_test.py
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
       - name: Retain browser failure diagnostics
@@ -100,3 +101,53 @@ jobs:
         run: npm publish .cache/release/package.tgz --ignore-scripts --access public --tag "$NPM_DIST_TAG"
       - name: Verify the public registry artifact
         run: node scripts/release.mjs verify-published
+
+  deploy_browser:
+    name: Publish browser distribution
+    needs: [validate, publish]
+    if: >-
+      always() && needs.validate.result == 'success' &&
+      (needs.publish.result == 'success' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          name: npm-package
+          path: .cache/release/
+      - name: Set up the restricted deployment identity
+        env:
+          DEPLOY_KEY: ${{ secrets.CAKEUI_DIST_SSH_KEY }}
+          DEPLOY_HOSTS: ${{ secrets.CAKEUI_DIST_KNOWN_HOSTS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$DEPLOY_KEY" && test -n "$DEPLOY_HOSTS"
+          umask 077
+          mkdir -p "$RUNNER_TEMP/cakeui-ssh"
+          printf '%s\n' "$DEPLOY_KEY" > "$RUNNER_TEMP/cakeui-ssh/key"
+          printf '%s\n' "$DEPLOY_HOSTS" > "$RUNNER_TEMP/cakeui-ssh/known_hosts"
+      - name: Verify the deployment connection
+        env:
+          CAKEUI_DIST_IDENTITY_FILE: ${{ runner.temp }}/cakeui-ssh/key
+          CAKEUI_DIST_KNOWN_HOSTS_FILE: ${{ runner.temp }}/cakeui-ssh/known_hosts
+        run: node scripts/deploy-browser.mjs --check
+      - name: Deploy the published package's browser assets
+        if: github.event_name == 'push'
+        env:
+          CAKEUI_DIST_IDENTITY_FILE: ${{ runner.temp }}/cakeui-ssh/key
+          CAKEUI_DIST_KNOWN_HOSTS_FILE: ${{ runner.temp }}/cakeui-ssh/known_hosts
+        run: node scripts/deploy-browser.mjs --artifact-dir .cache/release
+      - name: Remove the temporary identity
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/cakeui-ssh/key" "$RUNNER_TEMP/cakeui-ssh/known_hosts"

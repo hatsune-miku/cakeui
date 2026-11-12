@@ -16,8 +16,8 @@
     color: var(--cake-text);
   }
   &[aria-selected='true'] {
-    background: var(--cake-surface);
-    color: var(--cake-accent);
+    background: var(--cake-selected);
+    color: var(--cake-selected-ink);
     box-shadow: var(--cake-edge);
   }
 }

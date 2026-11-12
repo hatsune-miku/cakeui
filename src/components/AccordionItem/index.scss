@@ -1,5 +1,19 @@
 .cake-accordion-item {
+  interpolate-size: allow-keywords;
   border-bottom: 1px solid var(--cake-line);
+  &:last-child {
+    border-bottom: 0;
+  }
+  &::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition:
+      block-size var(--cake-fast) var(--cake-ease),
+      content-visibility var(--cake-fast) allow-discrete;
+  }
+  &[open]::details-content {
+    block-size: auto;
+  }
   .cake-accordion-summary {
     display: flex;
     align-items: center;
@@ -13,19 +27,25 @@
       display: none;
     }
     &:focus-visible {
-      outline: 2px solid var(--cake-accent);
+      outline: 2px solid var(--cake-focus);
       outline-offset: 2px;
       border-radius: 4px;
     }
   }
   .cake-accordion-arrow {
-    color: var(--cake-muted);
-    font-size: 20px;
+    flex: none;
+    box-sizing: border-box;
+    width: 7px;
+    height: 7px;
+    margin-right: 3px;
+    border-right: 1.5px solid var(--cake-muted);
+    border-bottom: 1.5px solid var(--cake-muted);
+    transform: rotate(-45deg);
     transition: transform var(--cake-fast) var(--cake-ease);
   }
   &[open] {
     .cake-accordion-arrow {
-      transform: rotate(90deg);
+      transform: rotate(45deg);
     }
   }
   .cake-accordion-content {

@@ -5,9 +5,9 @@ import { compileString } from 'sass'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const css = compileString(
-  `@use 'src/components/CakeProvider/index' as provider;
-.native-light { @include provider.light; @include provider.pink; }
-.native-dark { @include provider.dark; @include provider.pink-dark; }`,
+  `@use 'src/theme/generated' as palette;
+.native-light { @include palette.theme('pink', 'light'); }
+.native-dark { @include palette.theme('pink', 'dark'); }`,
   { loadPaths: [root] }
 ).css
 const keys = {
@@ -36,7 +36,7 @@ for (const mode of ['light', 'dark']) {
   themes[mode] = Object.fromEntries(Object.entries(keys).map(([name, token]) => [name, values[token]]))
 }
 const rawOutput =
-  '// Generated from CakeUI Web theme mixins. Run npm run native:tokens.\nexport const cakeColors = ' +
+  '// Generated from CakeUI Web pink theme. Run npm run native:tokens.\nexport const cakeColors = ' +
   JSON.stringify(themes, null, 2) +
   ' as const\n'
 const target = root + '/packages/native/src/tokens.ts'

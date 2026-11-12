@@ -16,7 +16,7 @@ API、组合示例、主题变量与维护流程。版本、完整 Props 类型�
 
 CakeUI 使用 React、TypeScript 和 SCSS，组件保留原生 HTML 结构和事件。数据获取、业务状态、排序、筛选、分页切片、存储、权限判断和异步任务由应用负责。
 
-库的公开入口是 `src/index.ts`，发布产物入口是 `dist/index.js`。所有组件使用具名导出，没有默认导出。对应的 `*Props`、`Size`、`Tone`、`CakeTheme`、`CakeMode` 同时导出。内部 context、hooks、工具函数和 demo 组件不属于公开 API，不从内部路径导入。
+基础组件公开入口是 `src/index.ts`，发布产物入口是 `dist/index.js`；HTML 幻灯片入口是 `src/presentation/index.ts`，对应 `@a1knla/cakeui/presentation`。两者均为 Web / React DOM，没有 React Native 部分。所有组件使用具名导出，没有默认导出。对应的 `*Props` 与相关类型同时导出。内部 context、hooks、工具函数和 demo 组件不属于公开 API，不从内部路径导入。
 
 优先遵守这些约定：
 
@@ -24,13 +24,31 @@ CakeUI 使用 React、TypeScript 和 SCSS，组件保留原生 HTML 结构和事
 - `Button` 默认 `type="button"`，需要提交表单时明确使用 `type="submit"`。
 - 表格、列表、菜单、日志、标签页通过 JSX children 组合。没有 `columns`、`dataSource`、`items`、`renderItem` 或通用 `asChild` / `as` 属性。
 - 不导入 Drawer、SidePanel、Select、Input、Tooltip、Modal、Checkbox 等未导出的名称。实际名称分别是 `ComboBox`、`TextBox`、`HoverTips`、`Dialog`、`CheckBox`；本项目没有 Drawer 或侧边面板组件。
-- 默认配色为蓝；`theme` 使用英文值 `blue` / `pink` / `gold`，面向用户的名称为“蓝 / 粉 / 金”。
-- 必须显式引入 `@a1knla/cakeui/style.css`。无需 Tailwind、CSS-in-JS、全局通知服务、图标包或额外 Provider 服务。
+- 默认配色为蓝；`theme` 支持 `blue` / `pink` / `gold` / `dousha` / `dousha-classic` / `grape`。单强调色使用 `accentColor` 或主题配置，不以配色名称表达组件用途。
+- 基础组件显式引入 `@a1knla/cakeui/style.css`；幻灯片组件显式引入 `@a1knla/cakeui/presentation/style.css`。无需 Tailwind、CSS-in-JS、全局通知服务、图标包或额外 Provider 服务。
 - 功能是否存在以当前源码和类型为准。不要将工作台的搜索、任务管理、主题持久化、图标或 Toast 调用函数当成库导出。
 
 ## 2. 安装、入口与执行环境
 
-正式包名是 `@a1knla/cakeui`，npm 页面为 https://www.npmjs.com/package/@a1knla/cakeui 。品牌名与 GitHub 仓库仍为 CakeUI / cakeui；安装和导入时必须包含 `@a1knla/` scope。开发环境使用 Node.js 22.12+ 和 npm，运行项目时 React 与 React DOM 都应为 19 或更高版本。
+正式包名是 `@a1knla/cakeui`，npm 页面为 https://www.npmjs.com/package/@a1knla/cakeui 。品牌名与 GitHub 仓库仍为 CakeUI / cakeui；安装和导入时必须包含 `@a1knla/` scope。可通过 npm 安装，也可直接从下面的 CDN 地址引入浏览器版本。
+
+| 对比项       | npm / ESM                                                           | CDN / 普通 script                                                       |
+| ------------ | ------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| 适用场景     | 已有 React 工程、TypeScript、SSR                                    | 普通 HTML、单文件页面、HTML slides                                      |
+| React 与挂载 | 项目提供 React / React DOM 19+；从 react-dom/client 导入 createRoot | 运行时内置；使用 CakeUI.React 和 CakeUI.createRoot                      |
+| 基础组件     | 从 @a1knla/cakeui 具名导入                                          | 从 CakeUI 取用，如 CakeUI.Button                                        |
+| 幻灯片组件   | 从 @a1knla/cakeui/presentation 具名导入                             | 从 CakeUI.presentation 取用，如 CakeUI.presentation.SlideDeck           |
+| 样式         | 显式导入基础 style.css 和 / 或 presentation/style.css               | 一个 cakeui.css 包含基础组件和幻灯片样式                                |
+| 代码形式     | JSX / TSX 由消费项目编译；ESM 支持 tree-shaking                     | 普通 JavaScript，使用 CakeUI.React.createElement；无需构建工具          |
+| 版本选择     | 安装指定 npm 版本，并使用锁文件                                     | 默认 URL 随稳定发版更新；已发布版本可用 releases/<版本>/ 固定 JS 和 CSS |
+
+两种方式使用相同的组件 Props、原生事件和 children 组合规则。CDN 版本只改变加载方式，不额外提供 slides 编辑器或数据格式。下面分别给出基础组件和 presentation 示例。
+
+版本要求：presentation、theme 子入口、ThemeSettings 和浏览器 IIFE 从 `0.4.0` 起提供。`CakeUI.version` 表示构建版本；`https://vanillacake.cn/cakeui-dist/manifest.json` 记录来源、版本和文件摘要，稳定发布的 source 为 npm。固定版本地址为 `https://vanillacake.cn/cakeui-dist/releases/0.4.0/`，追加 `cakeui.min.js` 或 `cakeui.css`。
+
+### 通过 npm 使用
+
+开发环境使用 Node.js 22.12+ 和 npm，运行项目时 React 与 React DOM 都应为 19 或更高版本。
 
 在已有 React 19 项目中安装：
 
@@ -40,20 +58,15 @@ npm install @a1knla/cakeui
 
 如果使用的 npm 镜像还未同步新版本，可追加 `--registry=https://registry.npmjs.org/` 从官方注册表安装。维护者发布步骤、验证方式与署名约定见 `docs/publishing.md`。
 
-需要验证未发布的本地改动时，仍可从仓库打包安装：
+如果项目还没有 React，先安装匹配的 React / React DOM；JSX / TSX 由 Vite 等构建工具或所用框架编译：
 
 ```sh
-git clone https://github.com/hatsune-miku/cakeui.git
-cd cakeui
-npm ci
-npm pack
-# npm pack 的 prepack 会构建库；将输出的 a1knla-cakeui-<版本>.tgz 交给消费项目
-
-# 在已有 React 19 项目内，用实际文件名替换占位符
-npm install /absolute/path/to/a1knla-cakeui-<版本>.tgz
+npm install react@^19 react-dom@^19
 ```
 
-使用方式：
+#### npm：基础组件
+
+在应用中渲染以下组件，CSS 每个入口引入一次即可：
 
 ```tsx example=hello
 import { Button, CakeProvider, TextBox } from '@a1knla/cakeui'
@@ -69,9 +82,146 @@ export function HelloCakeUI() {
 }
 ```
 
-构建提供 ESM、TypeScript 声明与一份完整 CSS。JS 可以 tree-shake；CSS 不按组件拆包，没有 CommonJS 入口，也没有公开 SCSS 子路径。消费项目不需要安装 Sass。React / React DOM 是 peer dependencies；库不捆绑 React，也没有其他运行时依赖。
+#### npm：HTML 幻灯片
 
-库的 JavaScript 构建带有 `'use client'` 指令。支持服务端渲染首屏 HTML，DOM 操作在 effect 或事件内执行；Dialog 和 Popover 等交互需要客户端挂载后才能打开。在使用 Server Components 的框架中，管理事件和状态的消费组件应处于客户端边界，CSS 按框架的全局样式规则引入。SSR 支持不代表服务端输出会自动打开模态框或提示层。
+presentation 是同一个 npm 包的子入口，不需要另装一个包，也不从基础入口导入 SlideDeck：
+
+```tsx example=presentation-minimal
+import { Slide, SlideDeck, SlideHeader, SlideText } from '@a1knla/cakeui/presentation'
+import '@a1knla/cakeui/presentation/style.css'
+
+export function ProjectSlides() {
+  return (
+    <SlideDeck aria-label="项目汇报">
+      <Slide aria-label="本周进展">
+        <SlideHeader title="本周进展" />
+        <SlideText>完成组件与文档。</SlideText>
+      </Slide>
+    </SlideDeck>
+  )
+}
+```
+
+只用幻灯片不需要基础 CSS 或 CakeProvider；同时使用 Button 等基础组件时，再从基础入口导入它们和 `@a1knla/cakeui/style.css`。将示例组件交给项目已有的 React 根节点渲染即可。主题分别通过 CakeProvider 和 SlideDeck 的 theme / mode 设置。
+
+ESM 构建提供 TypeScript 声明，JS 支持 tree-shaking，React / React DOM 是 peer dependencies。CSS 按基础组件和 presentation 分开，不按单个组件拆包。没有 CommonJS 入口，也没有公开 SCSS 子路径。消费项目不需要安装 Sass。
+
+### 通过 CDN 使用
+
+本文将 `https://vanillacake.cn/cakeui-dist/` 作为 CakeUI 的 CDN 地址使用：
+
+- JavaScript：[cakeui.min.js](https://vanillacake.cn/cakeui-dist/cakeui.min.js)
+- 完整样式：[cakeui.css](https://vanillacake.cn/cakeui-dist/cakeui.css)
+- 可直接打开或另存为 HTML 的[完整示例](https://gallery.vanillacake.cn/browser.html)
+
+JS 为单个普通脚本，不需要 type=module、import map、另引 React、npm 安装或本地打包。CSS 需单独加载；JS 不自动注入样式。稳定版发布后更新默认地址；`releases/<版本>/cakeui.min.js` 与同目录 CSS 固定版本且不覆盖，预发布版可通过 `next/` 或固定版本路径访问。只使用实际已发布且存在的版本目录，当前预览没有对应的 npm 正式版本目录。
+
+全局对象为 `window.CakeUI`（经典脚本内也可直接用 CakeUI）：基础 49 个组件位于 CakeUI.Button 等顶层；幻灯片 20 个组件位于 CakeUI.presentation；主题计算与配置函数位于 CakeUI.theme；React 为 CakeUI.React，挂载函数为 CakeUI.createRoot，源码版本为 CakeUI.version。所有 Props 和事件与对应 ESM 组件相同，使用 React.createElement 表达 JSX 的同一棵元素树。浏览器不会直接执行 JSX / TSX；希望写 JSX 时预先编译，不要求运行时 Babel。
+
+#### CDN：基础组件
+
+将以下内容保存为 `.html` 即可打开；组件状态和事件使用包内置的 React：
+
+```html example=browser-basic
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CakeUI CDN 示例</title>
+    <link rel="stylesheet" href="https://vanillacake.cn/cakeui-dist/cakeui.css" />
+  </head>
+  <body>
+    <main id="app"></main>
+    <script src="https://vanillacake.cn/cakeui-dist/cakeui.min.js"></script>
+    <script>
+      const { React, createRoot, CakeProvider, Button } = CakeUI
+      const h = React.createElement
+
+      function App() {
+        const [count, setCount] = React.useState(0)
+        return h(
+          CakeProvider,
+          { theme: 'blue', mode: 'system' },
+          h(Button, { onClick: () => setCount((value) => value + 1) }, '计数 ' + count)
+        )
+      }
+
+      createRoot(document.getElementById('app')).render(h(App))
+    </script>
+  </body>
+</html>
+```
+
+#### CDN：HTML 幻灯片
+
+使用同一对 JS / CSS 地址，组件取自 `CakeUI.presentation`。此例与上面的 npm 幻灯片示例等价：
+
+```html example=browser-url
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>项目汇报</title>
+    <link rel="stylesheet" href="https://vanillacake.cn/cakeui-dist/cakeui.css" />
+  </head>
+  <body>
+    <main id="slides"></main>
+    <script src="https://vanillacake.cn/cakeui-dist/cakeui.min.js"></script>
+    <script>
+      const { React, createRoot } = CakeUI
+      const { SlideDeck, Slide, SlideHeader, SlideText } = CakeUI.presentation
+      const h = React.createElement
+      createRoot(document.getElementById('slides')).render(
+        h(
+          SlideDeck,
+          { 'aria-label': '项目汇报' },
+          h(
+            Slide,
+            { 'aria-label': '本周进展' },
+            h(SlideHeader, { title: '本周进展' }),
+            h(SlideText, null, '完成组件与文档。')
+          )
+        )
+      )
+    </script>
+  </body>
+</html>
+```
+
+#### 加载顺序、类型与版本
+
+脚本须在应用代码之前完成加载；不要给它加 async 后立即访问 CakeUI。每页只加载一个浏览器运行时；自定义组件的 hooks 使用 CakeUI.React，且通过 CakeUI.createRoot 挂载，不与宿主项目另一份 React 混用。已有 React 构建项目优先使用 ESM 子入口。浏览器全局类型可通过 `import type {} from '@a1knla/cakeui/browser'` 引入，此子路径仅提供类型，不是可运行的 ESM 入口。
+
+完整 CSS 具有基础样式的根变量和默认文字不可选规则，Slide 内仍可选择。外部 URL 需要网络，文件双击打开时也一样；自包含离线 HTML 要内嵌脚本、CSS 和所用媒体。保持 JS / CSS 版本一致；默认地址会随稳定发版改变，长期保存的演示建议固定 releases/<版本> 地址。HTTP 提供正确 MIME、CORS 与 no-cache，允许跨域引用和缓存重新验证。SRI 若由应用自行设置，应绑定固定版本字节，不把旧摘要用于可变的默认地址。
+
+### 本地打包安装与离线文件
+
+需要使用尚未发布到 npm 的功能时，从仓库构建并安装实际打包文件：
+
+```sh
+git clone https://github.com/hatsune-miku/cakeui.git
+cd cakeui
+npm ci
+npm pack
+# npm pack 的 prepack 会构建库；将输出的 a1knla-cakeui-<版本>.tgz 交给消费项目
+
+# 在已有 React 19 项目内，用实际文件名替换占位符
+npm install /absolute/path/to/a1knla-cakeui-<版本>.tgz
+```
+
+安装 tgz 后使用上面完全相同的 npm import 和 CSS 路径。若需要自行托管浏览器版，构建产物为 `dist/browser/cakeui.min.js` 和 `dist/browser/cakeui.css`，同时复制两者，将 HTML 中的 CDN 地址改为自己的 URL 或相对路径即可。把文件放在 HTML 旁边可以离线加载，但仍是三个文件；完全自包含的单 HTML 需要将 JS / CSS 内嵌，并处理图片、字体等所有外部资源。不要把 `dist/index.js` 直接用于普通 script 标签，它是需要 React 依赖解析的 ESM 入口。
+
+仓库的独立工程 [`presentation-toolkit`](../presentation-toolkit/README.md) 可以把普通 React / TypeScript / SCSS 演示工程打包为一个离线 HTML。消费工程仍安装 React、React DOM 和 CakeUI，通过本地 import 引用媒体；工具负责内联依赖、CSS、图片和字体，不规定页面内容格式，也不改变组件 API。它目前通过本地路径安装，没有发布 npm 包；不是 `@a1knla/cakeui/presentation-toolkit` 子入口。
+
+消费工程提供 `presentation.config.json`（`entry`、`outfile`、`title`），使用 `cake-presentation build` 生成 HTML；`cake-presentation dev` 在本机预览，保存源码、导入资源或配置后自动构建并刷新，错误修复后自动恢复。这是整页 live reload，保留 URL hash，临时组件状态会重置；开发模式不写成品，导出 HTML 不包含刷新脚本。远程 import / CSS URL 会报错，代码内手写动态网络请求仍需由作者检查。详细配置、Node API 和资源限制见[工具说明](../presentation-toolkit/docs/usage.md)。
+
+Toolkit 另提供 `cake-presentation edit`（默认本机 4174），通过可选 `editor.files` 与 `editor.schema` 接入 JSON 页面内容：编辑文字、列表、模板参数与图片，排序、复制、删除和撤销。schema 可选 `parentField` 接入父节点引用，按前序展示树形列表、层级编号和祖先路径；计页只统计根节点，结构只读，正文照常编辑。工作区从左到右为页面列表、加宽的内容与布局表单、较小的预览，优先分配空间给内容编辑。草稿以应用的实际渲染入口预览，自动更新不会从编辑区抢走焦点；主动点击或用 Tab 进入预览后仍可交互。草稿自动备份到工程，保存才回写源文件；外部修改按页面和字段与草稿起点合并，同字段冲突保留两版供选择。刷新可恢复旧草稿，合并后重新建立撤销历史；保存同时保留修改前文件与提交的新稿快照。可选 `assets` 清单配合 `cake-presentation:assets` 导入保持图片为普通本地文件；导出仍是独立 HTML，不包含编辑器。此功能属于独立 Toolkit，不是 presentation 组件，也不支持将任意 TSX 自动转换成可编辑模型或自由画布。详见[编辑器字段、图片与保存约定](../presentation-toolkit/docs/editor.md)。
+
+### SSR 与浏览器兼容性
+
+库的 ESM 构建带有 `'use client'` 指令。支持服务端渲染首屏 HTML，DOM 操作在 effect 或事件内执行；Dialog 和 Popover 等交互需要客户端挂载后才能打开。在使用 Server Components 的框架中，管理事件和状态的消费组件应处于客户端边界，CSS 按框架的全局样式规则引入。SSR 支持不代表服务端输出会自动打开模态框或提示层。
 
 浏览器需要支持原生 dialog、Popover API、`:has()`、`color-mix()` 等当前实现使用的能力。库不捆绑 polyfill。真实浏览器自动测试使用 Chrome；Firefox / Safari 没有完成全面实机验证。ComboBox 的可定制选择器有独立的能力降级，见对应章节，不将“可运行”与“所有浏览器外观完全相同”混为一谈。
 
@@ -97,7 +247,7 @@ export function HelloCakeUI() {
 
 ### 样式作用域与全局影响
 
-不包含全局 reset，不修改页面的 margin 或原生 h1 / button / table 的常规样式。导入 CSS 后，会在 `:root` 提供默认主题变量并设置 `user-select: none` 与 `-webkit-user-select: none`，因此页面默认不可选择文字。
+不包含全局 reset，不修改页面的 margin 或原生 h1 / button / table 的常规样式。导入基础 `style.css` 后，会在 `:root` 提供默认主题变量并设置 `user-select: none` 与 `-webkit-user-select: none`，因此页面默认不可选择文字。presentation CSS 只作用于 `cake-slide-*`，不设置根变量或全局选择规则；Slide 内允许选择文字，便于复制讲义和代码。
 
 TextBox / TextArea / NumberBox、ComboBox 的搜索输入和 LogView 允许选择文字；ComboBox 的原生选择器和候选项保持不可选择。普通业务正文、原生 pre / code 或 contentEditable 若需要复制，应由应用显式开启选择。Gallery 的代码和 AI 文档阅读区已开启选择。
 
@@ -118,21 +268,61 @@ TextBox / TextArea / NumberBox、ComboBox 的搜索输入和 LogView 允许选�
 
 ### CakeProvider
 
-原生 div，ref 指向该 div。可选 `theme='blue'`、`mode='system'`、`density='comfortable'`。theme 为 blue / pink / gold；mode 为 light / dark / system；density 为 comfortable / compact。
+原生 div，ref 指向该 div。可选 `theme='blue'`、`mode='system'`、`density='comfortable'`。theme 为六种 ThemePreset；mode 为 light / dark / system；density 为 comfortable / compact。`accentColor?: string` 启用单色自定义，接受不透明 HEX / RGB；`foreground='auto'` 可取 auto / light / dark，仅控制强调区域前景。无效颜色抛出 TypeError，表单应先用 normalizeThemeColor 校验。
 
-Provider 是可嵌套的 CSS 容器，产生实际 DOM，设置主题背景、文字色、字体、字号与行高，不创建 React 全局状态或 body portal。嵌套 Provider 按自己的 Props 和默认值重新确定主题，不自动继承外层 Props。system 用 CSS 媒体查询响应系统明暗。不使用 Provider 时默认变量为蓝色浅色，根变量本身不会跟随系统变暗。
+Provider 是可嵌套的 CSS 容器，产生实际 DOM，设置背景、文字色、字体、字号与行高。内部 context 为 ThemeSettings 提供已应用配置和临时预览，不创建全局服务或 body portal。嵌套 Provider 按自己的 Props 和默认值重新确定主题，不自动继承外层 Props。system 用 CSS 媒体查询响应系统明暗；SSR 同时输出两套变量，首屏不依赖客户端检测。不使用 Provider 时根变量默认蓝色浅色，不跟随系统变暗。
 
-默认舒适密度字号 14px、控件高度变量 38px。紧凑密度以 AnyDrop 为基准：字号 13px、normal 行高、控件高度变量 32px、圆角 8 / 10 / 12 / 14px；按钮常规字重 400、水平 padding 12px，输入 padding 5px 8px。紧凑卡片间距为 0 并使用内描边，复选框为原生 16px 输入，进度条为 5px；日志使用 11px / 1.55 行高。个别组件有固定尺寸、padding、最小高度或触屏规则，不保证所有控件最终测量高度都等于该变量。Provider 不保存用户设置，主题持久化属于应用。
+`config?: ThemeConfig` 是受控配置，优先于快捷属性；`onThemeChange?: (config: ThemeConfig) => void` 请求应用或加载配置，受控方必须回写。`defaultConfig?: ThemeConfig` 提供非受控基准；未提供时由 theme / mode / accentColor / foreground 建立。非受控设置保存在当前 Provider，基准配置改变时重新采用新基准。预览不触发 onThemeChange，取消后恢复当前已应用配置。style 中显式设置的 CSS 变量优先，不会被配置切换清除。
+
+默认舒适密度字号 14px、控件高度变量 38px，圆角 small / medium / large / dialog 为 10 / 16 / 28 / 32px。紧凑密度以 AnyDrop 尺寸为基准：字号 13px、1.45 行高、控件高度变量 32px，圆角 8 / 12 / 24 / 32px；按钮常规字重 400、水平 padding 12px，输入 padding 5px 8px。紧凑卡片间距为 10px，复选框与单选框为 16px，进度条为 5px；日志使用 12px / 1.55 行高。两种密度使用同一字体栈。个别组件有固定尺寸、padding、最小高度或触屏规则，不保证最终高度等于该变量。Provider 不访问持久化存储。
+
+### ThemeSettings
+
+必须放在 CakeProvider 内；输出一个原生 Button 入口、可选存储错误 status 和一个 Dialog，ref 指向入口按钮。透传 ButtonProps（除 onClick），children 默认 Theme；disabled / loading 状态不可打开。`labels?: Partial<ThemeSettingsLabels>` 覆盖入口、标题、分组、操作、错误和加载文案；内置预设名称为蓝、粉、金、豆沙、绿豆沙、葡萄。`onOpenChange?: (open: boolean) => void` 通知打开和关闭。
+
+弹窗包含六预设、自定义颜色选择器与 HEX / RGB 文本框、system / light / dark 背景、auto / light / dark 强调前景。模式和前景按方案分别记忆；切换预设不清除自定义颜色。每次打开从已应用配置建立草稿，修改立即在当前 Provider 预览。应用提交；取消、Esc、关闭按钮、遮罩和卸载撤销预览；恢复默认只重置当前方案，仍需应用才提交。无效输入显示错误，保留最后有效预览并禁用应用。打开聚焦当前方案，原生 radio 支持方向键，Dialog 约束 Tab 并在关闭时恢复入口焦点；窄屏弹窗滚动，默认圆角 32px，继承可覆盖的 --cake-radius-dialog。
+
+`storage?: ThemeStorageAdapter` 可同步或异步，load 返回配置、JSON 字符串、旧配置或 null，save 接收规范化 ThemeConfig。挂载及 adapter 更换时读取并迁移；加载期间禁用入口，读取尚未完成而宿主已更换配置时忽略旧结果。只有应用调用 save；没有适配器就只在内存中使用。保存期间入口用 aria-disabled 阻止再次打开并保留焦点停靠，失败保留已应用效果并显示 status，文字由 labels.storageError 与原始错误信息组成；保存失败时附带重试按钮（labels.retry），重试只再次调用 save。通过 `onStorageError?: (error: unknown, operation: 'load' | 'save') => void` 通知原始错误。读取失败不改变当前配置。适配器应保持引用稳定，避免重复加载；建议同一 Provider 使用一个设置入口。
+
+```tsx example=theme-settings
+import { useMemo, useState } from 'react'
+
+import { Button, CakeProvider, ThemeSettings } from '@a1knla/cakeui'
+import '@a1knla/cakeui/style.css'
+import { createThemeConfig, createThemeStorage } from '@a1knla/cakeui/theme'
+
+export function ThemedApp() {
+  const [config, setConfig] = useState(() => createThemeConfig({ scheme: 'grape' }))
+  // Storage is accessed only by the adapter methods, including in SSR environments.
+  const storage = useMemo(
+    () =>
+      createThemeStorage(
+        {
+          getItem: (key) => localStorage.getItem(key),
+          setItem: (key, value) => localStorage.setItem(key, value),
+        },
+        'my-app-theme'
+      ),
+    []
+  )
+  return (
+    <CakeProvider config={config} onThemeChange={setConfig}>
+      <ThemeSettings storage={storage} onStorageError={(error, operation) => console.error(operation, error)} />
+      <Button variant="primary">Save</Button>
+    </CakeProvider>
+  )
+}
+```
 
 ### Button
 
 原生 button，ref 指向按钮。`variant='default'` 可取 default / primary / ghost / danger；`size='medium'` 使用 Size；`loading=false`；默认 `type='button'`。
 
-默认按钮常态为中性背景，按下时染上 accent-soft 并下移 1px；各 variant 均保留 1px 下移反馈。primary 使用 primary / primary-ink，粉色主题为 AnyDrop 的玫红底白字，悬停与按下使用 accent-hover；ghost 透明；danger 用危险色。动画使用 fast / ease 变量，默认 150ms 与 cubic-bezier(0.29, 0, 0, 1)。loading 显示小 Spinner、保留 children、设置 aria-busy 并禁用按钮。图标由应用传 children；纯图标按钮必须有可访问名称。
+默认按钮常态为中性背景，按下时染上 accent-soft 并下移 1px；各 variant 均保留 1px 下移反馈。primary 使用 primary / primary-ink，粉色主题为 AnyDrop 的玫红底白字，悬停与按下使用 accent-hover；ghost 透明；danger 用危险色，悬停和按下保持危险色。动画使用 fast / ease 变量，默认 150ms 与 cubic-bezier(0.29, 0, 0, 1)。loading 显示小 Spinner、保留 children、设置 aria-busy 并禁用按钮。图标由应用传 children；纯图标按钮必须有可访问名称。
 
 ### Card
 
-原生 div。`padding='medium'`，可取 none / small / medium / large。只提供表面、圆角、间距，不自带 header / footer / title / selectable / onSelect 等接口。按业务需要放普通元素，不将有点击事件的 div 当作天然可键盘操作的按钮。
+原生 div。`padding='medium'`，可取 none / small / medium / large。只提供表面、圆角、间距；两种密度默认均无边框和阴影，依靠表面与页面的底色差异分区。不自带 header / footer / title / selectable / onSelect 等接口。按业务需要放普通元素，不将有点击事件的 div 当作天然可键盘操作的按钮。
 
 ### Separator
 
@@ -158,7 +348,7 @@ Provider 是可嵌套的 CSS 容器，产生实际 DOM，设置主题背景、�
 
 单选使用 value / defaultValue 和 `onChange(event)`。可以传原生 multiple 或 size，相关选择与提交仍由 select 负责；已验证的定制弹出菜单主要是单选下拉路径，不保证 multiple / size 列表框具有相同弹出外观。disabled、禁用 option / optgroup、required、form、重置和键盘操作保留原生规则。选项值使用字符串。
 
-下拉表面与 ContextMenu 共用圆角、padding、颜色、阴影；实现使用 `appearance: base-select`、`::picker(select)`、`::picker-icon`、`::checkmark` 和 anchor-size。支持时显示自定义菜单，picker 最大高度为 min(320px, 视口高度减 16px)，选中项有标记。不支持时降级为浏览器原生选择器，不是运行时切换到另一个 JS 组件。
+下拉表面与 ContextMenu 共用圆角、padding、颜色、阴影；实现使用 `appearance: base-select`、`::picker(select)`、`::picker-icon`、`::checkmark` 和 anchor-size。支持时显示自定义菜单，picker 最大高度为 min(320px, 视口高度减 16px)，选中项有强调底色和标记，悬停与键盘候选只用中性底色 `--cake-item-hover`，两者不会混淆。不支持时降级为浏览器原生选择器，不是运行时切换到另一个 JS 组件。
 
 可选 `searchable=false` 开启单选搜索，增加 `searchPlaceholder='Search…'` 和 `emptyText='No matching options'`。仍然接受 option / optgroup，不引入 options 数组或 onValueChange。搜索匹配选项的文字和 value，忽略大小写；分组名称显示在选项旁，禁用项不能选择，hidden 项不参与结果。multiple 或 size > 1 时保留原生 select，不开启搜索。
 
@@ -172,19 +362,21 @@ Provider 是可嵌套的 CSS 容器，产生实际 DOM，设置主题背景、�
 
 外层 label，内部固定 checkbox input，children 是标签文字。输入类型排除 type / size，增加 `indeterminate=false`。className 属于外层，ref 及其他原生 input 属性属于内部输入。
 
-indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；它是混合外观与语义，不等于 checked，也不自动控制全选逻辑。浏览器在用户操作时可能清除 DOM 的混合状态，应用应同步自己的 indeterminate 与 checked 状态。无文字 children 时提供 aria-label。
+indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；它是混合外观与语义，不等于 checked，也不自动控制全选逻辑。浏览器在用户操作时可能清除 DOM 的混合状态，应用应同步自己的 indeterminate 与 checked 状态。无文字 children 时提供 aria-label。所有主题都用 CSS 绘制未选中底色和配对的勾号 / 横线，深色模式下不会出现浅色系统方块；forced-colors 恢复系统绘制。
 
 ### RadioButton
 
-外层 label，内部固定 radio input，children 是标签。无额外状态管理，类型排除 type / size。用相同 name 建立原生组；每项设置不同 value。原生浏览器负责组内互斥和键盘方向切换。没有单独的 RadioGroup 导出，语义分组可使用 GroupBox。
+外层 label，内部固定 radio input，children 是标签。无额外状态管理，类型排除 type / size。用相同 name 建立原生组；每项设置不同 value。原生浏览器负责组内互斥和键盘方向切换。绘制策略与 CheckBox 相同，圆点使用强调区前景。没有单独的 RadioGroup 导出，语义分组可使用 GroupBox。
 
 ### Switch
 
-外层 label，内部固定 checkbox input 并带 role='switch'。children 是标签，类型排除 type / size。沿用 checked / defaultChecked / onChange，参与 FormData，没有独立的 onCheckedChange。使用原生 disabled，不仅仅改透明度。
+外层 label，内部固定 checkbox input 并带 role='switch'。children 是标签，类型排除 type / size。沿用 checked / defaultChecked / onChange，参与 FormData，没有独立的 onCheckedChange。使用原生 disabled，不仅仅改透明度。滑块与轨道始终不透明且至少 3:1，颜色来自 `--cake-switch-fill` / `--cake-switch-thumb` 与未选中的 `--cake-switch-off-fill` / `--cake-switch-off-thumb`；forced-colors 使用系统色。
 
 ### Slider
 
 固定 `input type='range'`，类型去掉 type。支持原生 min、max、step、value、defaultValue、onChange、ref。默认数值范围由浏览器决定，建议业务中明确指定。没有 marks、双滑块、值提示或自动格式化；用旁边的 output / 文本显示值，并提供可访问名称。
+
+轨道和滑块由组件样式绘制，未填充部分使用 `--cake-track`，填充部分与滑块使用 `--cake-switch-fill`。组件把当前比例写入 input 的 `--cake-slider-ratio`（0 到 1），支持 SSR 首屏、受控更新、用户拖动和表单重置；不要在 style 中覆盖这个变量。onInput 在内部更新后调用。
 
 ### Field
 
@@ -194,7 +386,7 @@ indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；
 
 ### GroupBox
 
-原生 fieldset，必填 `label: ReactNode` 用作 legend，children 为分组内容。disabled 使用原生 fieldset 的禁用规则，ref 指向 fieldset。布局和每个控件的标签仍由调用方负责。
+原生 fieldset，必填 `label: ReactNode` 用作 legend，children 为分组内容。disabled 使用原生 fieldset 的禁用规则，ref 指向 fieldset。默认无边框，以 `--cake-hover` 底色和 medium 圆角分区，legend 位于内容流顶部而不是压在边框上。布局和每个控件的标签仍由调用方负责。
 
 ### Tabs
 
@@ -204,7 +396,7 @@ indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；
 
 ### TabList
 
-原生 div，必须放在 Tabs 中，输出 role='tablist' 与 aria-orientation。提供 aria-label 或 aria-labelledby。横向 Left / Right，纵向 Up / Down，Home / End 选首尾；跳过原生 disabled 项并循环，横向考虑 RTL。键盘移动焦点时会同时激活新标签。自定义 onKeyDown 先执行，preventDefault 可阻止内置导航。
+原生 div，必须放在 Tabs 中，输出 role='tablist' 与 aria-orientation。提供 aria-label 或 aria-labelledby。横向 Left / Right，纵向 Up / Down，Home / End 选首尾；跳过原生 disabled 项并循环，横向考虑 RTL。键盘移动焦点时会同时激活新标签。自定义 onKeyDown 先执行，preventDefault 可阻止内置导航。标签过多时可横向滚动，滚动条默认隐藏。
 
 ### Tab
 
@@ -238,7 +430,7 @@ indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；
 
 ### Table
 
-真正的 table，没有额外包裹层，ref 指向 HTMLTableElement。接受原生 caption、colgroup 及下列结构组件。需要水平滚动时由应用在外层添加 overflow 容器。没有 columns、dataSource、rowKey、排序或选择配置。
+真正的 table，没有额外包裹层，ref 指向 HTMLTableElement。接受原生 caption、colgroup 及下列结构组件。需要水平滚动时由应用在外层添加 overflow 容器。没有 columns、dataSource、rowKey、排序或选择配置。使用 `border-collapse: separate`，默认只有表头下方一条分隔线，数据行靠间距与悬停底色区分，悬停底色两端带圆角；需要行线时在单元格上设置 border-bottom，tr 上的 border 不生效。
 
 ### TableHead
 
@@ -298,7 +490,7 @@ indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；
 
 渲染外层 span 与原生手动 Popover，提示 role='tooltip'。克隆唯一子元素，将生成的说明 id 合并到其 aria-describedby，不增加额外的 Tab 停靠点。子组件必须将该属性传到实际可聚焦元素；不要传纯文本、数组或不能接收此属性的 Fragment。禁用按钮无法正常接收键盘焦点，需要额外的可聚焦帮助入口。
 
-悬停按 delay 打开，焦点或点击立即请求打开，离开使用 100ms 宽限，光标可进入提示层阅读，Escape 关闭。顶部空间不足时显示在下方；水平与垂直位置限制在视口 8px 边距内。单个 DOM 触发元素以自身边界居中，不把它的 margin 当作可视宽度；自定义组件产生多个 DOM 元素时按包装层定位。提示文字的 letter-spacing 为 normal，避免继承触发标题的字距。与触发元素间距由 `--cake-tip-offset` 控制，舒适密度 8px、紧凑密度 6px；紧凑提示为 11px / 1.45 行高、6px 9px padding、最大宽度 220px。滚动和 resize 重新定位。内容应为简短说明，不放表单、链接或其他必须操作的控件；它不是通用交互 Popover。
+悬停按 delay 打开，焦点或点击立即请求打开，离开使用 100ms 宽限，光标可进入提示层阅读，Escape 关闭。顶部空间不足时显示在下方；水平与垂直位置限制在视口 8px 边距内。单个 DOM 触发元素以自身边界居中，不把它的 margin 当作可视宽度；自定义组件产生多个 DOM 元素时按包装层定位。提示文字的 letter-spacing 为 normal，避免继承触发标题的字距。与触发元素间距由 `--cake-tip-offset` 控制，舒适密度 8px、紧凑密度 6px；紧凑提示为 12px / 1.45 行高、6px 9px padding、最大宽度 220px。滚动和 resize 重新定位。内容应为简短说明，不放表单、链接或其他必须操作的控件；它不是通用交互 Popover。
 
 ### WhatsThis
 
@@ -308,7 +500,7 @@ indeterminate 设置 DOM input.indeterminate，并输出 aria-checked='mixed'；
 
 原生 dialog，必填 `open: boolean`、`onOpenChange(open: boolean)`、`title: ReactNode`；可选 description、footer、`closeLabel='Close'`、`closeOnBackdrop=true`、`initialFocus: RefObject<HTMLElement | null>`。其余 Props 来自去掉 open / title / ref 的原生 dialog 类型。
 
-open 是受控状态，应用必须接受关闭请求并更新状态。组件使用 showModal / close，保留原生顶层、背景 inert 与焦点恢复。标题始终渲染为 h2 并与 dialog 关联；description 存在时由组件关联说明 id。组件内部有标题栏、关闭按钮、正文与可选 footer；不提供 footer 默认保存操作。
+open 是受控状态，应用必须接受关闭请求并更新状态。组件使用 showModal / close，保留原生顶层、背景 inert 与焦点恢复。标题始终渲染为 h2 并与 dialog 关联；description 存在时由组件关联说明 id。组件内部有标题栏、关闭按钮、正文与可选 footer；不提供 footer 默认保存操作。默认圆角 32px，可通过 --cake-radius-dialog 配置，两种密度相同。打开与关闭对 dialog 和遮罩使用过渡，关闭过渡依赖浏览器对 `overlay` / `allow-discrete` 的支持，不支持时直接消失；open 状态、close 事件和焦点恢复不等待过渡。
 
 初始焦点顺序：initialFocus.current；其次 autofocus 或 data-cake-autofocus='true'；其次正文内第一个未禁用 input / select / textarea / button；没有指定目标时保留浏览器初始焦点行为。目标必须位于 dialog 内。初始目标不可聚焦或被隐藏时应由应用修正，不把任意 div ref 当成可聚焦目标。
 
@@ -371,7 +563,7 @@ onClick 先执行；未 preventDefault 时通过内部 context 请求关闭菜�
 
 ### AccordionItem
 
-原生 details，必填 `title: ReactNode` 替代原生字符串 title，用于内部 summary。支持原生 open、onToggle、name、ref。正文位于内部 div；summary 已带折叠箭头。浏览器支持时，用相同 name 的 details 实现互斥组，Accordion 自身不模拟该功能。没有 defaultOpen / onOpenChange 属性；需要受控同步时按原生 onToggle 读取 currentTarget.open。
+原生 details，必填 `title: ReactNode` 替代原生字符串 title，用于内部 summary。支持原生 open、onToggle、name、ref。正文位于内部 div；summary 已带折叠箭头，最后一项不绘制底部分隔线。浏览器支持 `::details-content` 与 `interpolate-size` 时展开和收起带高度过渡，否则立即切换。浏览器支持时，用相同 name 的 details 实现互斥组，Accordion 自身不模拟该功能。没有 defaultOpen / onOpenChange 属性；需要受控同步时按原生 onToggle 读取 currentTarget.open。
 
 ### LogView
 
@@ -383,11 +575,338 @@ onClick 先执行；未 preventDefault 时通过内部 context 请求关闭菜�
 
 ### LogEntry
 
-原生 div，可选 time、dateTime、`level='info'`，level 为 info / success / warning / error / debug。渲染 time、级别、正文三个部分。time 是显示字符串；dateTime 写入 time.dateTime 和 title；children 为内容。不会解析日期、补充当前时间、国际化级别或省略相邻重复时间。省略 time 会保留时间列布局，适合应用自己合并连续相同时间的显示。
+原生 div，可选 time、dateTime、`level='info'`，level 为 info / success / warning / error / debug。渲染 time、级别、正文三个部分。info 与 debug 的级别文字使用辅助色，success / warning / error 使用对应状态色。time 是显示字符串；dateTime 写入 time.dateTime 和 title；children 为内容。不会解析日期、补充当前时间、国际化级别或省略相邻重复时间。省略 time 会保留时间列布局，适合应用自己合并连续相同时间的显示。
+
+## 4.1 HTML 幻灯片组件
+
+本节的 20 个组件及其 Props 均从 `@a1knla/cakeui/presentation` 导入，不从基础入口导出。它们为排版、逐页演示和讲义阅读提供 UI，不包含编辑器、Markdown 解析、自动图表、远程字体、自动播放、演讲者备注窗口或 RN 实现。内容通过 JSX 组合；原生 DOM 属性、事件和 React 19 ref 指向各组件的外层元素，下面明确列出的属性替代对应原生属性。
+
+Gallery：`/?page=presentation`；独立示例：`/slides.html`，可接受 `theme=blue|pink|gold`、`mode=light|dark|system` 查询参数。这些路由和参数属于示例站点，库不读写 URL 或 localStorage。
+
+### SlideDeck
+
+原生 div，默认 role=region、aria-label='Presentation'、tabIndex=0，建议传具体 `aria-label`。ref 指向该 div，可以调用 `focus()`。内部依次为 stage、每页 group 包装、可选导航控件、可选全屏错误提示。
+
+| 属性                              | 默认值                       | 说明                                                                                                                |
+| --------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| index / defaultIndex              | undefined / 0                | 从 0 开始的页索引；index 为受控值，defaultIndex 只用于初始化                                                        |
+| onIndexChange                     | undefined                    | `(index: number) => void`，用户请求不同页时调用；受控模式需要应用回写                                               |
+| view                              | presentation                 | presentation 固定画布逐页播放；document 连续阅读                                                                    |
+| ratio                             | 16:9                         | `SlideRatio = '16:9' \| '4:3' \| '16:10'`，Slide 可单独覆盖                                                         |
+| theme / mode                      | blue / light                 | 六种 ThemePreset；light / dark / system，system 用 CSS 媒体查询                                                     |
+| config / accentColor / foreground | undefined / undefined / auto | ThemeConfig 优先；accentColor 启用单色；foreground 为 auto / light / dark                                           |
+| keyboard / controls               | true / true                  | 启用区域内快捷键 / 底部按钮；document 不启用翻页快捷键或按钮                                                        |
+| focusIndicator                    | outline                      | outline / none；只控制 deck 根节点焦点描边，不影响 tabIndex、ref.focus、键盘和文本选择；嵌入自有演示外壳时可设 none |
+| loop                              | false                        | 前后翻页到边界时是否循环；Home / End 仍跳首尾                                                                       |
+| fullscreen                        | true                         | 是否显示全屏按钮；只影响内置按钮                                                                                    |
+| labels                            | 英文文案                     | 部分覆盖 SlideDeckLabels；键为 previous、next、enterFullscreen、exitFullscreen、fullscreenUnavailable、empty、slide |
+| onFullscreenError                 | undefined                    | 全屏 Promise 拒绝时收到原始错误；同时显示 labels.fullscreenUnavailable                                              |
+
+npm 和 CDN 的 SlideDeck 都自带逐页展示、连续阅读布局、比例适配、上一页 / 下一页、页码、键盘翻页和全屏。默认逐页、16:9、显示导航与全屏按钮。`view` / `ratio` 的切换按钮，以及按章节名称跳页的列表不内置；Gallery 使用页面状态和按钮分别更新 `view`、`ratio`、`index`。复制最小示例会得到内置控件，不会自动包含 Gallery 顶部工具栏或下方章节列表。需要同样的控制区时，参见第 5 节的受控示例，通过 `index` / `onIndexChange` 与外部控件共享页码。
+
+children 只接受直接的 Slide、它们的数组、任意层 Fragment，以及 null / false 等条件空值；其他元素或文本会抛错。不要传内部返回 Slide 的自定义组件；可调用返回 Slide 数组的普通内容组合函数。给动态页使用稳定 key。嵌套交互内容直接放在 Slide 内。
+
+索引会截断成整数并限制到现有页范围；NaN / Infinity 按 0 处理，空集合显示“无页面”文案及 0 / 0，导航禁用。children 缩减或外部 index 越界只修正显示，不主动回调；非受控原值保留，页数恢复后可重新显示该原值。控制 props 不应在同一生命周期切换受控 / 非受控模式。
+
+演示模式始终挂载所有页面，非活动页包装设置 aria-hidden、inert 和 display:none；内部状态、effect、订阅、音视频仍存在，媒体暂停由应用管理。翻页隐藏包含焦点的页面时，将焦点回收到 deck；焦点位于其他区域时不抢焦点。阅读模式全部可访问。包装的 role=group、aria-roledescription=slide、名称包含页码与 Slide 的 aria-label。内置计数器通过 polite status 宣告当前页；controls=false 时应由应用提供需要的页码提示。
+
+只有焦点位于当前 deck 内时处理 ← / →、PageUp / PageDown、Space / Shift+Space、Home / End。不安装全局键盘监听；忽略 Ctrl / Meta / Alt 组合、内层 deck、表单控件、button、a、可编辑区域、常见交互 role、音视频和 pre。消费方的 onKeyDown 先执行，可 preventDefault 阻止翻页；自定义交互组件应在自己的键盘处理中阻止冒泡或 preventDefault。导航按钮聚焦时保留原生 Space / Enter 激活行为。
+
+全屏只由点击按钮请求，退出由按钮或浏览器 Escape 负责，fullscreenchange 同步按钮状态。不支持或权限禁止时禁用按钮；请求被拒绝时显示提示并调用错误回调，不抛出未处理 Promise。iframe 需要宿主允许 fullscreen。全屏使用当前 deck 根节点，画布按所选比例适配视口；不会锁定键盘、横屏方向或浏览器缩放。
+
+### SlideNavigator
+
+原生 nav，ref 指向 HTMLElement，默认 aria-label="Slide navigation"。受控 `index: number` 和 `onIndexChange: (index: number) => void` 必填；索引从 0 开始，越界会限制在现有范围，非有限数按 0 处理。children 的每个非空直接子项是一个按钮标签，可用带 key 的 JSX 数组；标签内不要放交互元素或 Fragment 分组。组件不读取 SlideDeck 或业务数据，应用决定每个标签对应单页还是章节。
+
+当前项居中、放大 1.08 倍，以 aria-current="step" 标记。前后各两项逐级弱化，其他项透明、inert、aria-hidden 且不进入 Tab 顺序；边界不循环。只有 index 改变才移动数轴，过渡为 250ms cubic-bezier(0.29, 0, 0, 1)，减少动态效果偏好下取消过渡。长标签截断，当前项最多两行，辅助技术可读取完整名称。按钮可点击，← / →、Home / End 请求切换并在受控值更新后跟随焦点；先调用原生 onKeyDown，preventDefault 可取消。消费的按键阻止冒泡，避免同时驱动外层 Deck。
+
+可选 `context: ReactNode` 放在数轴下方，适合当前进度、子页路径与侧栏说明。由应用提供语言和层级信息；组件不自动推断总页数。树形演示将 index 绑定到根节点序号，进入子页时仅更新 context，数轴保持位置。独立使用时主题 CSS 变量有蓝色回退；放在 Deck 外时可在公共父节点或自身传入 presentation 变量。打印隐藏整个导航。
+
+### SlideTree
+
+原生 nav，默认 aria-label="Slide tree"，ref 指向 HTMLElement；内部用 ul 保留实际嵌套列表语义，children 使用 SlideTreeItem。它是缩略图目录导航，不使用需要完整 treeview 选择模型的 role="tree"。每个节点仍是原生按钮，支持 Tab、Enter、Space。可选 `labels` 的 expand / collapse 覆盖展开、收起按钮的英文可访问名称。
+
+节点聚焦时，↑ / ↓、Home / End 在可见且未禁用的节点间移动焦点；→ 展开节点或进入首个子节点，← 收起节点或返回父节点。这些按键不切换当前页面；Enter / Space 或点击调用节点的 onClick，由应用导航。先调用原生 onKeyDown，可 preventDefault 取消内置行为；消费的按键停止冒泡，避免同时触发外层幻灯片快捷键。
+
+外部导航改变 current 节点时，自动请求展开它的祖先，并只滚动组件内部，使当前项进入可见范围；不抢走外部焦点。不限制侧栏宽度，也不按深度增加列。CSS 变量 `--cake-slide-tree-max-height` 默认 none，可限制高度后垂直滚动；`--cake-slide-tree-indent` 默认 16px，加上连接线侧的 8px 缩进，逐层减少子节点宽度与缩略图尺寸。字体不随深度缩小。使用足够的容器宽度容纳实际层数。展开与收起立即生效，不播放页面位移或缩放动画，打印隐藏整个导航。
+
+### SlideTreeItem
+
+组合节点，返回 li，内部一行包括可选展开按钮与主按钮，后接 children 对应的嵌套 ul。原生 button 属性、事件、className、style 和 ref 均指向主按钮；`label: ReactNode` 必填，`thumbnail?: ReactNode` 为可选 16:9 缩略图内容，二者都不应包含交互元素。children 应为嵌套 SlideTreeItem，可按 JSX 数组递归组合，不需要业务数据 schema。
+
+`current=false` 在主按钮设置 aria-current="page" 和选中样式。选择由应用 onClick 管理；折叠箭头单独控制展开，不触发主按钮 onClick。`expanded?: boolean` 为受控展开值，`defaultExpanded=true` 为非受控初值，`onExpandedChange?: (expanded: boolean) => void` 响应展开请求；受控方必须回写状态，包括外部导航的祖先展开请求。没有 children 时不显示箭头。收起后内容仍挂载，hidden 隐藏嵌套列表；焦点原本在后代中时收回主按钮。主按钮的 aria-expanded / aria-controls 与展开按钮同步。展开按钮不进入 Tab 顺序，键盘通过主按钮的左右方向键操作。
+
+```tsx example=presentation-tree
+import { useState } from 'react'
+
+import { SlideTree, SlideTreeItem } from '@a1knla/cakeui/presentation'
+import '@a1knla/cakeui/presentation/style.css'
+
+export function ChapterTree() {
+  const [page, setPage] = useState('overview')
+  return (
+    <SlideTree
+      aria-label="章节页面"
+      labels={{ expand: '展开子页', collapse: '收起子页' }}
+      style={{ width: 232, maxHeight: 500 }}
+    >
+      <SlideTreeItem label="01 Overview" current={page === 'overview'} onClick={() => setPage('overview')}>
+        <SlideTreeItem
+          label="01.1 Example"
+          thumbnail={<img src="/example.png" alt="" width="100%" />}
+          current={page === 'example'}
+          onClick={() => setPage('example')}
+        >
+          <SlideTreeItem label="01.1.1 Details" current={page === 'details'} onClick={() => setPage('details')} />
+        </SlideTreeItem>
+      </SlideTreeItem>
+    </SlideTree>
+  )
+}
+```
+
+### SlidePlaybackMenu
+
+原生 div，role="group"、默认 aria-label="Playback"；ref 与原生属性指向 div，不接受 children。`value?: 'flat' | 'tree'` 为当前模式，不传时都不选中；`onValueChange` 必填。`labels?: Partial<Record<'flat' | 'tree', string>>` 覆盖默认 Flat playback / Tree playback。
+
+内部是两项 menuitemradio 按钮和选中勾号；点击包含当前模式在内的任一项会回调。它是菜单内容，必须放进宿主的 role="menu"，由宿主管理打开、关闭、方向键与焦点恢复。组件不安装快捷键、不创建弹层，也不改变 Deck 或持久化状态。flat / tree 的具体排版与遍历由应用维护，两种模式可以共享同一内容树。
+
+```tsx example=presentation-navigation
+import { useState } from 'react'
+
+import { Slide, SlideDeck, SlideNavigator, type SlidePlayback, SlidePlaybackMenu } from '@a1knla/cakeui/presentation'
+import '@a1knla/cakeui/presentation/style.css'
+
+export function ChapterSlides() {
+  const [index, setIndex] = useState(0)
+  return (
+    <>
+      <SlideNavigator index={index} onIndexChange={setIndex} context={`${index + 1} / 2`}>
+        <span>01 Overview</span>
+        <span>02 Results</span>
+      </SlideNavigator>
+      <SlideDeck index={index} onIndexChange={setIndex} focusIndicator="none">
+        <Slide aria-label="Overview">Overview</Slide>
+        <Slide aria-label="Results">Results</Slide>
+      </SlideDeck>
+    </>
+  )
+}
+
+// Render inside your menu host; the host closes and restores focus in onSelect.
+export function PlaybackChoices({
+  value,
+  onSelect,
+}: {
+  value: SlidePlayback
+  onSelect: (value: SlidePlayback) => void
+}) {
+  return (
+    <SlidePlaybackMenu
+      aria-label="播放方式"
+      value={value}
+      onValueChange={onSelect}
+      labels={{ flat: '平铺播放', tree: '树形播放' }}
+    />
+  )
+}
+```
+
+### SlideSubmenu
+
+用于现有菜单中的二级菜单。`label: ReactNode` 是触发按钮内容，`children` 放原生菜单项，`menuLabel: string` 是子菜单的无障碍名称；`backLabel='Back'` 控制窄屏返回项，`menuClassName` 设置子菜单弹层 class。原生 button 属性、事件、`className` 与 ref 指向触发按钮，组件固定 type="button"、role="menuitem"、aria-haspopup / expanded / controls；disabled 禁止展开。onClick / onKeyDown / onPointerEnter 可通过 preventDefault 取消默认行为。
+
+触发项点击、Enter / Space、向右键或鼠标悬停展开。子菜单使用原生 Popover，保留在宿主 DOM 树内，可在宿主全屏时显示；向右展开，空间不足向左，两侧均不足时覆盖父菜单部分区域并显示返回项。向上 / 下、Home / End 只移动本层可用菜单项的焦点，单字符可按项目前缀跳转；向左或 Escape 只收起本级并回到触发项。Tab 留给宿主关闭整体菜单。鼠标离开后短暂延迟收起，允许越过弹层边缘；键盘已进入子菜单时不会因指针移开丢失焦点。外部点击、父 Popover 关闭或外部滚动会收起子菜单。打印时隐藏。
+
+组件不保存业务选择，也不替宿主关闭全部菜单。应用在菜单项回调中处理选择与整体关闭 / 焦点恢复。宿主的方向键候选应过滤为 `item.closest('[role="menu"]') === event.currentTarget`，防止把子菜单项混入主菜单；宿主应在关闭时卸载子菜单或关闭父 Popover。必须加载 presentation 样式，配色继承宿主的 `--cake-presentation-*` 变量；纯鼠标菜单也应保留键盘入口。
+
+```tsx example=presentation-submenu
+import { SlideSubmenu } from '@a1knla/cakeui/presentation'
+import '@a1knla/cakeui/presentation/style.css'
+
+// Render inside a menu host; onSelect should also close the host and restore focus.
+export function TitleChoices({ value, onSelect }: { value: string; onSelect: (value: string) => void }) {
+  return (
+    <SlideSubmenu label={<span>标题字体</span>} menuLabel="标题字体" backLabel="返回菜单">
+      {['Original', 'Display'].map((font) => (
+        <button
+          key={font}
+          type="button"
+          role="menuitemradio"
+          aria-checked={value === font}
+          onClick={() => onSelect(font)}
+        >
+          {font}
+        </button>
+      ))}
+    </SlideSubmenu>
+  )
+}
+```
+
+### Slide
+
+原生 section，内部有一个 `cake-slide-content` div 承载 children；ref、style、事件与 aria-* 均在 section。`ratio` 默认继承 deck，否则 16:9；`tone='paper'` 可取 paper / accent / inverted；`layout='default'` 可取 default / center / cover。center 垂直居中且文本居中，cover 垂直居中但文本左对齐；存在 SlideFooter 时其自动上边距会把页脚推到底部。可单独使用，不强制放入 SlideDeck，但连续阅读重排和分页由 Deck 提供。
+
+固定比例使用 aspect-ratio；文字、页边距和组件间距通过容器宽度等比例缩放。演示中超出内容区会出现内部滚动；不自动缩字、分页或隐藏超出正文。不要为可读性堆满内容，长页优先拆页。document 模式允许页面增高，在 deck 宽度不超过 640px 时取消固定比例、提高最小字号并将 SlideColumns 变为单栏。
+
+### SlideHeader
+
+原生 header，ref 指向 header。必填 `title: ReactNode` 替代原生 title，`children` 不接受；可选 label、description。内部按顺序渲染可选 label div、h2 SlideTitle、可选 p SlideText（muted）。title / description 内容应适合 heading / paragraph 语义，不嵌套同类块元素；需要不同标题等级时用 SlideTitle 自行组合。
+
+### SlideTitle
+
+原生 heading，ref 为 HTMLHeadingElement。`level=2` 可取 1 / 2 / 3，决定 h1 / h2 / h3；`size='large'` 可取 display / large / medium，分别为 1280px 画布下约 72 / 48 / 35.2px。视觉大小与语义等级独立，封面一般 level=1；children 作为标题内容，不自动截断。
+
+### SlideText
+
+原生 p。`size='body'` 可取 body / lead / small，对应 1280px 画布下 24 / 28.16 / 16px；`muted=false` 控制辅助文字色。接受行内 children、链接、强调等原生内容，不应嵌套 p、列表等块元素。
+
+### SlideFooter
+
+原生 footer，children 放在内容 div；可选 `source`、`page` 为 ReactNode，分别渲染来源和页码 div。默认上边框、自动上边距、16px 基准字号，空间不足时换行。页码由应用传入，不从 Deck 推断；因此独立 Slide 或重排时也应同步维护 page。
+
+### SlideColumns
+
+原生 div，CSS grid。`columns=2` 可取 2 / 3 / 4；`balance='equal'` 可取 equal / wide-left / wide-right，仅两栏时后三项决定 1:1 / 3:2 / 2:3。children 直接成为 grid 项，列数与数据无关；不包装每个孩子，不要求 SlidePanel。普通 div 内容的内部排版由应用自己设置。document 窄屏变为单栏，presentation 保持列数。
+
+### SlidePanel
+
+原生 div，内部 flex column，统一 padding、间距和圆角。`variant='soft'` 可取 soft / outline / accent，分别使用中性底、描边透明底、主题浅底。没有隐式 title/footer API，组合 SlideTitle、SlideText、列表等作为 children。
+
+### SlideList
+
+原生 ul，统一字号、行距和条目间距，无扩展属性。children 使用 SlideListItem 或原生 li；原生 li 不自动获得 SlideListItem 的 marker 样式。需要有序列表时可自行使用原生 ol 与合适的 className，没有 ordered 属性。
+
+### SlideListItem
+
+原生 li，无扩展属性。配合 SlideList，marker 使用强调色；保留 value 等原生属性，但编号是否生效由 ul / ol 的原生语义决定。
+
+### SlideStat
+
+原生 div，必填 `value`、`label`，可选 `detail` 均为 ReactNode；不接受 children。内部三个具名 div 按数值、标签、说明排列，顶部强调线，数值使用等宽数字及封面字号。只显示内容，不计算百分比、趋势、单位或统计结论；应标明数据来源或明确是示例数值。
+
+### SlideFigure
+
+原生 figure，children 放在媒体 div，后接可选 `caption: ReactNode` 对应 figcaption。ref 指向 figure。可容纳 SlideImage、原生 SVG、图表或 video；不加载或修改媒体，不自动把 caption 当作图片 alt。
+
+### SlideImage
+
+原生 img，要求 `alt: string`，装饰图可以显式传空字符串。`fit='contain'` 可取 contain / cover；保留 src、srcSet、sizes、loading、width、height、事件与 HTMLImageElement ref。默认媒体框 16:9，宽高占容器，圆角；可用 style / className 改 aspectRatio、尺寸。contain 保留完整图像，cover 可能裁切；媒体框比例不自动跟随 Deck ratio。默认不懒加载，打印前由应用保证图片已加载。
+
+### SlideQuote
+
+原生 blockquote，保留 `cite` URL 属性，ref 指向 blockquote。children 放入引文 div；可选 `attribution: ReactNode` 渲染 footer。左强调线和大字号用于短引文，不自动添加引号、作者或引用来源，不验证引文真实性。
+
+### SlideCode
+
+原生 pre，ref 指向 pre，默认 tabIndex=0 用于键盘滚动；必填 children:string 渲染到 code，React 转义文本。可选 language 仅为可见标签，不启用语法高亮或执行代码。默认保留空白、允许选择、横向滚动；打印时换行。设置适当 aria-label，长代码可拆页；没有复制按钮或剪贴板服务。
+
+### 幻灯片主题、打印与兼容性
+
+presentation 不读取 CakeProvider 的 Props / density；同页需要一致主题时把同一 config 分别传入两个容器。默认蓝色浅色；仅使用旧三种 theme / mode 时保留原有投影配色（粉色使用更深强调色）。显式 config、accentColor、手动 foreground 或新预设使用通用主题生成器并映射到 presentation 变量；因此显式传入旧预设 config 与旧快捷属性的外观可能不同。紧凑密度不改变幻灯片字号，SlideDeck 不提供设置入口 context。
+
+可通过 Deck 的 className 或 style 设置下表的公开 CSS 变量；不要依赖内部节点深度。Slide 单独使用时有蓝色浅色回退值。每个 Slide 的 cqw 以该页面自身宽度计算，适配外层容器，无需 JS 测量字号。
+
+| 变量                            | 蓝色浅色默认值 / 用途                                                |
+| ------------------------------- | -------------------------------------------------------------------- |
+| --cake-presentation-paper       | #fdfefe，页面底色                                                    |
+| --cake-presentation-ink         | #29313a，正文                                                        |
+| --cake-presentation-muted       | #596572，辅助文字                                                    |
+| --cake-presentation-surface     | #eef2f6，中性面板 / 代码底                                           |
+| --cake-presentation-line        | #c8d2dc，分隔与描边                                                  |
+| --cake-presentation-accent      | #3d658f，标题辅助 / 数值 / inverted 背景                             |
+| --cake-presentation-accent-soft | #d6e7f7，accent 页面和面板                                           |
+| --cake-presentation-accent-ink  | #fff，inverted 正文；自定义 accent 时同时检查此色                    |
+| --cake-presentation-font        | Segoe UI Variable Text、Segoe UI、PingFang SC、system-ui、sans-serif |
+| --cake-presentation-radius      | 28px，Slide 圆角回退值                                               |
+
+基准 1280px 宽画布的页边距为 60px、内容间距 24px，字号见各组件。窄屏 document 模式使用 24px 页边距、20px 间距，display / title / medium / body / lead / small 分别为 40 / 30 / 24 / 17 / 20 / 14px。按压导航按钮沿用 Button 的 1px 下移、150ms 和 cubic-bezier(0.29, 0, 0, 1)；prefers-reduced-motion 时取消过渡。无自动翻页或入场动画。
+
+CSS 打印媒体规则显示所有页，隐藏 Deck 控件，页间 break-after:page，末页不追加分页；代码允许折行。库不设置全局 @page、不隐藏宿主的导航或其他内容。消费方应提供独立演示路由并按需要设置打印纸张、横向、边距、背景图形；Gallery 的 `/slides.html` 示例设置 A4 横向、零页边距，并隐藏示例控制区。固定比例与纸张比例不同会有留白；内容过长仍可能跨页，库不自动分页。页内原生 hidden / 用户 CSS 保持原含义，应用自行准备打印内容。
+
+需要 CSS container queries / cqw、aspect-ratio、color-mix、inert 等现代 Web 能力；不捆绑 polyfill。全屏单独做能力检测，参见 [MDN Fullscreen](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullscreen)。自动化验证使用 Chromium，未完成 Firefox / Safari 全面实机及屏幕阅读器人工验证。SSR 输出包含全部页和隐藏状态；必须加载对应 CSS，键盘 / 全屏交互在客户端挂载后启用。
 
 ## 5. 可直接集成的组合示例
 
 标有 `example=` 的 TSX 代码块都是独立模块，包验证会将它们放进真实安装 CakeUI tgz 的消费项目进行严格类型检查。为了展示 API，示例中的保存函数只回显数据；接入实际服务时替换相应业务函数。
+
+### HTML 幻灯片：受控演示与连续阅读
+
+此例完整展示独立子入口与 CSS。切换阅读模式不改变内容；自定义页码由同一数据源维护。生产内容可以按 JSX 拆分，但传入 Deck 的顶层元素仍应是 Slide。
+
+```tsx example=presentation
+import { useState } from 'react'
+
+import {
+  Slide,
+  SlideCode,
+  SlideColumns,
+  SlideDeck,
+  SlideFigure,
+  SlideFooter,
+  SlideHeader,
+  SlideImage,
+  SlideList,
+  SlideListItem,
+  SlidePanel,
+  SlideQuote,
+  SlideStat,
+  SlideText,
+  SlideTitle,
+} from '@a1knla/cakeui/presentation'
+import '@a1knla/cakeui/presentation/style.css'
+
+export function ProjectSlides() {
+  const [index, setIndex] = useState(0)
+  const [reading, setReading] = useState(false)
+  return (
+    <main>
+      <button type="button" onClick={() => setReading(!reading)}>
+        切换阅读模式
+      </button>
+      <SlideDeck
+        aria-label="项目汇报"
+        index={index}
+        onIndexChange={setIndex}
+        view={reading ? 'document' : 'presentation'}
+        theme="blue"
+        mode="light"
+      >
+        <Slide aria-label="项目概览" tone="accent" layout="cover">
+          <SlideTitle level={1} size="display">
+            项目概览
+          </SlideTitle>
+          <SlideText size="lead">组件、文档与验证进展。</SlideText>
+          <SlideFooter page="1 / 3">项目组</SlideFooter>
+        </Slide>
+        <Slide aria-label="完成内容">
+          <SlideHeader title="完成内容" description="以下数值为示例。" />
+          <SlideColumns>
+            <SlidePanel>
+              <SlideStat value="3" label="示例页面" />
+              <SlideList>
+                <SlideListItem>统一版式</SlideListItem>
+                <SlideListItem>补充文档</SlideListItem>
+              </SlideList>
+            </SlidePanel>
+            <SlideFigure caption="图片请替换为项目内的真实资源。">
+              <SlideImage src="/project-overview.png" alt="项目概览示意" />
+            </SlideFigure>
+          </SlideColumns>
+          <SlideFooter page="2 / 3" source="项目记录" />
+        </Slide>
+        <Slide aria-label="集成方式">
+          <SlideHeader title="集成方式" />
+          <SlideCode language="TSX">{'<SlideText>项目进展</SlideText>'}</SlideCode>
+          <SlideQuote attribution="项目排版约定">一页讲清一个观点。</SlideQuote>
+          <SlideFooter page="3 / 3" />
+        </Slide>
+      </SlideDeck>
+    </main>
+  )
+}
+```
 
 ### 表单、错误关联与原生选择器
 
@@ -758,27 +1277,91 @@ export function ActivityLog() {
 
 ## 6. 主题、变量与动效
 
-三种配色分别有 light / dark 变体。可以在同一页面展示多个 Provider，菜单与 Dialog 保留在自己的主题 DOM 作用域中。全量变量与六套主题的精确值见自动生成附录。
+六种预设分别有 light / dark 变体，背景模式独立于配色。可以在同页使用多个 Provider，菜单与 Dialog 保留在所属 DOM 作用域中。全量变量与十二套预设的精确值见自动生成附录。
 
-粉色主题以 AnyDrop 为最终样式基准：强调色 #d15776、悬停 #be476a、浅色背景 #f4f1ee、深色背景 #16151a。卡片是半透明表面，弹层使用独立的不透明 `--cake-popup`；不要把卡片直接当浮层底色。发生参考项目间的样式冲突时优先修正 CakeUI，使其与 AnyDrop 一致。蓝 / 金仍保留各自配色；默认 theme 仍为 blue。粉色主按钮白字与浅色辅助文字保留原样，存在小字号对比度低于 WCAG AA 的已知边界，见 `docs/design.md`；不要宣称该主题通过完整 AA。
+| 方案           | 参考色  | 特征                                        |
+| -------------- | ------- | ------------------------------------------- |
+| blue           | #CFE2F5 | 保留原有蓝色配色                            |
+| pink           | #F0D4E1 | 保留 AnyDrop 柔和基底和玫红强调             |
+| gold           | #F3D3B9 | 保留原有暖金配色                            |
+| dousha         | #B37D87 | 暖粉基底、红豆沙强调，不使用绿色页面背景    |
+| dousha-classic | #ADC89E | 暖粉基底、绿色强调，auto 默认浅色文字和图标 |
+| grape          | #D6C8E5 | 柔和粉色基底、葡萄色强调                    |
 
-| 变量组                                                                       | 用途                                              |
-| ---------------------------------------------------------------------------- | ------------------------------------------------- |
-| --cake-bg / --cake-surface / --cake-popup                                    | 页面、半透明卡片与不透明弹层表面                  |
-| --cake-control / --cake-control-hover                                        | 普通控件常态与悬停背景                            |
-| --cake-text / --cake-muted                                                   | 正文与辅助文字                                    |
-| --cake-line / --cake-edge                                                    | 分隔线与内描边                                    |
-| --cake-hover / --cake-backdrop / --cake-shadow                               | 轻悬停背景、模态遮罩、弹层阴影                    |
-| --cake-accent / --cake-accent-soft / --cake-accent-hover / --cake-accent-ink | 主题色、填充、悬停填充与填充上的文字              |
-| --cake-success / --cake-warning / --cake-danger 及各自 -soft                 | 状态前景与背景                                    |
-| --cake-radius-small / -medium / -large / -dialog                             | 圆角，默认 10 / 14 / 20 / 26px                    |
-| --cake-control-height                                                        | 普通控件高度基线，comfortable 38px / compact 32px |
-| --cake-font / --cake-mono                                                    | 普通字体与日志、代码等宽字体                      |
-| --cake-fast / --cake-normal / --cake-slow / --cake-ease                      | 150 / 200 / 250ms 与缓出曲线                      |
+新配色与自定义颜色的 `--cake-hairline` 独立于控件 `--cake-line`：按当前卡片表面合成浅色 6% / 深色 5% 的前景色，供显式需要细线的业务布局使用；表面色对覆盖同样参与合成。Card 默认不绘制这条细线。控件边线、焦点环与文字色对保持各自语义。
+
+参考色是生成种子，不直接填满所有控件。新配色与单色推导生成不透明语义色对，覆盖页面、分层表面、输入、强调、柔和强调、选中、禁用和 hover / active；成功、警告、危险保留独立色相。auto 根据背景选择前景；手动 light / dark 只调整强调区域的文字和图标，同时向白 / 黑适度移动对应背景，尽量保留色相，不改变正文模式。绿豆沙的浅文字需要更深绿色填充，故实际填充不等于参考色。
+
+#### 纯计算与配置 API
+
+从 `@a1knla/cakeui/theme` 导入，不依赖 React，也不在导入或计算时访问 DOM / localStorage。浏览器构建对应 `CakeUI.theme`。`ThemeConfig` 当前 version=2，保存 scheme、规范化 customColor，以及按方案记忆的 options；每项含 mode、foreground、可选 light / dark 语义色对覆盖。
+
+| API                                             | 行为                                                                                                                   |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| themePresets / resolveThemePreset(id)           | 只读六预设元数据；未知 id 抛错                                                                                         |
+| normalizeThemeColor(value)                      | #RGB / #RRGGBB（可省略 #）、逗号或空格分隔 RGB、百分比 RGB → 小写 #rrggbb；无效返回 null；拒绝 alpha、越界、混用百分比 |
+| createThemeConfig(input?)                       | 默认 blue、system、auto，自定义色默认 #cfe2f5；校验失败抛 TypeError                                                    |
+| validateThemeConfig(value)                      | 返回 valid 和规范化 config，或 errors；不修改输入                                                                      |
+| updateThemeConfig(config, patch)                | 返回新配置，保留其他方案选项及自定义色；切换到未配置方案用 system / auto                                               |
+| resolveThemeOptions(config)                     | 当前方案的有效选项                                                                                                     |
+| resetThemeScheme(config)                        | 只删除当前方案选项；custom 同时恢复默认种子；其他方案记忆保留                                                          |
+| generateTheme(config, systemMode='light')       | 返回 scheme、实际 mode、pairs、variables、contrastIssues；systemMode 必须为 light / dark，由调用方提供                 |
+| themeContrast(a, b)                             | 不透明 HEX / RGB 的 WCAG 相对亮度对比度；无效抛错，不舍入阈值                                                          |
+| serializeThemeConfig(config)                    | 校验并输出 JSON，不保存 DOM 派生色值或业务字段                                                                         |
+| migrateThemeConfig(value)                       | 显式旧配置迁移，见下文；未知版本或非法字段抛错                                                                         |
+| applyTheme(element, config)                     | 写入语义 CSS 变量，跟随系统；返回 update(config) / destroy() 控制器                                                    |
+| createThemeStorage(storage, key='cakeui-theme') | 包装 getItem / setItem 的存储对象，不自动访问浏览器存储                                                                |
+
+```tsx example=theme-pure
+import { applyTheme, createThemeConfig, generateTheme, updateThemeConfig } from '@a1knla/cakeui/theme'
+
+export function mountTheme(scope: HTMLElement) {
+  const config = createThemeConfig({ scheme: 'custom', customColor: 'rgb(82, 67, 150)', mode: 'system' })
+  const light = generateTheme(config, 'light')
+  console.log(light.pairs.accent, light.contrastIssues)
+  // scope uses class="cake-theme" and the base stylesheet.
+  const controller = applyTheme(scope, config)
+  controller.update(updateThemeConfig(config, { foreground: 'light' }))
+  return () => controller.destroy()
+}
+```
+
+applyTheme 只管理自己写入的变量；update 用完整语义集合替换旧配置，不能残留旧方案覆盖。destroy 恢复调用前的内联值与优先级，保留其他业务变量以及应用在最后一次更新后自行改写的值。同一元素重新 applyTheme 会替换旧控制器；销毁后 update 抛错。使用 `.cake-theme` 和基础样式提供字体、布局变量、背景与文字规则；也可在自己的容器样式中消费生成变量。不要在同一元素混用 Provider 和命令式控制器。
+
+高级覆盖通过 `pairs: { light: { accent: { background, foreground } }, dark: {...} }` 提交完整色对；仅允许 ThemePairName 中的语义名称，两个颜色均须不透明且至少 4.5:1。覆盖在前景选择之后应用；hover / active / selected 是独立色对，应按需一起配置。直接 CSS 覆盖仍支持，但不会自动校验对比度；同一个前景跨背景使用时由调用者检查。
+
+#### 迁移与对比度边界
+
+旧 `theme` / `mode` 用法无需修改。migrateThemeConfig 接受裸预设字符串、JSON 字符串、无 version 的 `{ theme, mode }` 或 `{ scheme, mode, foreground, customColor }`、version=1 的同名字段及 `overrides[scheme].mode/foreground`，转为 version=2 的 options。null 表示初始默认值；未知方案、非法值、未来版本和损坏 JSON 抛错，调用者决定恢复默认或提示。只提取主题字段，不迁入顶栏、工具、登录或更新逻辑。Gallery 另按旧 themeChosen 标记迁移历史选择；通用迁移器不解释该业务标记。
+
+新推导方案的所有内置文本色对（含禁用）以至少 4.5:1 为目标，焦点环相对输入背景至少 3:1。计算验证针对明确色对；实际页面、图片、透明叠层和消费方覆盖仍需浏览器检查，不能由此声称整页符合 WCAG。普通文字阈值见 [WCAG 对比度说明](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)。旧三预设 auto 的强调色固定不变，并保留半透明表面和禁用透明度；辅助文字、危险色和选中文字已校正到至少 4.5:1。generateTheme.contrastIssues 列出当前配置中低于阈值的色对，详细基线见设计记录。
+
+所有主题下 CheckBox / RadioButton 仍是原生 input，使用 CSS 绘制底色与配对的勾选标记，避免浏览器自行选择相反的图标色或在深色模式下显示浅色方块。forced-colors 恢复系统控件绘制。SlideDeck 的新主题反色页内面板使用不透明交互色对，避免叠加固定透明度后降低文字对比度。
+
+粉色主题以 AnyDrop 为最终样式基准：强调色 #d15776、悬停 #be476a、浅色背景 #f4f1ee、深色背景 #16151a。卡片是半透明表面，弹层使用独立的不透明 `--cake-popup`；不要把卡片直接当浮层底色。发生参考项目间的样式冲突时优先修正 CakeUI，使其与 AnyDrop 一致。蓝 / 金仍保留各自配色；默认 theme 仍为 blue。粉色主按钮白字由固定强调色决定，存在小字号对比度低于 WCAG AA 的已知边界，见 `docs/design.md`；不要宣称该主题通过完整 AA。
+
+| 变量组                                                                       | 用途                                                       |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| --cake-bg / --cake-surface / --cake-popup                                    | 页面、卡片与弹层表面（旧预设卡片半透明）                   |
+| --cake-control / --cake-control-hover                                        | 普通控件常态与悬停背景                                     |
+| --cake-text / --cake-muted                                                   | 正文与辅助文字                                             |
+| --cake-line / --cake-edge                                                    | 分隔线与内描边                                             |
+| --cake-hover / --cake-backdrop / --cake-shadow                               | 轻悬停背景、模态遮罩、弹层阴影                             |
+| --cake-accent / --cake-accent-soft / --cake-accent-hover / --cake-accent-ink | 主题色、填充、悬停填充与填充上的文字                       |
+| --cake-success / --cake-warning / --cake-danger 及各自 -soft                 | 状态前景与背景                                             |
+| --cake-item-hover / --cake-track                                             | 菜单与候选项的中性悬停底色、滑块未填充轨道                 |
+| --cake-switch-fill / -thumb / -off-fill / -off-thumb                         | Switch 选中与未选中的轨道和滑块，均不透明                  |
+| --cake-radius-small / -medium / -large / -dialog                             | 圆角，默认 10 / 16 / 28 / 32px；compact 8 / 12 / 24 / 32px |
+| --cake-radius-item                                                           | 菜单项圆角，等于 medium 减去 6px 浮层内边距                |
+| --cake-control-height                                                        | 普通控件高度基线，comfortable 38px / compact 32px          |
+| --cake-font / --cake-mono                                                    | 普通字体与日志、代码等宽字体                               |
+| --cake-fast / --cake-normal / --cake-slow / --cake-ease                      | 150 / 200 / 250ms 与缓出曲线                               |
 
 新增的 `--cake-surface-strong`、`--cake-hover-subtle`、`--cake-accent-subtle`、`--cake-hairline`、`--cake-atmosphere` / `-strong` 和 `--cake-shadow-strong` 为业务布局提供同源颜色与阴影。`--cake-primary` / `--cake-primary-ink` 将主按钮填充与淡色强调背景分开。控件细节通过 button / input / card / checkbox / progress / log / tip / help 前缀变量控制；精确默认值见附录。
 
 `--cake-tone` / `--cake-tone-soft` 是组件内部按 tone 计算的派生变量，推荐修改对应主题或状态变量而不是把它们当成全局配色入口。
+
+新增成对变量包括 surface / surface-text、popup / popup-text、control / control-text（及 hover / active）、primary / primary-ink（及 hover / active）、accent-soft / accent-ink、selected / selected-ink、disabled / disabled-ink。语义别名 accent-fill / on-accent 指向 primary / primary-ink，border 指向 line，focus 为独立焦点环。旧 accent 继续代表可放在表面上的强调前景，不等同于强调填充。组件与业务样式消费语义变量，不针对 blue / pink 等名称分支。
 
 定制可用 Provider 的 style 设置变量（TypeScript 可用交叉类型为自定义属性建模），或者在引入 @a1knla/cakeui/style.css 之后加载应用样式，用自己的 className 调整。主题选择器可能有更高 specificity；覆盖具体主题颜色时可以限定自己的 `.app-theme.cake-theme`，需要超过带 data 属性的规则时增加明确的主题属性选择器。不要用大量 !important 遮盖层叠问题。
 
@@ -787,14 +1370,16 @@ export function ActivityLog() {
   --cake-font: 'Noto Sans SC', system-ui, sans-serif;
   --cake-radius-small: 8px;
 }
-.app-theme.cake-theme[data-theme='blue'] {
-  --cake-accent: #426b91;
+.app-theme.cake-theme {
+  --cake-radius-dialog: 40px;
 }
 ```
 
-字体按本机已安装字体回退，不下载远程字体。默认顺序包含 Inter Variable、SF Pro Text、Noto Sans SC、PingFang SC、Segoe UI Variable Text、system-ui；紧凑密度使用 Segoe UI Variable Text / Segoe UI / PingFang SC / system-ui。等宽字体使用 Cascadia Code / Consolas / JetBrains Mono / Menlo / monospace。
+字体按本机已安装字体回退，不下载远程字体。两种密度共用一个字体栈：拉丁字形优先 Segoe UI Variable Text、Segoe UI、-apple-system、SF Pro Text、Inter Variable，中文依次为 PingFang SC、HarmonyOS Sans SC、MiSans、Noto Sans SC、Noto Sans CJK SC、Source Han Sans SC、DengXian，最后是 system-ui；中文字体列在 system-ui 之前，避免 Windows 回退到矮字形的微软雅黑。等宽字体使用 Cascadia Mono / Cascadia Code / Consolas / JetBrains Mono / Menlo / monospace，并关闭连字。使用 `font` 简写的业务样式会重置连字设置，需要时补上 `font-variant-ligatures: none`。
 
-默认 Button 的按压与 Interactive 区域下陷幅度均为 1px，不能为了加重效果给它们再叠加独立 transform 而不检查命中与定位。输入 focus 只保留一圈内描边；如果集成后出现双边框，检查消费项目的全局 input、focus、outline 和 box-shadow 规则。
+默认 Button 的按压与 Interactive 区域下陷幅度均为 1px，不能为了加重效果给它们再叠加独立 transform 而不检查命中与定位。输入 focus 和 focus-visible 显式取消浏览器 outline，只保留一圈内描边；按钮保留单圈键盘 outline。forced-colors 下输入用系统 Highlight outline 替代阴影，避免失去焦点指示。如果集成后出现双边框，检查消费项目更高优先级的 focus / outline / box-shadow 规则。
+
+动效只使用 cubic-bezier(0.29, 0, 0, 1) 与 linear 两种曲线和 150 / 200 / 250ms 三档时长；Spinner、Skeleton 和不确定进度条是循环动画，使用 linear。阴影只有两种形式：模拟实线描边的 1px 扩散，以及大半径的氛围阴影。
 
 prefers-reduced-motion: reduce 将三个时长变量设为 0，并关闭 Spinner / Skeleton 的持续动画。业务状态与事件不等待 transitionend 或 animationend；即使动画关闭也应立即完成选择、关闭、提交和焦点恢复。
 
@@ -827,8 +1412,12 @@ prefers-reduced-motion: reduce 将三个时长变量设为 0，并关闭 Spinner
 ```text
 ARCH.md                           原始设计需求与参考
 AGENTS.md                         本项目的 AI 协作和文档同步约定
-src/index.ts                      唯一公开组件 / 类型入口
-src/styles.scss                   全量 SCSS 入口
+src/index.ts                      基础组件 / 类型入口
+src/styles.scss                   基础组件 SCSS 入口
+src/presentation/index.ts          HTML 幻灯片组件 / 类型入口
+src/presentation/styles.scss       独立幻灯片 SCSS 入口
+src/presentation/components/*/     幻灯片组件 index.tsx + index.scss
+slides.html                       独立演示 / 打印入口，使用 demo/presentation.tsx
 src/components/Foo/index.tsx      每个公开组件的实现与 Props
 src/components/Foo/index.scss    对应样式
 src/components/CakeProvider/      主题与设计变量
@@ -902,26 +1491,35 @@ Gallery 构建会检查文档一致性，再将 public 中两个文件复制到 
 
 `packages/native` 提供 `@a1knla/cakeui-native` 基础组件源码包，由 Metro 编译；当前用于 AnyDrop 本地开发，尚未发布 npm。Web 的包名、入口、CSS 和运行依赖保持不变。原生接口见 [CakeUI Native 文档](../packages/native/README.md)。
 
-原生 CakeProvider 提供 React context；Button 使用 onPress，TextBox 使用 onChangeText，Switch 使用 value / onValueChange，CheckBox 使用 checked / onValueChange。这些与本文 Web DOM 属性不可混用。原生组件使用 StyleSheet，不要求 SCSS；系统 Widget 由应用实现。原生颜色由现有粉色主题 mixins 生成，运行 `npm run native:tokens` 和 `npm run native:tokens:check` 保持一致。
+原生 CakeProvider 提供 React context；Button 使用 onPress，TextBox 使用 onChangeText，Switch 使用 value / onValueChange，CheckBox 使用 checked / onValueChange。这些与本文 Web DOM 属性不可混用。原生组件使用 StyleSheet，不要求 SCSS；系统 Widget 由应用实现。原生颜色由 `src/theme/_generated.scss` 中粉色预设生成；更新主题后依次运行 `npm run themes:build`、`npm run native:tokens` 和 `npm run native:tokens:check` 保持一致。
 
 ## 附录 A. 当前构建身份与公开导出
 
 - 包名：@a1knla/cakeui
-- 版本：0.3.0
+- 版本：0.5.0
 - 署名：hatsune-miku
 - React peer：>=19.0.0；React DOM peer：>=19.0.0
-- 公开组件：48 个；下列列表与 src/index.ts 一致。
-- 文档 / package.json / src 内容指纹（SHA-256）：3ea481fd2a2ecf0683031cd0cca39c97b2cc9aa76a2dd31c53f1907e2178ee90
+- 公开组件：69 个；下列分组分别与两个公开入口一致。
+- 文档 / package.json / src 内容指纹（SHA-256）：8538c9244fdcb25fd3c3104fbcd2fe63727054e67d40c09ea563ed5ee783fd78
 - 本文为生成结果，请修改 docs/ai.md 或相应源码后运行 npm run docs:build。
 
-Accordion, AccordionItem, Alert, Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, CakeProvider, Card, CheckBox, ComboBox, ContextMenu, Dialog, Dot, Field, GroupBox, HoverTips, ListItem, ListView, LogEntry, LogView, MenuItem, MenuSeparator, NumberBox, Pagination, ProgressBar, RadioButton, Separator, Skeleton, Slider, Spinner, Switch, Tab, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TabList, TabPanel, Tabs, Tag, TextArea, TextBox, Toast, WhatsThis
+- src/index.ts（49 个）：Accordion, AccordionItem, Alert, Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, CakeProvider, Card, CheckBox, ComboBox, ContextMenu, Dialog, Dot, Field, GroupBox, HoverTips, ListItem, ListView, LogEntry, LogView, MenuItem, MenuSeparator, NumberBox, Pagination, ProgressBar, RadioButton, Separator, Skeleton, Slider, Spinner, Switch, Tab, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TabList, TabPanel, Tabs, Tag, TextArea, TextBox, ThemeSettings, Toast, WhatsThis
+- src/presentation/index.ts（20 个）：SlideDeck, SlideNavigator, SlideTree, SlideTreeItem, SlidePlaybackMenu, SlideSubmenu, Slide, SlideHeader, SlideTitle, SlideText, SlideFooter, SlideColumns, SlidePanel, SlideList, SlideListItem, SlideStat, SlideFigure, SlideImage, SlideQuote, SlideCode
+- src/theme/index.ts：normalizeThemeColor, themeContrast, themePresets, resolveThemePreset, validateThemeConfig, createThemeConfig, resolveThemeOptions, updateThemeConfig, resetThemeScheme, serializeThemeConfig, migrateThemeConfig, generateTheme, applyTheme, createThemeStorage；独立配置、计算与作用域接口。
 
 ## 附录 B. 完整公开 Props 与类型
 
 下列声明直接提取自公开入口所导出的源文件；原生属性由 React 类型扩展，不在这里重复 React 的完整 DOM 类型。组件对应同名 Props，例如 Button 使用 ButtonProps。默认值与行为见正文，类型中的可选标记不表达默认值。
 
 ```typescript
-import type { ComponentPropsWithRef, ComponentPropsWithoutRef, ReactElement, ReactNode, RefObject } from 'react'
+import type {
+  CSSProperties,
+  ComponentPropsWithRef,
+  ComponentPropsWithoutRef,
+  ReactElement,
+  ReactNode,
+  RefObject,
+} from 'react'
 
 export type AccordionProps = ComponentPropsWithRef<'div'>
 
@@ -953,7 +1551,7 @@ export interface ButtonProps extends ComponentPropsWithRef<'button'> {
   loading?: boolean
 }
 
-export type CakeTheme = 'blue' | 'pink' | 'gold'
+export type CakeTheme = ThemePreset
 
 export type CakeMode = 'light' | 'dark' | 'system'
 
@@ -961,6 +1559,11 @@ export interface CakeProviderProps extends ComponentPropsWithRef<'div'> {
   theme?: CakeTheme
   mode?: CakeMode
   density?: 'comfortable' | 'compact'
+  accentColor?: string
+  foreground?: ThemeForeground
+  config?: ThemeConfig
+  defaultConfig?: ThemeConfig
+  onThemeChange?: (config: ThemeConfig) => void
 }
 
 export interface CardProps extends ComponentPropsWithRef<'div'> {
@@ -1104,6 +1707,37 @@ export type TextAreaProps = ComponentPropsWithRef<'textarea'>
 
 export type TextBoxProps = ComponentPropsWithRef<'input'>
 
+export interface ThemeSettingsLabels {
+  open: string
+  title: string
+  scheme: string
+  custom: string
+  color: string
+  colorPicker: string
+  mode: string
+  system: string
+  light: string
+  dark: string
+  foreground: string
+  auto: string
+  lightForeground: string
+  darkForeground: string
+  apply: string
+  cancel: string
+  reset: string
+  invalidColor: string
+  storageError: string
+  retry: string
+  loading: string
+}
+
+export interface ThemeSettingsProps extends Omit<ButtonProps, 'onClick'> {
+  storage?: ThemeStorageAdapter
+  onStorageError?: (error: unknown, operation: 'load' | 'save') => void
+  onOpenChange?: (open: boolean) => void
+  labels?: Partial<ThemeSettingsLabels>
+}
+
 export interface ToastProps extends ComponentPropsWithoutRef<'div'> {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -1120,6 +1754,267 @@ export interface WhatsThisProps {
 export type Size = 'small' | 'medium' | 'large'
 
 export type Tone = 'neutral' | 'accent' | 'success' | 'warning' | 'danger'
+
+export interface SlideDeckLabels {
+  previous: string
+  next: string
+  enterFullscreen: string
+  exitFullscreen: string
+  fullscreenUnavailable: string
+  empty: string
+  slide: string
+}
+
+export interface SlideDeckProps extends ComponentPropsWithRef<'div'> {
+  index?: number
+  defaultIndex?: number
+  onIndexChange?: (index: number) => void
+  view?: 'presentation' | 'document'
+  ratio?: SlideRatio
+  theme?: ThemePreset
+  mode?: 'light' | 'dark' | 'system'
+  config?: ThemeConfig
+  accentColor?: string
+  foreground?: ThemeForeground
+  keyboard?: boolean
+  controls?: boolean
+  focusIndicator?: 'outline' | 'none'
+  loop?: boolean
+  fullscreen?: boolean
+  labels?: Partial<SlideDeckLabels>
+  onFullscreenError?: (error: unknown) => void
+}
+
+export interface SlideNavigatorProps extends ComponentPropsWithRef<'nav'> {
+  index: number
+  onIndexChange: (index: number) => void
+  context?: ReactNode
+}
+
+export interface SlideTreeLabels {
+  expand: string
+  collapse: string
+}
+
+export interface SlideTreeProps extends ComponentPropsWithRef<'nav'> {
+  labels?: Partial<SlideTreeLabels>
+}
+
+export interface SlideTreeItemProps extends ComponentPropsWithRef<'button'> {
+  label: ReactNode
+  thumbnail?: ReactNode
+  current?: boolean
+  expanded?: boolean
+  defaultExpanded?: boolean
+  onExpandedChange?: (expanded: boolean) => void
+}
+
+export type SlidePlayback = 'flat' | 'tree'
+
+export interface SlidePlaybackMenuProps extends Omit<ComponentPropsWithRef<'div'>, 'children'> {
+  value?: SlidePlayback
+  onValueChange: (value: SlidePlayback) => void
+  labels?: Partial<Record<SlidePlayback, string>>
+}
+
+export interface SlideSubmenuProps extends Omit<ComponentPropsWithRef<'button'>, 'children'> {
+  label: ReactNode
+  children: ReactNode
+  menuLabel: string
+  backLabel?: string
+  menuClassName?: string
+}
+
+export type SlideRatio = '16:9' | '4:3' | '16:10'
+
+export interface SlideProps extends ComponentPropsWithRef<'section'> {
+  ratio?: SlideRatio
+  tone?: 'paper' | 'accent' | 'inverted'
+  layout?: 'default' | 'center' | 'cover'
+}
+
+export interface SlideHeaderProps extends Omit<ComponentPropsWithRef<'header'>, 'title' | 'children'> {
+  title: ReactNode
+  label?: ReactNode
+  description?: ReactNode
+}
+
+export interface SlideTitleProps extends ComponentPropsWithRef<'h2'> {
+  level?: 1 | 2 | 3
+  size?: 'display' | 'large' | 'medium'
+}
+
+export interface SlideTextProps extends ComponentPropsWithRef<'p'> {
+  size?: 'body' | 'lead' | 'small'
+  muted?: boolean
+}
+
+export interface SlideFooterProps extends ComponentPropsWithRef<'footer'> {
+  page?: ReactNode
+  source?: ReactNode
+}
+
+export interface SlideColumnsProps extends ComponentPropsWithRef<'div'> {
+  columns?: 2 | 3 | 4
+  balance?: 'equal' | 'wide-left' | 'wide-right'
+}
+
+export interface SlidePanelProps extends ComponentPropsWithRef<'div'> {
+  variant?: 'soft' | 'outline' | 'accent'
+}
+
+export interface SlideListProps extends ComponentPropsWithRef<'ul'> {}
+
+export interface SlideListItemProps extends ComponentPropsWithRef<'li'> {}
+
+export interface SlideStatProps extends Omit<ComponentPropsWithRef<'div'>, 'children'> {
+  value: ReactNode
+  label: ReactNode
+  detail?: ReactNode
+}
+
+export interface SlideFigureProps extends ComponentPropsWithRef<'figure'> {
+  caption?: ReactNode
+}
+
+export interface SlideImageProps extends ComponentPropsWithRef<'img'> {
+  alt: string
+  fit?: 'contain' | 'cover'
+}
+
+export interface SlideQuoteProps extends ComponentPropsWithRef<'blockquote'> {
+  attribution?: ReactNode
+}
+
+export interface SlideCodeProps extends Omit<ComponentPropsWithRef<'pre'>, 'children'> {
+  children: string
+  language?: string
+}
+
+export type ThemePreset = 'blue' | 'pink' | 'gold' | 'dousha' | 'dousha-classic' | 'grape'
+
+export type ThemeScheme = ThemePreset | 'custom'
+
+export type ThemeMode = 'system' | 'light' | 'dark'
+
+export type ResolvedThemeMode = 'light' | 'dark'
+
+export type ThemeForeground = 'auto' | 'light' | 'dark'
+
+export type ThemePairName =
+  | 'canvas'
+  | 'surface'
+  | 'surfaceRaised'
+  | 'muted'
+  | 'input'
+  | 'inputHover'
+  | 'inputActive'
+  | 'accent'
+  | 'accentHover'
+  | 'accentActive'
+  | 'accentSoft'
+  | 'accentSoftHover'
+  | 'selected'
+  | 'disabled'
+  | 'success'
+  | 'successHover'
+  | 'warning'
+  | 'warningHover'
+  | 'danger'
+  | 'dangerHover'
+
+export interface ThemeColorPair {
+  background: string
+  foreground: string
+}
+
+export interface ThemeSchemeOptions {
+  mode: ThemeMode
+  foreground: ThemeForeground
+  /** Both members are required. Overrides are opaque colors with contrast >= 4.5. */
+  pairs?: Partial<Record<ResolvedThemeMode, Partial<Record<ThemePairName, ThemeColorPair>>>>
+}
+
+export interface ThemeConfig {
+  version: 2
+  scheme: ThemeScheme
+  customColor: string
+  options: Partial<Record<ThemeScheme, ThemeSchemeOptions>>
+}
+
+export interface ThemeConfigInput {
+  scheme?: ThemeScheme
+  customColor?: string
+  mode?: ThemeMode
+  foreground?: ThemeForeground
+  pairs?: ThemeSchemeOptions['pairs']
+}
+
+export interface ThemePresetInfo {
+  id: ThemePreset
+  name: string
+  reference: string
+  foreground: ThemeForeground
+}
+
+export interface ThemeContrastIssue {
+  pair: ThemePairName
+  ratio: number
+  minimum: number
+  reason: 'legacy-palette'
+}
+
+export interface GeneratedTheme {
+  scheme: ThemeScheme
+  mode: ResolvedThemeMode
+  pairs: Record<ThemePairName, ThemeColorPair>
+  variables: Record<`--cake-${string}`, string>
+  /** Actual known legacy exceptions, not a claim of whole-page WCAG conformance. */
+  contrastIssues: ThemeContrastIssue[]
+}
+
+export type ThemeValidation = { valid: true; config: ThemeConfig; errors: [] } | { valid: false; errors: string[] }
+
+export interface ThemeStorageAdapter {
+  load: () => unknown | Promise<unknown>
+  save: (config: ThemeConfig) => void | Promise<void>
+}
+
+export interface ThemeController {
+  update: (config: ThemeConfig) => void
+  destroy: () => void
+}
+
+export declare function normalizeThemeColor(value: unknown): string | null
+
+export declare function themeContrast(first: string, second: string): number
+
+export declare const themePresets: readonly Readonly<ThemePresetInfo>[]
+
+export declare function resolveThemePreset(id: ThemePreset): Readonly<ThemePresetInfo>
+
+export declare function validateThemeConfig(value: unknown): ThemeValidation
+
+export declare function createThemeConfig(input?: ThemeConfigInput): ThemeConfig
+
+export declare function resolveThemeOptions(config: ThemeConfig): ThemeSchemeOptions
+
+export declare function updateThemeConfig(config: ThemeConfig, patch: ThemeConfigInput): ThemeConfig
+
+export declare function resetThemeScheme(config: ThemeConfig): ThemeConfig
+
+export declare function serializeThemeConfig(config: ThemeConfig): string
+
+export declare function migrateThemeConfig(value: unknown): ThemeConfig
+
+export declare function generateTheme(config: ThemeConfig, systemMode?: ResolvedThemeMode): GeneratedTheme
+
+export declare function applyTheme(element: HTMLElement, config: ThemeConfig): ThemeController
+
+export declare function createThemeStorage(
+  storage: Pick<Storage, 'getItem' | 'setItem'>,
+  key?: string
+): ThemeStorageAdapter
 ```
 
 ## 附录 C. 从 SCSS 生成的主题变量
@@ -1128,79 +2023,124 @@ export type Tone = 'neutral' | 'accent' | 'success' | 'warning' | 'danger'
 
 ### 共用变量
 
-| 变量                           | 值                                                                                                                |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| `--cake-button-gap`            | `7px`                                                                                                             |
-| `--cake-button-padding`        | `7px 14px`                                                                                                        |
-| `--cake-button-weight`         | `500`                                                                                                             |
-| `--cake-card-edge`             | `none`                                                                                                            |
-| `--cake-card-gap`              | `14px`                                                                                                            |
-| `--cake-checkbox-color-scheme` | `inherit`                                                                                                         |
-| `--cake-checkbox-margin`       | `0`                                                                                                               |
-| `--cake-checkbox-size`         | `17px`                                                                                                            |
-| `--cake-control-height`        | `38px`                                                                                                            |
-| `--cake-ease`                  | `cubic-bezier(0.29, 0, 0, 1)`                                                                                     |
-| `--cake-edge`                  | `inset 0 0 0 1px var(--cake-line)`                                                                                |
-| `--cake-fast`                  | `150ms`                                                                                                           |
-| `--cake-font`                  | `'Inter Variable', 'SF Pro Text', 'Noto Sans SC', 'PingFang SC', 'Segoe UI Variable Text', system-ui, sans-serif` |
-| `--cake-help-background`       | `var(--cake-hover)`                                                                                               |
-| `--cake-help-color`            | `var(--cake-muted)`                                                                                               |
-| `--cake-help-font-size`        | `11px`                                                                                                            |
-| `--cake-help-size`             | `17px`                                                                                                            |
-| `--cake-input-focus-width`     | `1.5px`                                                                                                           |
-| `--cake-input-hover`           | `var(--cake-control-hover)`                                                                                       |
-| `--cake-input-padding`         | `9px 12px`                                                                                                        |
-| `--cake-log-background`        | `var(--cake-hover)`                                                                                               |
-| `--cake-log-font-size`         | `12px`                                                                                                            |
-| `--cake-log-gap`               | `2px`                                                                                                             |
-| `--cake-log-line-height`       | `1.7`                                                                                                             |
-| `--cake-log-padding`           | `12px`                                                                                                            |
-| `--cake-mono`                  | `'Cascadia Code', 'Consolas', 'JetBrains Mono', 'Menlo', monospace`                                               |
-| `--cake-normal`                | `200ms`                                                                                                           |
-| `--cake-progress-height`       | `6px`                                                                                                             |
-| `--cake-progress-track`        | `var(--cake-hover)`                                                                                               |
-| `--cake-radius-dialog`         | `26px`                                                                                                            |
-| `--cake-radius-large`          | `20px`                                                                                                            |
-| `--cake-radius-medium`         | `14px`                                                                                                            |
-| `--cake-radius-small`          | `10px`                                                                                                            |
-| `--cake-slow`                  | `250ms`                                                                                                           |
-| `--cake-tip-font-size`         | `12px`                                                                                                            |
-| `--cake-tip-line-height`       | `1.6`                                                                                                             |
-| `--cake-tip-offset`            | `8px`                                                                                                             |
-| `--cake-tip-padding`           | `9px 12px`                                                                                                        |
-| `--cake-tip-width`             | `300px`                                                                                                           |
+| 变量                       | 值                                                                                                                                                                                                                                |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--cake-accent-fill`       | `var(--cake-primary)`                                                                                                                                                                                                             |
+| `--cake-border`            | `var(--cake-line)`                                                                                                                                                                                                                |
+| `--cake-button-gap`        | `7px`                                                                                                                                                                                                                             |
+| `--cake-button-padding`    | `7px 14px`                                                                                                                                                                                                                        |
+| `--cake-button-weight`     | `500`                                                                                                                                                                                                                             |
+| `--cake-card-edge`         | `none`                                                                                                                                                                                                                            |
+| `--cake-card-gap`          | `14px`                                                                                                                                                                                                                            |
+| `--cake-checkbox-size`     | `17px`                                                                                                                                                                                                                            |
+| `--cake-choice-appearance` | `none`                                                                                                                                                                                                                            |
+| `--cake-choice-background` | `var(--cake-control)`                                                                                                                                                                                                             |
+| `--cake-choice-border`     | `1px solid color-mix(in srgb, var(--cake-muted) 70%, transparent)`                                                                                                                                                                |
+| `--cake-choice-fill`       | `var(--cake-switch-fill)`                                                                                                                                                                                                         |
+| `--cake-choice-ink`        | `var(--cake-switch-thumb)`                                                                                                                                                                                                        |
+| `--cake-choice-mark`       | `''`                                                                                                                                                                                                                              |
+| `--cake-choice-radius`     | `4px`                                                                                                                                                                                                                             |
+| `--cake-control-height`    | `38px`                                                                                                                                                                                                                            |
+| `--cake-ease`              | `cubic-bezier(0.29, 0, 0, 1)`                                                                                                                                                                                                     |
+| `--cake-edge`              | `inset 0 0 0 1px var(--cake-line)`                                                                                                                                                                                                |
+| `--cake-fast`              | `150ms`                                                                                                                                                                                                                           |
+| `--cake-font`              | `'Segoe UI Variable Text', 'Segoe UI', -apple-system, 'SF Pro Text', 'Inter Variable', 'PingFang SC', 'HarmonyOS Sans SC', 'MiSans', 'Noto Sans SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'DengXian', system-ui, sans-serif` |
+| `--cake-help-background`   | `var(--cake-hover)`                                                                                                                                                                                                               |
+| `--cake-help-color`        | `var(--cake-muted)`                                                                                                                                                                                                               |
+| `--cake-help-font-size`    | `11px`                                                                                                                                                                                                                            |
+| `--cake-help-size`         | `17px`                                                                                                                                                                                                                            |
+| `--cake-input-focus-width` | `1.5px`                                                                                                                                                                                                                           |
+| `--cake-input-hover`       | `var(--cake-control-hover)`                                                                                                                                                                                                       |
+| `--cake-input-padding`     | `9px 12px`                                                                                                                                                                                                                        |
+| `--cake-item-hover`        | `color-mix(in srgb, var(--cake-text) 8%, transparent)`                                                                                                                                                                            |
+| `--cake-log-background`    | `var(--cake-hover)`                                                                                                                                                                                                               |
+| `--cake-log-font-size`     | `12px`                                                                                                                                                                                                                            |
+| `--cake-log-gap`           | `2px`                                                                                                                                                                                                                             |
+| `--cake-log-line-height`   | `1.7`                                                                                                                                                                                                                             |
+| `--cake-log-padding`       | `12px`                                                                                                                                                                                                                            |
+| `--cake-mono`              | `'Cascadia Mono', 'Cascadia Code', 'Consolas', 'JetBrains Mono', 'Menlo', monospace`                                                                                                                                              |
+| `--cake-normal`            | `200ms`                                                                                                                                                                                                                           |
+| `--cake-on-accent`         | `var(--cake-primary-ink)`                                                                                                                                                                                                         |
+| `--cake-progress-height`   | `6px`                                                                                                                                                                                                                             |
+| `--cake-progress-track`    | `var(--cake-hover)`                                                                                                                                                                                                               |
+| `--cake-radius-dialog`     | `32px`                                                                                                                                                                                                                            |
+| `--cake-radius-item`       | `max(4px, calc(var(--cake-radius-medium) - 6px))`                                                                                                                                                                                 |
+| `--cake-radius-large`      | `28px`                                                                                                                                                                                                                            |
+| `--cake-radius-medium`     | `16px`                                                                                                                                                                                                                            |
+| `--cake-radius-small`      | `10px`                                                                                                                                                                                                                            |
+| `--cake-slow`              | `250ms`                                                                                                                                                                                                                           |
+| `--cake-tip-font-size`     | `12px`                                                                                                                                                                                                                            |
+| `--cake-tip-line-height`   | `1.6`                                                                                                                                                                                                                             |
+| `--cake-tip-offset`        | `8px`                                                                                                                                                                                                                             |
+| `--cake-tip-padding`       | `9px 12px`                                                                                                                                                                                                                        |
+| `--cake-tip-width`         | `300px`                                                                                                                                                                                                                           |
+| `--cake-track`             | `color-mix(in srgb, var(--cake-muted) 28%, transparent)`                                                                                                                                                                          |
 
-### 六套配色的变量
+### 十二套预设配色的变量
 
-| 变量                       | blue / light                                  | blue / dark                               | pink / light                                      | pink / dark                                       | gold / light                                  | gold / dark                               |
-| -------------------------- | --------------------------------------------- | ----------------------------------------- | ------------------------------------------------- | ------------------------------------------------- | --------------------------------------------- | ----------------------------------------- |
-| `--cake-accent`            | `#416b97`                                     | `#b5d2ef`                                 | `#d15776`                                         | `#d15776`                                         | `#8b654a`                                     | `#e8c8ad`                                 |
-| `--cake-accent-hover`      | `#c7ddf2`                                     | `#4a6d90`                                 | `#be476a`                                         | `#be476a`                                         | `#efc9aa`                                     | `#80614d`                                 |
-| `--cake-accent-ink`        | `#294866`                                     | `#f4f9ff`                                 | `#2a2521`                                         | `#e7e2df`                                         | `#513b2e`                                     | `#fff7ef`                                 |
-| `--cake-accent-soft`       | `#d6e7f7`                                     | `#3e5e7d`                                 | `rgba(209, 87, 118, 0.14)`                        | `rgba(209, 87, 118, 0.2)`                         | `#f3d3b9`                                     | `#715543`                                 |
-| `--cake-accent-subtle`     | `var(--cake-accent-soft)`                     | `var(--cake-accent-soft)`                 | `rgba(209, 87, 118, 0.08)`                        | `rgba(209, 87, 118, 0.12)`                        | `var(--cake-accent-soft)`                     | `var(--cake-accent-soft)`                 |
-| `--cake-atmosphere`        | `0 36px 100px #2b38451f`                      | `0 36px 100px #2b38451f`                  | `0 0 40px 6px rgba(31, 27, 22, 0.12)`             | `0 0 40px 6px rgba(0, 0, 0, 0.4)`                 | `0 36px 100px #2b38451f`                      | `0 36px 100px #2b38451f`                  |
-| `--cake-atmosphere-strong` | `var(--cake-atmosphere)`                      | `var(--cake-atmosphere)`                  | `0 0 56px 10px rgba(31, 27, 22, 0.16)`            | `0 0 56px 10px rgba(0, 0, 0, 0.5)`                | `var(--cake-atmosphere)`                      | `var(--cake-atmosphere)`                  |
-| `--cake-backdrop`          | `#30394238`                                   | `#0007`                                   | `rgba(31, 27, 22, 0.2)`                           | `rgba(0, 0, 0, 0.5)`                              | `#30394238`                                   | `#0007`                                   |
-| `--cake-bg`                | `#f6f8fb`                                     | `#202226`                                 | `#f4f1ee`                                         | `#16151a`                                         | `#f8f5ef`                                     | `#211f1c`                                 |
-| `--cake-control`           | `#ffffffb8`                                   | `#ffffff12`                               | `rgba(255, 255, 255, 0.7)`                        | `rgba(255, 255, 255, 0.07)`                       | `#ffffffb8`                                   | `#ffffff12`                               |
-| `--cake-control-hover`     | `#fff`                                        | `#ffffff1c`                               | `rgba(255, 255, 255, 0.98)`                       | `rgba(255, 255, 255, 0.13)`                       | `#fff`                                        | `#ffffff1c`                               |
-| `--cake-danger`            | `#934a53`                                     | `#efb8be`                                 | `#c0453f`                                         | `#c0453f`                                         | `#934a53`                                     | `#efb8be`                                 |
-| `--cake-danger-soft`       | `#f3dde0`                                     | `#9a596133`                               | `rgba(192, 69, 63, 0.12)`                         | `rgba(192, 69, 63, 0.2)`                          | `#f3dde0`                                     | `#9a596133`                               |
-| `--cake-hairline`          | `var(--cake-edge)`                            | `var(--cake-edge)`                        | `inset 0 0 0 1px rgba(38, 34, 31, 0.06)`          | `inset 0 0 0 1px rgba(255, 255, 255, 0.05)`       | `var(--cake-edge)`                            | `var(--cake-edge)`                        |
-| `--cake-hover`             | `#2b384509`                                   | `#ffffff0b`                               | `rgba(38, 34, 31, 0.04)`                          | `rgba(255, 255, 255, 0.055)`                      | `#2b384509`                                   | `#ffffff0b`                               |
-| `--cake-hover-subtle`      | `var(--cake-hover)`                           | `var(--cake-hover)`                       | `rgba(38, 34, 31, 0.028)`                         | `rgba(255, 255, 255, 0.03)`                       | `var(--cake-hover)`                           | `var(--cake-hover)`                       |
-| `--cake-line`              | `#2b38451a`                                   | `#f4f7fa1a`                               | `rgba(38, 34, 31, 0.09)`                          | `rgba(255, 255, 255, 0.08)`                       | `#2b38451a`                                   | `#f4f7fa1a`                               |
-| `--cake-muted`             | `#626d79`                                     | `#aab1b9`                                 | `#8a807a`                                         | `#948b86`                                         | `#626d79`                                     | `#aab1b9`                                 |
-| `--cake-popup`             | `var(--cake-surface)`                         | `var(--cake-surface)`                     | `#fff`                                            | `#26242b`                                         | `var(--cake-surface)`                         | `var(--cake-surface)`                     |
-| `--cake-primary`           | `var(--cake-accent-soft)`                     | `var(--cake-accent-soft)`                 | `var(--cake-accent)`                              | `var(--cake-accent)`                              | `var(--cake-accent-soft)`                     | `var(--cake-accent-soft)`                 |
-| `--cake-primary-ink`       | `var(--cake-accent-ink)`                      | `var(--cake-accent-ink)`                  | `#fff`                                            | `#fff`                                            | `var(--cake-accent-ink)`                      | `var(--cake-accent-ink)`                  |
-| `--cake-shadow`            | `0 0 0 1px #2b384514, 0 36px 100px #2b38451f` | `0 0 0 1px #ffffff14, 0 36px 100px #0005` | `var(--cake-edge), var(--cake-atmosphere)`        | `var(--cake-edge), var(--cake-atmosphere)`        | `0 0 0 1px #2b384514, 0 36px 100px #2b38451f` | `0 0 0 1px #ffffff14, 0 36px 100px #0005` |
-| `--cake-shadow-strong`     | `var(--cake-shadow)`                          | `var(--cake-shadow)`                      | `var(--cake-edge), var(--cake-atmosphere-strong)` | `var(--cake-edge), var(--cake-atmosphere-strong)` | `var(--cake-shadow)`                          | `var(--cake-shadow)`                      |
-| `--cake-success`           | `#46654e`                                     | `#a9c8af`                                 | `#46654e`                                         | `#a9c8af`                                         | `#46654e`                                     | `#a9c8af`                                 |
-| `--cake-success-soft`      | `#dce9df`                                     | `#7b9b8233`                               | `#dce9df`                                         | `#7b9b8233`                                       | `#dce9df`                                     | `#7b9b8233`                               |
-| `--cake-surface`           | `#fdfefe`                                     | `#2d3035`                                 | `rgba(255, 255, 255, 0.66)`                       | `rgba(255, 255, 255, 0.045)`                      | `#fdfefe`                                     | `#312e2a`                                 |
-| `--cake-surface-strong`    | `var(--cake-surface)`                         | `var(--cake-surface)`                     | `rgba(255, 255, 255, 0.9)`                        | `rgba(40, 38, 46, 0.96)`                          | `var(--cake-surface)`                         | `var(--cake-surface)`                     |
-| `--cake-text`              | `#29313a`                                     | `#edf0f3`                                 | `#2a2521`                                         | `#e7e2df`                                         | `#29313a`                                     | `#edf0f3`                                 |
-| `--cake-warning`           | `#80602d`                                     | `#e2c18f`                                 | `#80602d`                                         | `#e2c18f`                                         | `#80602d`                                     | `#e2c18f`                                 |
-| `--cake-warning-soft`      | `#f3e7ce`                                     | `#b68c4133`                               | `#f3e7ce`                                         | `#b68c4133`                                       | `#f3e7ce`                                     | `#b68c4133`                               |
+| 变量                           | blue / light                                  | blue / dark                               | pink / light                                      | pink / dark                                       | gold / light                                  | gold / dark                               | dousha / light                               | dousha / dark                            | dousha-classic / light                       | dousha-classic / dark                    | grape / light                                | grape / dark                             |
+| ------------------------------ | --------------------------------------------- | ----------------------------------------- | ------------------------------------------------- | ------------------------------------------------- | --------------------------------------------- | ----------------------------------------- | -------------------------------------------- | ---------------------------------------- | -------------------------------------------- | ---------------------------------------- | -------------------------------------------- | ---------------------------------------- |
+| `--cake-accent`                | `#416b97`                                     | `#b5d2ef`                                 | `#d15776`                                         | `#d15776`                                         | `#8b654a`                                     | `#e8c8ad`                                 | `#946770`                                    | `#b98891`                                | `#67785f`                                    | `#adc89e`                                | `#787080`                                    | `#d6c8e5`                                |
+| `--cake-accent-hover`          | `#c7ddf2`                                     | `#4a6d90`                                 | `#be476a`                                         | `#be476a`                                         | `#efc9aa`                                     | `#80614d`                                 | `#a7777f`                                    | `#85656d`                                | `#9fb891`                                    | `#7a8873`                                | `#c5b8d3`                                    | `#888193`                                |
+| `--cake-accent-ink`            | `#294866`                                     | `#f4f9ff`                                 | `#2a2521`                                         | `#e7e2df`                                         | `#513b2e`                                     | `#fff7ef`                                 | `#825a62`                                    | `#c49ba2`                                | `#ffffff`                                    | `#ffffff`                                | `#716979`                                    | `#d6c8e5`                                |
+| `--cake-accent-soft`           | `#d6e7f7`                                     | `#3e5e7d`                                 | `rgba(209, 87, 118, 0.14)`                        | `rgba(209, 87, 118, 0.2)`                         | `#f3d3b9`                                     | `#715543`                                 | `#f2e1e0`                                    | `#47363a`                                | `#777570`                                    | `#46473f`                                | `#f4eff6`                                    | `#4c464f`                                |
+| `--cake-accent-soft-hover`     | `var(--cake-accent-soft)`                     | `var(--cake-accent-soft)`                 | `var(--cake-accent-soft)`                         | `var(--cake-accent-soft)`                         | `var(--cake-accent-soft)`                     | `var(--cake-accent-soft)`                 | `#ead5d5`                                    | `#553f44`                                | `#75756e`                                    | `#53584c`                                | `#f0eaf4`                                    | `#5e5762`                                |
+| `--cake-accent-soft-hover-ink` | `var(--cake-accent-ink)`                      | `var(--cake-accent-ink)`                  | `var(--cake-accent-ink)`                          | `var(--cake-accent-ink)`                          | `var(--cake-accent-ink)`                      | `var(--cake-accent-ink)`                  | `#79545b`                                    | `#ceabb1`                                | `#ffffff`                                    | `#ffffff`                                | `#6e6776`                                    | `#dacde8`                                |
+| `--cake-accent-subtle`         | `var(--cake-accent-soft)`                     | `var(--cake-accent-soft)`                 | `rgba(209, 87, 118, 0.08)`                        | `rgba(209, 87, 118, 0.12)`                        | `var(--cake-accent-soft)`                     | `var(--cake-accent-soft)`                 | `#f2e1e0`                                    | `#47363a`                                | `#f1ede4`                                    | `#46473f`                                | `#f4eff6`                                    | `#4c464f`                                |
+| `--cake-atmosphere`            | `0 36px 100px #2b38451f`                      | `0 36px 100px #0005`                      | `0 0 40px 6px rgba(31, 27, 22, 0.12)`             | `0 0 40px 6px rgba(0, 0, 0, 0.4)`                 | `0 36px 100px #2b38451f`                      | `0 36px 100px #0005`                      | `0 28px 80px #2b38451f`                      | `0 28px 80px #0005`                      | `0 28px 80px #2b38451f`                      | `0 28px 80px #0005`                      | `0 28px 80px #2b38451f`                      | `0 28px 80px #0005`                      |
+| `--cake-atmosphere-strong`     | `var(--cake-atmosphere)`                      | `var(--cake-atmosphere)`                  | `0 0 56px 10px rgba(31, 27, 22, 0.16)`            | `0 0 56px 10px rgba(0, 0, 0, 0.5)`                | `var(--cake-atmosphere)`                      | `var(--cake-atmosphere)`                  | `var(--cake-atmosphere)`                     | `var(--cake-atmosphere)`                 | `var(--cake-atmosphere)`                     | `var(--cake-atmosphere)`                 | `var(--cake-atmosphere)`                     | `var(--cake-atmosphere)`                 |
+| `--cake-backdrop`              | `#30394238`                                   | `#0007`                                   | `rgba(31, 27, 22, 0.2)`                           | `rgba(0, 0, 0, 0.5)`                              | `#30394238`                                   | `#0007`                                   | `#30394238`                                  | `#00000080`                              | `#30394238`                                  | `#00000080`                              | `#30394238`                                  | `#00000080`                              |
+| `--cake-bg`                    | `#f6f8fb`                                     | `#202226`                                 | `#f4f1ee`                                         | `#16151a`                                         | `#f8f5ef`                                     | `#211f1c`                                 | `#fff5f2`                                    | `#272123`                                | `#fff5f2`                                    | `#272123`                                | `#faf7f9`                                    | `#231f22`                                |
+| `--cake-check-accent`          | `var(--cake-accent)`                          | `var(--cake-accent)`                      | `var(--cake-accent)`                              | `var(--cake-accent)`                              | `var(--cake-accent)`                          | `var(--cake-accent)`                      | `var(--cake-primary)`                        | `var(--cake-primary)`                    | `var(--cake-primary)`                        | `var(--cake-primary)`                    | `var(--cake-primary)`                        | `var(--cake-primary)`                    |
+| `--cake-color-scheme`          | `light`                                       | `dark`                                    | `light`                                           | `dark`                                            | `light`                                       | `dark`                                    | `light`                                      | `dark`                                   | `light`                                      | `dark`                                   | `light`                                      | `dark`                                   |
+| `--cake-control`               | `#ffffffb8`                                   | `#ffffff12`                               | `rgba(255, 255, 255, 0.7)`                        | `rgba(255, 255, 255, 0.07)`                       | `#ffffffb8`                                   | `#ffffff12`                               | `#fffdfc`                                    | `#363132`                                | `#fffdfc`                                    | `#363132`                                | `#fefdfe`                                    | `#322f31`                                |
+| `--cake-control-active`        | `var(--cake-control)`                         | `var(--cake-control)`                     | `var(--cake-control)`                             | `var(--cake-control)`                             | `var(--cake-control)`                         | `var(--cake-control)`                     | `#fffdfc`                                    | `#363132`                                | `#fffdfc`                                    | `#363132`                                | `#fefdfe`                                    | `#322f31`                                |
+| `--cake-control-active-text`   | `var(--cake-text)`                            | `var(--cake-text)`                        | `var(--cake-text)`                                | `var(--cake-text)`                                | `var(--cake-text)`                            | `var(--cake-text)`                        | `#25232a`                                    | `#f4f3f7`                                | `#25232a`                                    | `#f4f3f7`                                | `#25232a`                                    | `#f4f3f7`                                |
+| `--cake-control-hover`         | `#fff`                                        | `#ffffff1c`                               | `rgba(255, 255, 255, 0.98)`                       | `rgba(255, 255, 255, 0.13)`                       | `#fff`                                        | `#ffffff1c`                               | `#fcf8f7`                                    | `#3d3839`                                | `#fcfbf8`                                    | `#3d3839`                                | `#fcfbfd`                                    | `#393638`                                |
+| `--cake-control-hover-text`    | `var(--cake-text)`                            | `var(--cake-text)`                        | `var(--cake-text)`                                | `var(--cake-text)`                                | `var(--cake-text)`                            | `var(--cake-text)`                        | `#25232a`                                    | `#f4f3f7`                                | `#25232a`                                    | `#f4f3f7`                                | `#25232a`                                    | `#f4f3f7`                                |
+| `--cake-control-text`          | `var(--cake-text)`                            | `var(--cake-text)`                        | `var(--cake-text)`                                | `var(--cake-text)`                                | `var(--cake-text)`                            | `var(--cake-text)`                        | `#25232a`                                    | `#f4f3f7`                                | `#25232a`                                    | `#f4f3f7`                                | `#25232a`                                    | `#f4f3f7`                                |
+| `--cake-danger`                | `#934a53`                                     | `#efb8be`                                 | `#b2403b`                                         | `#d37f7a`                                         | `#934a53`                                     | `#efb8be`                                 | `#b03947`                                    | `#e4babf`                                | `#b03947`                                    | `#e4babf`                                | `#b03947`                                    | `#e4babf`                                |
+| `--cake-danger-hover`          | `#e5c7cb`                                     | `#5d4b51`                                 | `#eacbca`                                         | `#563435`                                         | `#e5c7cb`                                     | `#5f4a4a`                                 | `#eecccd`                                    | `#55292f`                                | `#eecccd`                                    | `#55292f`                                | `#eacdd2`                                    | `#52282f`                                |
+| `--cake-danger-hover-ink`      | `#85434b`                                     | `#efb8be`                                 | `#9b3834`                                         | `#db9893`                                         | `#85434b`                                     | `#efb8be`                                 | `#a03441`                                    | `#e4babf`                                | `#a03441`                                    | `#e4babf`                                | `#a03441`                                    | `#e4babf`                                |
+| `--cake-danger-soft`           | `#f3dde0`                                     | `#9a596133`                               | `rgba(192, 69, 63, 0.12)`                         | `rgba(192, 69, 63, 0.2)`                          | `#f3dde0`                                     | `#9a596133`                               | `#f5dddc`                                    | `#47272c`                                | `#f5dddc`                                    | `#47272c`                                | `#f1dee2`                                    | `#44252b`                                |
+| `--cake-disabled`              | `#fdfefe`                                     | `#2d3035`                                 | `#fbfaf9`                                         | `#202024`                                         | `#fdfefe`                                     | `#312e2a`                                 | `#fff9f7`                                    | `#2f292b`                                | `#fff9f7`                                    | `#2f292b`                                | `#fcfafc`                                    | `#2b272a`                                |
+| `--cake-disabled-background`   | `initial`                                     | `initial`                                 | `initial`                                         | `initial`                                         | `initial`                                     | `initial`                                 | `var(--cake-disabled)`                       | `var(--cake-disabled)`                   | `var(--cake-disabled)`                       | `var(--cake-disabled)`                   | `var(--cake-disabled)`                       | `var(--cake-disabled)`                   |
+| `--cake-disabled-color`        | `initial`                                     | `initial`                                 | `initial`                                         | `initial`                                         | `initial`                                     | `initial`                                 | `var(--cake-disabled-ink)`                   | `var(--cake-disabled-ink)`               | `var(--cake-disabled-ink)`                   | `var(--cake-disabled-ink)`               | `var(--cake-disabled-ink)`                   | `var(--cake-disabled-ink)`               |
+| `--cake-disabled-ink`          | `#93989c`                                     | `#8d9094`                                 | `#93908d`                                         | `#848182`                                         | `#93989c`                                     | `#8f8f8f`                                 | `#716d70`                                    | `#acaaad`                                | `#716d70`                                    | `#acaaad`                                | `#706d72`                                    | `#aba9ac`                                |
+| `--cake-disabled-opacity`      | `initial`                                     | `initial`                                 | `initial`                                         | `initial`                                         | `initial`                                     | `initial`                                 | `1`                                          | `1`                                      | `1`                                          | `1`                                      | `1`                                          | `1`                                      |
+| `--cake-focus`                 | `#416b97`                                     | `#b5d2ef`                                 | `#d15776`                                         | `#d15776`                                         | `#8b654a`                                     | `#e8c8ad`                                 | `#b37d87`                                    | `#b37d87`                                | `#839778`                                    | `#adc89e`                                | `#978da2`                                    | `#d6c8e5`                                |
+| `--cake-hairline`              | `var(--cake-edge)`                            | `var(--cake-edge)`                        | `inset 0 0 0 1px rgba(38, 34, 31, 0.06)`          | `inset 0 0 0 1px rgba(255, 255, 255, 0.05)`       | `var(--cake-edge)`                            | `var(--cake-edge)`                        | `inset 0 0 0 1px #f2eeed`                    | `inset 0 0 0 1px #3b3537`                | `inset 0 0 0 1px #f2eeed`                    | `inset 0 0 0 1px #3b3537`                | `inset 0 0 0 1px #f0eeef`                    | `inset 0 0 0 1px #373336`                |
+| `--cake-hover`                 | `#2b384509`                                   | `#ffffff0b`                               | `rgba(38, 34, 31, 0.04)`                          | `rgba(255, 255, 255, 0.055)`                      | `#2b384509`                                   | `#ffffff0b`                               | `#fcf8f7`                                    | `#3d3839`                                | `#fcfbf8`                                    | `#3d3839`                                | `#fcfbfd`                                    | `#393638`                                |
+| `--cake-hover-subtle`          | `var(--cake-hover)`                           | `var(--cake-hover)`                       | `rgba(38, 34, 31, 0.028)`                         | `rgba(255, 255, 255, 0.03)`                       | `var(--cake-hover)`                           | `var(--cake-hover)`                       | `#fcf8f7`                                    | `#3d3839`                                | `#fcfbf8`                                    | `#3d3839`                                | `#fcfbfd`                                    | `#393638`                                |
+| `--cake-line`                  | `#2b38451a`                                   | `#f4f7fa1a`                               | `rgba(38, 34, 31, 0.09)`                          | `rgba(255, 255, 255, 0.08)`                       | `#2b38451a`                                   | `#f4f7fa1a`                               | `#c2bfbf`                                    | `#686366`                                | `#c2bfbf`                                    | `#686366`                                | `#c1bfc1`                                    | `#656265`                                |
+| `--cake-muted`                 | `#626d79`                                     | `#aab1b9`                                 | `#746b66`                                         | `#948b86`                                         | `#626d79`                                     | `#aab1b9`                                 | `#716d70`                                    | `#acaaad`                                | `#716d70`                                    | `#acaaad`                                | `#706d72`                                    | `#aba9ac`                                |
+| `--cake-muted-background`      | `#f6f8fb`                                     | `#202226`                                 | `#f4f1ee`                                         | `#16151a`                                         | `#f8f5ef`                                     | `#211f1c`                                 | `#fff5f2`                                    | `#272123`                                | `#fff5f2`                                    | `#272123`                                | `#faf7f9`                                    | `#231f22`                                |
+| `--cake-placeholder-opacity`   | `0.85`                                        | `0.85`                                    | `0.85`                                            | `0.85`                                            | `0.85`                                        | `0.85`                                    | `1`                                          | `1`                                      | `1`                                          | `1`                                      | `1`                                          | `1`                                      |
+| `--cake-popup`                 | `var(--cake-surface)`                         | `var(--cake-surface)`                     | `#fff`                                            | `#26242b`                                         | `var(--cake-surface)`                         | `var(--cake-surface)`                     | `#fffefd`                                    | `#393436`                                | `#fffefd`                                    | `#393436`                                | `#fefefe`                                    | `#363235`                                |
+| `--cake-popup-text`            | `var(--cake-text)`                            | `var(--cake-text)`                        | `var(--cake-text)`                                | `var(--cake-text)`                                | `var(--cake-text)`                            | `var(--cake-text)`                        | `#25232a`                                    | `#f4f3f7`                                | `#25232a`                                    | `#f4f3f7`                                | `#25232a`                                    | `#f4f3f7`                                |
+| `--cake-primary`               | `var(--cake-accent-soft)`                     | `var(--cake-accent-soft)`                 | `var(--cake-accent)`                              | `var(--cake-accent)`                              | `var(--cake-accent-soft)`                     | `var(--cake-accent-soft)`                 | `#b37d87`                                    | `#7a5860`                                | `#697a60`                                    | `#6a7963`                                | `#d6c8e5`                                    | `#91889d`                                |
+| `--cake-primary-active`        | `var(--cake-accent-hover)`                    | `var(--cake-accent-hover)`                | `var(--cake-accent-hover)`                        | `var(--cake-accent-hover)`                        | `var(--cake-accent-hover)`                    | `var(--cake-accent-hover)`                | `#a27981`                                    | `#8a6e74`                                | `#697a60`                                    | `#6c7868`                                | `#b6aac3`                                    | `#888191`                                |
+| `--cake-primary-active-ink`    | `var(--cake-primary-ink)`                     | `var(--cake-primary-ink)`                 | `var(--cake-primary-ink)`                         | `var(--cake-primary-ink)`                         | `var(--cake-primary-ink)`                     | `var(--cake-primary-ink)`                 | `#161b22`                                    | `#ffffff`                                | `#ffffff`                                    | `#ffffff`                                | `#161b22`                                    | `#161b22`                                |
+| `--cake-primary-hover`         | `var(--cake-accent-hover)`                    | `var(--cake-accent-hover)`                | `var(--cake-accent-hover)`                        | `var(--cake-accent-hover)`                        | `var(--cake-accent-hover)`                    | `var(--cake-accent-hover)`                | `#a7777f`                                    | `#85656d`                                | `#697a60`                                    | `#6c7966`                                | `#c5b8d3`                                    | `#888193`                                |
+| `--cake-primary-hover-ink`     | `var(--cake-primary-ink)`                     | `var(--cake-primary-ink)`                 | `var(--cake-primary-ink)`                         | `var(--cake-primary-ink)`                         | `var(--cake-primary-ink)`                     | `var(--cake-primary-ink)`                 | `#161b22`                                    | `#ffffff`                                | `#ffffff`                                    | `#ffffff`                                | `#161b22`                                    | `#161b22`                                |
+| `--cake-primary-ink`           | `var(--cake-accent-ink)`                      | `var(--cake-accent-ink)`                  | `#fff`                                            | `#fff`                                            | `var(--cake-accent-ink)`                      | `var(--cake-accent-ink)`                  | `#161b22`                                    | `#ffffff`                                | `#ffffff`                                    | `#ffffff`                                | `#161b22`                                    | `#161b22`                                |
+| `--cake-selected`              | `var(--cake-surface)`                         | `var(--cake-surface)`                     | `var(--cake-surface)`                             | `var(--cake-surface)`                             | `var(--cake-surface)`                         | `var(--cake-surface)`                     | `#f2e1e0`                                    | `#47363a`                                | `#777570`                                    | `#46473f`                                | `#f4eff6`                                    | `#4c464f`                                |
+| `--cake-selected-ink`          | `#416b97`                                     | `#b5d2ef`                                 | `#ba4d69`                                         | `#d56480`                                         | `#8b654a`                                     | `#e8c8ad`                                 | `#825a62`                                    | `#c49ba2`                                | `#ffffff`                                    | `#ffffff`                                | `#716979`                                    | `#d6c8e5`                                |
+| `--cake-shadow`                | `0 0 0 1px #2b384514, 0 36px 100px #2b38451f` | `0 0 0 1px #ffffff14, 0 36px 100px #0005` | `var(--cake-edge), var(--cake-atmosphere)`        | `var(--cake-edge), var(--cake-atmosphere)`        | `0 0 0 1px #2b384514, 0 36px 100px #2b38451f` | `0 0 0 1px #ffffff14, 0 36px 100px #0005` | `0 0 0 1px #2b384514, 0 28px 80px #2b38451f` | `0 0 0 1px #ffffff14, 0 28px 80px #0005` | `0 0 0 1px #2b384514, 0 28px 80px #2b38451f` | `0 0 0 1px #ffffff14, 0 28px 80px #0005` | `0 0 0 1px #2b384514, 0 28px 80px #2b38451f` | `0 0 0 1px #ffffff14, 0 28px 80px #0005` |
+| `--cake-shadow-strong`         | `var(--cake-shadow)`                          | `var(--cake-shadow)`                      | `var(--cake-edge), var(--cake-atmosphere-strong)` | `var(--cake-edge), var(--cake-atmosphere-strong)` | `var(--cake-shadow)`                          | `var(--cake-shadow)`                      | `var(--cake-shadow)`                         | `var(--cake-shadow)`                     | `var(--cake-shadow)`                         | `var(--cake-shadow)`                     | `var(--cake-shadow)`                         | `var(--cake-shadow)`                     |
+| `--cake-success`               | `#46654e`                                     | `#a9c8af`                                 | `#46654e`                                         | `#a9c8af`                                         | `#46654e`                                     | `#a9c8af`                                 | `#327144`                                    | `#b8cfbf`                                | `#327144`                                    | `#b8cfbf`                                | `#327144`                                    | `#b8cfbf`                                |
+| `--cake-success-hover`         | `#dce9df`                                     | `#3d4544`                                 | `#dce9df`                                         | `#323937`                                         | `#dce9df`                                     | `#40443c`                                 | `#d2d9cc`                                    | `#2b3d2f`                                | `#d2d9cc`                                    | `#2b3d2f`                                | `#cedbd2`                                    | `#293c2e`                                |
+| `--cake-success-hover-ink`     | `#46654e`                                     | `#a9c8af`                                 | `#46654e`                                         | `#a9c8af`                                         | `#46654e`                                     | `#a9c8af`                                 | `#2e673e`                                    | `#b8cfbf`                                | `#2e673e`                                    | `#b8cfbf`                                | `#2e683f`                                    | `#b8cfbf`                                |
+| `--cake-success-soft`          | `#dce9df`                                     | `#7b9b8233`                               | `#dce9df`                                         | `#7b9b8233`                                       | `#dce9df`                                     | `#7b9b8233`                               | `#e5e5dc`                                    | `#2a352b`                                | `#e5e5dc`                                    | `#2a352b`                                | `#e0e6e2`                                    | `#27332b`                                |
+| `--cake-surface`               | `#fdfefe`                                     | `#2d3035`                                 | `rgba(255, 255, 255, 0.66)`                       | `rgba(255, 255, 255, 0.045)`                      | `#fdfefe`                                     | `#312e2a`                                 | `#fffbf9`                                    | `#312b2d`                                | `#fffbf9`                                    | `#312b2d`                                | `#fdfbfc`                                    | `#2d292c`                                |
+| `--cake-surface-strong`        | `var(--cake-surface)`                         | `var(--cake-surface)`                     | `rgba(255, 255, 255, 0.9)`                        | `rgba(40, 38, 46, 0.96)`                          | `var(--cake-surface)`                         | `var(--cake-surface)`                     | `#fffefd`                                    | `#393436`                                | `#fffefd`                                    | `#393436`                                | `#fefefe`                                    | `#363235`                                |
+| `--cake-surface-text`          | `var(--cake-text)`                            | `var(--cake-text)`                        | `var(--cake-text)`                                | `var(--cake-text)`                                | `var(--cake-text)`                            | `var(--cake-text)`                        | `#25232a`                                    | `#f4f3f7`                                | `#25232a`                                    | `#f4f3f7`                                | `#25232a`                                    | `#f4f3f7`                                |
+| `--cake-switch-fill`           | `var(--cake-accent)`                          | `var(--cake-accent)`                      | `var(--cake-accent)`                              | `var(--cake-accent)`                              | `var(--cake-accent)`                          | `var(--cake-accent)`                      | `var(--cake-primary)`                        | `var(--cake-primary)`                    | `var(--cake-primary)`                        | `var(--cake-primary)`                    | `var(--cake-primary)`                        | `var(--cake-primary)`                    |
+| `--cake-switch-off-fill`       | `#90959c`                                     | `#72777e`                                 | `#999491`                                         | `#605b5a`                                         | `#90959c`                                     | `#747679`                                 | `#979495`                                    | `#757173`                                | `#979495`                                    | `#757173`                                | `#969497`                                    | `#726f72`                                |
+| `--cake-switch-off-thumb`      | `#ffffff`                                     | `#edf0f3`                                 | `#ffffff`                                         | `#e7e2df`                                         | `#ffffff`                                     | `#edf0f3`                                 | `#ffffff`                                    | `#f4f3f7`                                | `#ffffff`                                    | `#f4f3f7`                                | `#ffffff`                                    | `#f4f3f7`                                |
+| `--cake-switch-thumb`          | `var(--cake-surface)`                         | `var(--cake-surface)`                     | `var(--cake-primary-ink)`                         | `var(--cake-primary-ink)`                         | `var(--cake-surface)`                         | `var(--cake-surface)`                     | `var(--cake-primary-ink)`                    | `var(--cake-primary-ink)`                | `var(--cake-primary-ink)`                    | `var(--cake-primary-ink)`                | `var(--cake-primary-ink)`                    | `var(--cake-primary-ink)`                |
+| `--cake-text`                  | `#29313a`                                     | `#edf0f3`                                 | `#2a2521`                                         | `#e7e2df`                                         | `#29313a`                                     | `#edf0f3`                                 | `#25232a`                                    | `#f4f3f7`                                | `#25232a`                                    | `#f4f3f7`                                | `#25232a`                                    | `#f4f3f7`                                |
+| `--cake-warning`               | `#80602d`                                     | `#e2c18f`                                 | `#80602d`                                         | `#e2c18f`                                         | `#80602d`                                     | `#e2c18f`                                 | `#875d00`                                    | `#d9c9a6`                                | `#875d00`                                    | `#d9c9a6`                                | `#875d00`                                    | `#d9c9a6`                                |
+| `--cake-warning-hover`         | `#f3e7ce`                                     | `#484237`                                 | `#f3e7ce`                                         | `#3e362a`                                         | `#f3e7ce`                                     | `#4c412f`                                 | `#e7d6bd`                                    | `#4b3817`                                | `#e7d6bd`                                    | `#4b3817`                                | `#e3d7c2`                                    | `#483617`                                |
+| `--cake-warning-hover-ink`     | `#80602d`                                     | `#e2c18f`                                 | `#80602d`                                         | `#e2c18f`                                         | `#80602d`                                     | `#e2c18f`                                 | `#7d5600`                                    | `#d9c9a6`                                | `#7d5600`                                    | `#d9c9a6`                                | `#7d5600`                                    | `#d9c9a6`                                |
+| `--cake-warning-soft`          | `#f3e7ce`                                     | `#b68c4133`                               | `#f3e7ce`                                         | `#b68c4133`                                       | `#f3e7ce`                                     | `#b68c4133`                               | `#f1e2d3`                                    | `#40311b`                                | `#f1e2d3`                                    | `#40311b`                                | `#ede4d9`                                    | `#3d2f1a`                                |

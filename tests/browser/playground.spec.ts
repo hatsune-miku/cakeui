@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test } from '@playwright/test'
+import { type Locator, expect, test } from '@playwright/test'
 
 test('themes, search, code samples and task composition work', async ({ page }) => {
   const errors: string[] = []
@@ -17,7 +17,7 @@ test('themes, search, code samples and task composition work', async ({ page }) 
   await page.getByRole('button', { name: '查看按钮与提示代码' }).click()
   await expect(page.locator('#actions .demo-code')).toContainText('<Button')
   await page.getByRole('textbox', { name: '搜索组件' }).fill('does-not-exist')
-  await expect(page.getByText('没有找到「does-not-exist」相关组件。')).toBeVisible()
+  await expect(page.getByText('没有匹配 does-not-exist 的组件。')).toBeVisible()
   await page.getByRole('button', { name: '应用示例', exact: true }).click()
   await page.getByRole('button', { name: '新建任务', exact: true }).click()
   await page.getByRole('textbox', { name: '任务名称' }).fill('测试真实任务流程')
@@ -238,6 +238,12 @@ test('tooltips open on focus and escape, native tabs and log filters work', asyn
   await expect(page.getByRole('log').locator('.cake-logentry')).toHaveCount(6)
 })
 
+// Playwright can scroll an option to the viewport center while the picker is still entering.
+// The anchored picker then moves with the page and the click misses, which light-dismisses it.
+async function waitForPickerSettled(select: Locator) {
+  await expect.poll(() => select.evaluate((element) => element.getAnimations({ subtree: true }).length)).toBe(0)
+}
+
 for (const mode of ['light', 'dark'] as const) {
   test(`combo popup supports pointer, keyboard and dismissal in ${mode} mode`, async ({ page }) => {
     await page.goto('/')
@@ -247,6 +253,7 @@ for (const mode of ['light', 'dark'] as const) {
     await expect(select).toHaveCSS('appearance', 'base-select')
     const manual = page.getByRole('option', { name: '手动同步', exact: true })
     await expect(manual).toBeVisible()
+    await waitForPickerSettled(select)
     await manual.click()
     await expect(select).toHaveValue('manual')
     await expect(select).toBeFocused()
@@ -265,6 +272,7 @@ for (const mode of ['light', 'dark'] as const) {
     await page.setViewportSize({ width: 390, height: 844 })
     await select.click()
     await expect(manual).toBeVisible()
+    await waitForPickerSettled(select)
     const bounds = await manual.boundingBox()
     expect(bounds!.x).toBeGreaterThanOrEqual(0)
     expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390)
@@ -282,8 +290,8 @@ for (const mode of ['light', 'dark'] as const) {
     expect(result.violations).toEqual([])
     await page.getByRole('button', { name: '设计变量', exact: true }).click()
     const tokens = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
-    // The source palette intentionally remains identical to AnyDrop. Keep this narrow
-    // audit explicit: new rules, targets or color regressions must still fail.
+    // The accent color is fixed by the palette, so white on pink stays below 4.5:1. Keep this
+    // narrow audit explicit: new rules, targets or color regressions must still fail.
     await test.info().attach('theme-accessibility.json', {
       body: JSON.stringify(tokens.violations, null, 2),
       contentType: 'application/json',
@@ -292,10 +300,52 @@ for (const mode of ['light', 'dark'] as const) {
     expect(tokens.violations[0].nodes.map((node) => node.target.join(' ')).sort()).toEqual([
       '.demo-token-theme[data-theme="pink"][data-mode="dark"] > .cake-button[data-variant="primary"][data-size="medium"]',
       '.demo-token-theme[data-theme="pink"][data-mode="light"] > .cake-button[data-variant="primary"][data-size="medium"]',
-      '.demo-token-theme[data-theme="pink"][data-mode="light"] > .demo-between:nth-child(1) > .demo-token-value',
     ])
   })
 }
+
+test('browser history, the light and dark toggle, and the page chrome follow gallery state', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await page.goto('/')
+  await expect(page.locator('.demo-app')).toHaveAttribute('data-mode', 'light')
+  await page.getByRole('button', { name: '金', exact: true }).click()
+  // Choosing a color must not flip the background to the system preference.
+  await expect(page.locator('.demo-app')).toHaveAttribute('data-mode', 'light')
+  await expect(page.locator('html')).toHaveCSS('color-scheme', 'light')
+  await page.getByRole('button', { name: '切换深色模式' }).click()
+  await expect(page.locator('html')).toHaveCSS('color-scheme', 'dark')
+  await page.getByRole('button', { name: '设计变量', exact: true }).click()
+  await expect(page).toHaveURL(/\?page=tokens$/)
+  await page.getByRole('button', { name: '开始使用', exact: true }).click()
+  await page.goBack()
+  await expect(page.getByRole('heading', { name: '设计变量', exact: true })).toBeVisible()
+  await page.goBack()
+  await expect(page.getByRole('heading', { name: '组件总览', exact: true })).toBeVisible()
+  await expect(page).not.toHaveURL(/page=/)
+})
+
+test('selection controls paint visibly on pink dark and slider fill tracks its value', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '粉', exact: true }).click()
+  await page.getByRole('button', { name: '切换深色模式' }).click()
+  const autosave = page.getByRole('switch', { name: '自动保存' })
+  await expect(autosave).toBeChecked()
+  expect(await autosave.evaluate((element) => getComputedStyle(element, '::after').backgroundColor)).toBe(
+    'rgb(255, 255, 255)'
+  )
+  const unchecked = page.getByRole('checkbox', { name: '启动时打开' })
+  await expect(unchecked).toHaveCSS('appearance', 'none')
+  expect(await unchecked.evaluate((element) => getComputedStyle(element).backgroundColor)).not.toBe(
+    'rgb(255, 255, 255)'
+  )
+  const slider = page.getByRole('slider', { name: '提示音量' })
+  await expect(slider).toHaveCSS('appearance', 'none')
+  expect(await slider.evaluate((element) => element.style.getPropertyValue('--cake-slider-ratio'))).toBe('0.65')
+  await slider.focus()
+  await page.keyboard.press('End')
+  await expect(page.getByText('100%')).toBeVisible()
+  expect(await slider.evaluate((element) => element.style.getPropertyValue('--cake-slider-ratio'))).toBe('1')
+})
 
 test('mobile layout and reduced motion remain usable', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })

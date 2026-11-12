@@ -36,6 +36,9 @@ test('gallery documents are discoverable, directly addressable and readable on n
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
   await page.getByRole('button', { name: '切换深色模式' }).click()
   await expect(content).toBeVisible()
+  const modeTip = page.getByRole('tooltip', { name: '切换明暗模式' })
+  await expect(modeTip).toBeVisible()
+  await expect(modeTip).toHaveCSS('opacity', '1')
   const dark = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
   expect(dark.violations).toEqual([])
   await page.screenshot({ path: 'test-results/ai-docs-mobile-dark.png' })
@@ -67,7 +70,7 @@ test('plain reference needs no JavaScript and the gallery can recover from a fai
     })
   )
   await page.goto('/?page=docs')
-  await expect(page.getByText('文档暂时无法加载。')).toBeVisible()
+  await expect(page.getByText('文档加载失败，因为服务器返回 HTTP 503。')).toBeVisible()
   available = true
   await page.getByRole('button', { name: '重新加载' }).click()
   await expect(page.getByLabel('CakeUI 完整技术文档', { exact: true })).toHaveText(reference)

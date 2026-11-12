@@ -1,0 +1,19 @@
+.cake-slide-quote {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cake-slide-space, 24px);
+  margin: 0;
+  padding-left: var(--cake-slide-space, 24px);
+  border-left: 3px solid var(--cake-slide-accent, #3d658f);
+}
+.cake-slide-quote-content {
+  font-size: var(--cake-slide-title, 48px);
+  line-height: 1.45;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.cake-slide-quote-attribution {
+  font-size: var(--cake-slide-small, 16px);
+  color: var(--cake-slide-muted, #596572);
+}

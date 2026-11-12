@@ -1,0 +1,104 @@
+.cake-theme-settings-dialog {
+  width: min(560px, calc(100vw - 24px));
+}
+.cake-theme-settings-group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.cake-theme-settings-legend {
+  padding: 0;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+.cake-theme-settings-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.cake-theme-settings-preset {
+  min-height: 44px;
+  padding: 6px 10px;
+  box-sizing: border-box;
+  border-radius: var(--cake-radius-small);
+  transition: background var(--cake-fast) var(--cake-ease);
+  .cake-radio-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  &:hover {
+    background: var(--cake-hover);
+  }
+  &:has(:checked) {
+    background: var(--cake-selected);
+    color: var(--cake-selected-ink);
+    box-shadow: var(--cake-edge);
+  }
+}
+.cake-theme-settings-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex: none;
+  box-shadow: var(--cake-edge);
+}
+.cake-theme-settings-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  min-height: 32px;
+  align-items: center;
+}
+.cake-theme-settings-colors {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.cake-theme-settings-picker {
+  width: 52px;
+  height: 40px;
+  flex: none;
+  padding: 5px;
+}
+.cake-theme-settings-color-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 120px;
+}
+.cake-theme-settings-color-label {
+  font-size: 13px;
+}
+.cake-theme-settings-error {
+  color: var(--cake-danger);
+  background: var(--cake-danger-soft);
+  padding: 8px 10px;
+  border-radius: var(--cake-radius-small);
+  margin: 0;
+  width: 100%;
+}
+.cake-theme-settings-reset {
+  margin-right: auto;
+}
+.cake-theme-settings-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--cake-muted);
+  font-size: 13px;
+}
+@media (max-width: 420px) {
+  .cake-theme-settings-dialog {
+    padding: 22px 18px;
+  }
+  .cake-theme-settings-presets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cake-theme-settings-reset {
+    flex-basis: 100%;
+  }
+}

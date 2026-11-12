@@ -7,25 +7,37 @@
   min-height: 34px;
   padding: 7px 10px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--cake-radius-item);
   font: inherit;
   font-size: 13px;
   background: transparent;
   color: var(--cake-text);
   text-align: start;
   cursor: pointer;
+  outline: none;
+  transition: background var(--cake-fast) var(--cake-ease);
   &:hover:not(:disabled),
   &:focus-visible {
     outline: none;
-    background: var(--cake-accent-soft);
-    color: var(--cake-accent-ink);
+    background: var(--cake-item-hover);
+  }
+  @media (forced-colors: active) {
+    &:focus-visible {
+      outline: 2px solid Highlight;
+    }
   }
   &:disabled {
-    opacity: 0.4;
+    opacity: var(--cake-disabled-opacity, 0.4);
+    color: var(--cake-disabled-color, var(--cake-text));
     cursor: not-allowed;
   }
   &[data-danger='true'] {
     color: var(--cake-danger);
+    &:hover:not(:disabled),
+    &:focus-visible {
+      background: var(--cake-danger-hover);
+      color: var(--cake-danger-hover-ink);
+    }
   }
   .cake-menuitem-label {
     display: inline-flex;
@@ -36,5 +48,11 @@
     font-family: var(--cake-mono);
     color: var(--cake-muted);
     font-size: 11px;
+  }
+  &:hover:not(:disabled),
+  &:focus-visible {
+    .cake-menuitem-shortcut {
+      color: inherit;
+    }
   }
 }

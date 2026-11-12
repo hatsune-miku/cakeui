@@ -1,6 +1,7 @@
 import { type ComponentPropsWithoutRef, type ReactNode, type RefObject, useEffect, useId, useRef } from 'react'
 
 import { getTabStops } from '../../focus'
+import { CloseGlyph } from '../../glyphs'
 import { cx } from '../../utils'
 import { Button } from '../Button'
 
@@ -125,7 +126,7 @@ export function Dialog({
           {title}
         </h2>
         <Button variant="ghost" size="small" aria-label={closeLabel} onClick={() => onOpenChange(false)}>
-          ×
+          <CloseGlyph />
         </Button>
       </div>
       {description && (

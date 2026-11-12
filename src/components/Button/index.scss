@@ -11,28 +11,34 @@
   cursor: pointer;
   &:hover:not(:disabled) {
     background: var(--cake-control-hover);
+    color: var(--cake-control-hover-text);
   }
   &:active:not(:disabled) {
     background: var(--cake-accent-soft);
-    transform: translateY(1px);
-  }
-  &[data-variant='default']:active:not(:disabled) {
-    background: var(--cake-accent-soft);
+    color: var(--cake-accent-ink);
     transform: translateY(1px);
   }
   &[data-variant='primary'] {
-    background: var(--cake-primary);
-    color: var(--cake-primary-ink);
+    background: var(--cake-accent-fill);
+    color: var(--cake-on-accent);
+    --cake-control-disabled-bg: var(--cake-primary);
+    --cake-control-disabled-ink: var(--cake-primary-ink);
     box-shadow: none;
-    &:hover:not(:disabled),
+    &:hover:not(:disabled) {
+      background: var(--cake-primary-hover);
+      color: var(--cake-primary-hover-ink);
+    }
     &:active:not(:disabled) {
-      background: var(--cake-accent-hover);
+      background: var(--cake-primary-active);
+      color: var(--cake-primary-active-ink);
     }
   }
   &[data-variant='ghost'] {
     background: transparent;
     box-shadow: none;
     color: var(--cake-muted);
+    --cake-control-disabled-bg: transparent;
+    --cake-control-disabled-ink: var(--cake-muted);
     &:hover:not(:disabled) {
       background: var(--cake-hover);
       color: var(--cake-text);
@@ -41,10 +47,18 @@
   &[data-variant='danger'] {
     background: var(--cake-danger-soft);
     color: var(--cake-danger);
+    --cake-control-disabled-bg: var(--cake-danger-soft);
+    --cake-control-disabled-ink: var(--cake-danger);
     box-shadow: none;
-    &:hover:not(:disabled) {
-      background: color-mix(in srgb, var(--cake-danger-soft) 85%, var(--cake-danger));
+    &:hover:not(:disabled),
+    &:active:not(:disabled) {
+      background: var(--cake-danger-hover);
+      color: var(--cake-danger-hover-ink);
     }
+  }
+  &:disabled {
+    background: var(--cake-disabled-background, var(--cake-control-disabled-bg));
+    color: var(--cake-disabled-color, var(--cake-control-disabled-ink));
   }
   &[data-size='small'] {
     min-height: 28px;

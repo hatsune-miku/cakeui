@@ -7,6 +7,7 @@
   border-radius: var(--cake-radius-medium);
   background: var(--cake-hover);
   overflow-x: auto;
+  scrollbar-width: none;
   &[aria-orientation='vertical'] {
     flex-direction: column;
     flex: none;

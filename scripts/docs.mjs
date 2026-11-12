@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -7,8 +8,12 @@ import { format, resolveConfig } from 'prettier'
 import { compileString } from 'sass'
 import ts from 'typescript'
 
+import { loadThemeModule } from './theme-module.mjs'
+
 const root = fileURLToPath(new URL('..', import.meta.url))
 const check = process.argv.includes('--check')
+execFileSync(process.execPath, ['scripts/themes.mjs', ...(check ? ['--check'] : [])], { cwd: root, stdio: 'inherit' })
+const themeEngine = await loadThemeModule()
 const config = await resolveConfig(resolve(root, 'docs/ai.md'))
 function read(path) {
   return readFileSync(resolve(root, path), 'utf8').replace(/\r\n/g, '\n')
@@ -21,40 +26,71 @@ const body = read('docs/ai.md').trim()
 const components = []
 const declarations = []
 const reactTypes = new Set()
+const componentGroups = []
 
-for (const entry of parse('src/index.ts').statements) {
-  assert(
-    ts.isExportDeclaration(entry) && entry.moduleSpecifier,
-    'Review docs generator for the new public export syntax.'
-  )
-  const module = entry.moduleSpecifier.text.replace(/^\.\//, 'src/')
-  const path = existsSync(resolve(root, module + '.ts')) ? module + '.ts' : module + '/index.tsx'
-  const source = parse(path)
-  const names = entry.exportClause?.elements?.map((element) => (element.propertyName ?? element.name).text)
-  for (const node of source.statements) {
-    if (ts.isImportDeclaration(node) && node.moduleSpecifier.text === 'react') {
-      for (const specifier of node.importClause?.namedBindings?.elements ?? []) {
-        if (node.importClause.isTypeOnly || specifier.isTypeOnly) reactTypes.add(specifier.name.text)
+for (const entryPath of ['src/index.ts', 'src/presentation/index.ts']) {
+  const group = { entry: entryPath, components: [] }
+  componentGroups.push(group)
+  for (const entry of parse(entryPath).statements) {
+    assert(
+      ts.isExportDeclaration(entry) && entry.moduleSpecifier,
+      'Review docs generator for the new public export syntax.'
+    )
+    const module = entry.moduleSpecifier.text.replace(/^\.\//, entryPath.replace(/index\.ts$/, ''))
+    const path = existsSync(resolve(root, module + '.ts')) ? module + '.ts' : module + '/index.tsx'
+    const source = parse(path)
+    const names = entry.exportClause?.elements?.map((element) => (element.propertyName ?? element.name).text)
+    for (const node of source.statements) {
+      if (ts.isImportDeclaration(node) && node.moduleSpecifier.text === 'react') {
+        for (const specifier of node.importClause?.namedBindings?.elements ?? []) {
+          if (node.importClause.isTypeOnly || specifier.isTypeOnly) reactTypes.add(specifier.name.text)
+        }
       }
-    }
-    if (!node.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) continue
-    assert(node.name, `Unnamed public export in ${path}; review documentation generation.`)
-    const name = node.name.text
-    if (names && !names.includes(name)) continue
-    if (ts.isFunctionDeclaration(node)) {
-      assert(/^[A-Z]/.test(name), `New non-component export ${name} needs documentation support.`)
-      assert(body.includes(`\n### ${name}\n`), `Missing a dedicated ### ${name} section in docs/ai.md.`)
-      components.push(name)
-    } else {
-      assert(
-        ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node),
-        `Unsupported public declaration ${name}.`
-      )
-      declarations.push(node.getText(source))
+      if (!node.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) continue
+      assert(node.name, `Unnamed public export in ${path}; review documentation generation.`)
+      const name = node.name.text
+      if (names && !names.includes(name)) continue
+      if (ts.isFunctionDeclaration(node)) {
+        assert(/^[A-Z]/.test(name), `New non-component export ${name} needs documentation support.`)
+        assert(body.includes(`\n### ${name}\n`), `Missing a dedicated ### ${name} section in docs/ai.md.`)
+        components.push(name)
+        group.components.push(name)
+      } else {
+        assert(
+          ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node),
+          `Unsupported public declaration ${name}.`
+        )
+        declarations.push(node.getText(source))
+      }
     }
   }
 }
 assert(new Set(components).size === components.length, 'Duplicate component exports.')
+const themeApi = []
+for (const entry of parse('src/theme/index.ts').statements) {
+  assert(ts.isExportDeclaration(entry) && entry.moduleSpecifier)
+  const source = parse('src/theme/' + entry.moduleSpecifier.text.replace('./', '') + '.ts')
+  const names = entry.exportClause?.elements?.map((element) => element.name.text)
+  for (const node of source.statements) {
+    if (!node.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) continue
+    if (ts.isVariableStatement(node)) {
+      for (const variable of node.declarationList.declarations) {
+        if (!names?.includes(variable.name.getText(source))) continue
+        assert(variable.type, 'Public theme constants need explicit types.')
+        declarations.push(`export declare const ${variable.name.getText(source)}: ${variable.type.getText(source)}`)
+        themeApi.push(variable.name.getText(source))
+      }
+    } else if (node.name && (!names || names.includes(node.name.text))) {
+      if (ts.isFunctionDeclaration(node)) {
+        assert(node.type && !node.typeParameters, 'Public theme functions need documented return types.')
+        declarations.push(
+          `export declare function ${node.name.text}(${node.parameters.map((parameter) => `${parameter.name.getText(source)}${parameter.initializer || parameter.questionToken ? '?' : ''}: ${parameter.type.getText(source)}`).join(', ')}): ${node.type.getText(source)}`
+        )
+        themeApi.push(node.name.text)
+      } else declarations.push(node.getText(source))
+    }
+  }
+}
 const documented = [...body.matchAll(/^### ([A-Z][A-Za-z]+)$/gm)].map((match) => match[1])
 assert.deepEqual(documented.sort(), [...components].sort(), 'Component reference must match the public entry exactly.')
 const examples = [...body.matchAll(/^```tsx example=([\w-]+)\n([\s\S]*?)^```/gm)]
@@ -64,8 +100,8 @@ assert(
 )
 
 // Compile the actual provider mixins, so theme tables cannot drift from SCSS.
-const themeDeclaration = parse('src/components/CakeProvider/index.tsx').statements.find(
-  (node) => ts.isTypeAliasDeclaration(node) && node.name.text === 'CakeTheme'
+const themeDeclaration = parse('src/theme/types.ts').statements.find(
+  (node) => ts.isTypeAliasDeclaration(node) && node.name.text === 'ThemePreset'
 )
 assert(themeDeclaration && ts.isUnionTypeNode(themeDeclaration.type), 'CakeTheme must list the documented themes.')
 const themes = themeDeclaration.type.types.map((node) => {
@@ -73,13 +109,12 @@ const themes = themeDeclaration.type.types.map((node) => {
   return node.literal.text
 })
 const combinations = themes.flatMap((theme) => ['light', 'dark'].map((mode) => ({ theme, mode })))
-const sass = `@use 'src/components/CakeProvider/index' as tokens;
+const sass = `@use 'src/components/CakeProvider/index';
+@use 'src/theme/generated' as tokens;
 ${combinations
   .map(
     ({ theme, mode }) => `.cake-doc-${theme}-${mode} {
-  @include tokens.${mode};
-  @include tokens.blue${mode === 'dark' ? '-dark' : ''};
-  ${theme === 'blue' ? '' : `@include tokens.${theme}${mode === 'dark' ? '-dark' : ''};`}
+  @include tokens.theme('${theme}', '${mode}');
 }`
   )
   .join('\n')}`
@@ -106,7 +141,7 @@ const tokenTables = `以下取 comfortable 密度、未开启减少动态效果�
 | --- | --- |
 ${shared.map((key) => `| \`${key}\` | \`${palettes[0][key]}\` |`).join('\n')}
 
-### 六套配色的变量
+### 十二套预设配色的变量
 
 | 变量 | ${combinations.map(({ theme, mode }) => `${theme} / ${mode}`).join(' | ')} |
 | --- | ${combinations.map(() => '---').join(' | ')} |
@@ -136,11 +171,12 @@ const full = await format(
 - 版本：${pkg.version}
 - 署名：${pkg.author}
 - React peer：${pkg.peerDependencies.react}；React DOM peer：${pkg.peerDependencies['react-dom']}
-- 公开组件：${components.length} 个；下列列表与 src/index.ts 一致。
+- 公开组件：${components.length} 个；下列分组分别与两个公开入口一致。
 - 文档 / package.json / src 内容指纹（SHA-256）：${fingerprint}
 - 本文为生成结果，请修改 docs/ai.md 或相应源码后运行 npm run docs:build。
 
-${components.join(', ')}
+${componentGroups.map((group) => `- ${group.entry}（${group.components.length} 个）：${group.components.join(', ')}`).join('\n')}
+- src/theme/index.ts：${themeApi.join(', ')}；独立配置、计算与作用域接口。
 
 ## 附录 B. 完整公开 Props 与类型
 
@@ -160,13 +196,17 @@ const index = await format(
 
 > React + TypeScript + SCSS UI components. Native HTML props, composable JSX children. Default blue theme. Author: ${pkg.author}. Version: ${pkg.version}.
 
-安装：npm install ${pkg.name}。需要 React / React DOM 19+，显式导入 ${pkg.name}/style.css。包名包含 @a1knla/ scope，品牌名和 GitHub 仓库仍为 CakeUI / cakeui。不要凭其他 UI 库的习惯猜测 API。
+安装：npm install ${pkg.name}。需要 React / React DOM 19+。基础组件显式导入 ${pkg.name}/style.css；HTML 幻灯片从 ${pkg.name}/presentation 导入，样式为 ${pkg.name}/presentation/style.css。纯主题接口从 ${pkg.name}/theme 导入，不依赖 React。presentation、theme 和 ThemeSettings 从 0.4.0 起提供；presentation 是同包的 Web 子入口，不是 RN 包。包名包含 @a1knla/ scope，品牌名和 GitHub 仓库仍为 CakeUI / cakeui。不要凭其他 UI 库的习惯猜测 API。
+
+CDN：普通 HTML 使用 <link rel="stylesheet" href="https://vanillacake.cn/cakeui-dist/cakeui.css"> 和 <script src="https://vanillacake.cn/cakeui-dist/cakeui.min.js"></script>。无需 npm、另引 React 或构建工具；基础组件从 CakeUI 取用，幻灯片从 CakeUI.presentation 取用，使用 CakeUI.React.createElement 和 CakeUI.createRoot 挂载。CDN 与 npm 的组件 Props 相同。完整文档第 2 节分别提供 npm / CDN 的基础组件和幻灯片示例，以及本地打包、离线与版本规则。
 
 ## 文档 / Documentation
 
 - [完整技术文档 / Full technical reference](https://gallery.vanillacake.cn/llms-full.txt): UTF-8 text/plain；${components.length} 个组件的 API、默认值、原生属性、ref、交互边界、主题变量、可编译示例和开发维护规则。生成代码前优先读取。
 - [Gallery 阅读页](https://gallery.vanillacake.cn/?page=docs): 同一份全文，可选择复制。
-- [源码](https://github.com/hatsune-miku/cakeui): 公开组件入口 src/index.ts，Props 在 src/components/*/index.tsx。
+- [HTML 幻灯片](https://gallery.vanillacake.cn/?page=presentation): 逐页演示、连续阅读、全屏与打印；独立页 /slides.html。
+- [CDN / 外部 script 示例](https://gallery.vanillacake.cn/browser.html): 普通 HTML 使用内置 React 的完整浏览器构建。默认 URL 随稳定发版更新，固定版本使用 releases/<版本>/；manifest.json 记录来源、版本和文件摘要。
+- [源码](https://github.com/hatsune-miku/cakeui): 基础入口 src/index.ts，幻灯片入口 src/presentation/index.ts；Props 在对应 components/*/index.tsx。
 - [维护规则](https://github.com/hatsune-miku/cakeui/blob/main/AGENTS.md): 每次改动都评估并同步受影响文档。
 
 ## API 提醒 / Key constraints
@@ -176,6 +216,7 @@ const index = await format(
 - ContextMenu interactive defaults to false: right-down opens and depresses the region; right-release selects only an enabled item under the pointer, otherwise the menu stays open.
 - ComboBox is a native select with option / optgroup; customizable picker appearance depends on browser support.
 - No Drawer or SidePanel. Global text selection defaults to none; input and log areas explicitly allow selection.
+- Presentation CSS is independent and scoped. SlideDeck takes Slide children (including arrays/fragments), not a slides data schema. Keyboard navigation is scoped to the focused deck; printing exposes all slides.
 
 完整文档内容指纹（SHA-256）：${fingerprint}
 `,

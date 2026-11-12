@@ -1,0 +1,27 @@
+.theme-fixture {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+}
+.theme-fixture-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+.theme-fixture-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+@media (max-width: 600px) {
+  .theme-fixture {
+    padding: 12px;
+  }
+  .theme-fixture-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -4,6 +4,12 @@
 
 首个版本 `0.1.0` 已发布。后续推荐使用 [Publish npm package 工作流](https://github.com/hatsune-miku/cakeui/actions/workflows/publish.yml)，源文件为 `.github/workflows/publish.yml`。它使用 npm Trusted Publishing，通过 GitHub OIDC 获取本次发布所需的临时身份，无需在 GitHub Secrets 中保存 npm token。
 
+## 包入口
+
+基础入口 `@a1knla/cakeui` / `@a1knla/cakeui/style.css`、Web 幻灯片入口 `@a1knla/cakeui/presentation` / `@a1knla/cakeui/presentation/style.css` 与纯主题入口 `@a1knla/cakeui/theme` 在同一个 tgz 中。theme 不依赖 React；无需注册额外 npm 包，没有 RN 入口。presentation、theme、ThemeSettings 和浏览器 IIFE 从 0.4.0 起提供，浏览器产物随 npm 版本同步部署。
+
+包验证检查三个 ESM 入口、严格类型、原生 ref、SSR、独立样式消费以及浏览器 IIFE 和全局类型。`dist/browser/cakeui.min.js` 内置 React / React DOM、基础组件、presentation 和 CakeUI.theme，`dist/browser/cakeui.css` 为对应完整样式；二者包含在同一个 npm tgz 中。普通分支提交不会发布 npm，需要按后文版本与 tag 流程发布。
+
 ## 一次性配置 npm Trusted Publisher
 
 在 npmjs.com 登录有权管理此包的账号，打开 `@a1knla/cakeui` 的 Settings → Trusted publishing → Add trusted publisher，选择 GitHub Actions，并填写：
@@ -28,7 +34,15 @@ npm 当前要求 CLI 至少 11.5.1、Node 至少 22.14.0，且使用 GitHub 托�
 | Actions 页面 Run workflow              | 只验证，生成可下载的 tgz；即使选择 tag 也不发布 |
 | 普通分支 push、PR、GitHub Release 事件 | 不触发此发布工作流                              |
 
-验证 job 只有 `contents: read`，不授予 OIDC 权限。依次检查包名、作者、仓库、public / registry、manifest 与锁文件版本、tag；运行文档一致性、类型、DOM 单元测试、发布保护测试、库 / Gallery 构建、格式、真实浏览器交互与 axe 检查；最后安装实际 tgz，验证 ESM、CSS / 声明入口、SSR、7 个文档示例及消费项目构建。
+npm 发布及摘要校验成功后，独立 `deploy_browser` job 从本次验证的同一个 tgz 读取浏览器 JS / CSS，通过 SSH 上传到 `/var/www/html/cakeui-dist`，再以 HTTPS 校验公开文件的 MIME、CORS 和 SHA-256。上传不重新构建，也不执行包生命周期脚本。部署 job 没有 npm OIDC 权限；手动 Run workflow 只验证部署密钥与连接，不替换远端文件。
+
+仓库 Actions Secrets 中配置 `CAKEUI_DIST_SSH_KEY`（专用 Ed25519 私钥）和 `CAKEUI_DIST_KNOWN_HOSTS`（从已可信连接取得的服务端 host key）。远端 authorized_keys 使用 restrict 和 forced command，只允许 `/usr/local/libexec/cakeui-dist-receive` 的 check / publish；不允许交互 shell、端口转发或任意 scp。不要将本机常用 SSH 私钥或 miku 密码写入 Actions。Secrets 的创建 / 更新遵循 [GitHub 加密要求](https://docs.github.com/en/rest/actions/secrets#create-or-update-a-repository-secret)。
+
+如果 npm 成功而浏览器部署失败，只重跑失败的部署 job，不能重新发布已存在的 npm 版本。接收端允许相同版本、相同字节重试，但拒绝覆盖已存在版本的不同文件。也可下载本次 `npm-package` artifact，在本机运行 `npm run deploy:browser -- --artifact-dir <artifact目录>`；它先确认包的 integrity 与 npm 一致，再提取指定的两个文件上传。Windows 使用 npm.cmd 传参。SSH 可使用现有本机登录，或者通过 `CAKEUI_DIST_IDENTITY_FILE`、`CAKEUI_DIST_KNOWN_HOSTS_FILE` 指定专用身份与 host key 文件。
+
+每次稳定发版更新根目录的 `cakeui.min.js` / `cakeui.css`，预发布更新 `next/`，全部 npm 版本保留在 `releases/<版本>/`。默认 URL 会变化，长期保存的 HTML 建议锁定版本。首次建立分发时可运行 `npm run deploy:browser -- --preview`，仅发布当前源码预览到 `previews/<摘要>/`，未有稳定发布时同时初始化默认地址；它不能替换已有 npm 稳定版，CI 禁止使用 preview。详见 [部署说明](deployment.md)。
+
+验证 job 只有 `contents: read`，不授予 OIDC 权限。依次检查包名、作者、仓库、public / registry、manifest 与锁文件版本、tag；运行文档一致性、类型、DOM 单元测试、发布保护测试、库 / Gallery 构建、格式、真实浏览器交互与 axe 检查；最后安装实际 tgz，验证三个 ESM、CSS / 声明入口、SSR、全部标注 example 的 TSX 文档示例及消费项目构建。CDN 的 HTML 文档示例由浏览器测试直接加载构建后的 JS / CSS，检查渲染与交互。
 
 `npm run test:package -- --artifact-dir .cache/release` 在全部包验证通过后保留同一个 tgz，并写入包名、版本和 SHA-512 integrity。工作流执行发布 dry-run 后上传 `npm-package` artifact，保留 7 天。`package.tgz` 与 `metadata.json` 位于 artifact 内。
 
@@ -74,4 +88,4 @@ npm install @a1knla/cakeui --registry=https://registry.npmjs.org/
 
 需要在本机手动发布时，仍可以通过 npm 官方网页登录完成认证后，运行 `npm publish --access public --registry=https://registry.npmjs.org/`；本机流程会执行 prepack 的文档检查和构建。遵循相同版本、验证与署名约定，按 npm 提示完成二次认证，不把密码、token 或 OTP 存入仓库。
 
-发布 npm 包不会自动部署 Gallery。文档或示例有改动时，把 Gallery 与纯文本文档一起部署，见 [deployment.md](deployment.md)。使用 npm 镜像时若新版本尚未同步，可给安装命令追加官方 registry 参数。
+发布 npm 包会自动部署浏览器 JS / CSS，不自动部署 Gallery。文档或示例有改动时，把 Gallery 与纯文本文档一起部署，见 [deployment.md](deployment.md)。使用 npm 镜像时若新版本尚未同步，可给安装命令追加官方 registry 参数。
