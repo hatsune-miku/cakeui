@@ -7,7 +7,9 @@ import {
   Card,
   CheckBox,
   ComboBox,
+  ContextMenu,
   Dialog,
+  MenuItem,
   RadioButton,
   Switch,
   Tab,
@@ -40,6 +42,8 @@ function Fixture() {
   const [fail, setFail] = useState(false)
   const [attempts, setAttempts] = useState(0)
   const [error, setError] = useState('')
+  const [reversed, setReversed] = useState(false)
+  const [contextActions, setContextActions] = useState(0)
   const storage = useMemo<ThemeStorageAdapter>(
     () => ({
       load: () => localStorage.getItem('cake-theme-fixture'),
@@ -159,6 +163,24 @@ function Fixture() {
       <CakeProvider data-testid="nested">
         <Button variant="primary">Nested primary</Button>
       </CakeProvider>
+      <div className="theme-fixture-actions">
+        <Button onClick={() => setReversed((value) => !value)}>Reverse sections</Button>
+        {(reversed ? ['second', 'first'] : ['first', 'second']).map((id) => (
+          <section key={id} aria-label={id + ' section'}>
+            <Button>Repeated action</Button>
+          </section>
+        ))}
+        <Button>Ambiguous action</Button>
+        <Button>Ambiguous action</Button>
+        <ContextMenu
+          menuLabel="Existing actions"
+          interactive
+          menu={<MenuItem onClick={() => setContextActions((value) => value + 1)}>Existing command</MenuItem>}
+        >
+          <Button>Context target</Button>
+        </ContextMenu>
+        <output data-testid="context-actions">{contextActions}</output>
+      </div>
       <SlideDeck config={config} controls={false} aria-label="Themed slides">
         <Slide tone="inverted">
           <SlideHeader title="Theme preview" />

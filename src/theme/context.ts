@@ -1,11 +1,14 @@
 import { createContext } from 'react'
 
-import type { ThemeConfig } from './types'
+import type { ThemeConfig, ThemeStorageAdapter } from './types'
 
 export interface ThemeScope {
   config: ThemeConfig
   current: ThemeConfig
-  preview: (owner: string, value: ThemeConfig | null) => void
+  locale: 'en' | 'zh-CN'
+  preview: (owner: string, value: ThemeConfig | null, edit?: (value: ThemeConfig) => void) => void
   apply: (value: ThemeConfig) => void
+  commit: (value: ThemeConfig) => Promise<void>
+  registerStorage: (owner: string, storage: ThemeStorageAdapter) => () => void
 }
 export const ThemeContext = createContext<ThemeScope | null>(null)

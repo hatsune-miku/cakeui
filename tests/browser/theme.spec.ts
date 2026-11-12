@@ -39,7 +39,7 @@ test('preset and custom state colors match their foregrounds in the actual brows
           if (foreground === 'auto' && !legacy)
             expect(
               themeContrast(colors[0], colors[1]),
-              `${variant}/${mode}/${foreground}/${name}`
+              `${variant}/${mode}/${foreground}/${name}: ${colors.join(' on ')}`
             ).toBeGreaterThanOrEqual(4.5)
         }
         // Disable animation through the user's reduced-motion preference, not a test-only CSS override.
@@ -183,6 +183,15 @@ test('theme choices accept a single pointer click without moving the dialog', as
     await page.getByRole('button', { name: 'Theme', exact: true }).click()
     const dialog = page.getByRole('dialog', { name: 'Theme settings' })
     const original = await dialog.boundingBox()
+    const groups = dialog.getByRole('radiogroup')
+    const before = await groups.evaluateAll((elements) =>
+      elements.map((element) => element.getBoundingClientRect().toJSON())
+    )
+    // A blank click used to invalidate WebKit's fieldset/legend height and move the later choices.
+    await page.mouse.click(original!.x + original!.width - 12, original!.y + original!.height / 2)
+    expect(
+      await groups.evaluateAll((elements) => elements.map((element) => element.getBoundingClientRect().toJSON()))
+    ).toEqual(before)
     for (const name of ['葡萄', 'Custom', 'Dark', 'Light text', 'Dark text', '粉']) {
       const target = dialog.getByRole('radio', { name, exact: true })
       await target.scrollIntoViewIfNeeded()
@@ -194,5 +203,46 @@ test('theme choices accept a single pointer click without moving the dialog', as
     await dialog.evaluate((element) => element.focus())
     await expect(dialog).toHaveCSS('outline-style', 'none')
     await dialog.getByRole('button', { name: 'Cancel', exact: true }).last().click()
+  }
+})
+
+test('pointer focus restoration has no button ring and keyboard navigation restores it', async ({
+  page,
+  browserName,
+}) => {
+  await page.goto('/tests/browser/fixtures/theme/')
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  const entry = page.getByRole('button', { name: 'Theme', exact: true })
+  const dialog = page.getByRole('dialog', { name: 'Theme settings' })
+  await entry.click()
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).last().click()
+  await expect(entry).toBeFocused()
+  await expect(entry).toHaveCSS('box-shadow', 'none')
+  // System WebKit on macOS uses Option+Tab to include buttons in native sequential navigation.
+  const tab = browserName === 'webkit' && process.platform === 'darwin' ? 'Alt+Tab' : 'Tab'
+  await page.keyboard.press(tab)
+  const rename = page.getByRole('button', { name: 'Rename', exact: true })
+  await expect(rename).toBeFocused()
+  await expect(rename).toHaveCSS('box-shadow', /inset/)
+  await page.keyboard.press('Enter')
+  await page.getByRole('button', { name: 'Done', exact: true }).click()
+  await expect(rename).toBeFocused()
+  await expect(rename).toHaveCSS('box-shadow', 'none')
+  await page.keyboard.press('Shift+' + tab)
+  await expect(entry).toBeFocused()
+  await expect(entry).toHaveCSS('box-shadow', /inset/)
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Escape')
+  await expect(entry).toBeFocused()
+  await expect(entry).toHaveCSS('box-shadow', /inset/)
+  for (const preset of ['blue', 'pink', 'gold', 'dousha', 'dousha-classic', 'grape']) {
+    await page.getByLabel('Preset', { exact: true }).selectOption(preset)
+    for (const mode of ['light', 'dark']) {
+      await page.getByLabel('Mode', { exact: true }).selectOption(mode)
+      const button = page.getByRole('button', { name: 'Default', exact: true })
+      await button.click()
+      await expect(button).toHaveCSS('border-width', '0px')
+      await expect(button).toHaveCSS('box-shadow', 'none')
+    }
   }
 })

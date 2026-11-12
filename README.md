@@ -27,7 +27,7 @@ export function App() {
 }
 ```
 
-`theme`：`blue` / `pink` / `gold` / `dousha` / `dousha-classic` / `grape`；`mode`：`light` / `dark` / `system`。单色主题用 `<CakeProvider accentColor="#70569b">`，可在容器中放入 `ThemeSettings` 预览、应用和取消。纯计算接口从 `@a1knla/cakeui/theme` 导入；[配置、存储适配器和迁移说明](docs/ai.md#6-主题变量与动效)。组件支持原生 HTML 属性，通过 JSX children 组合。
+`theme`：`blue` / `pink` / `gold` / `dousha` / `dousha-classic` / `grape`；`mode`：`light` / `dark` / `system`。单色主题用 `<CakeProvider accentColor="#70569b">`，可在容器中放入 `ThemeSettings` 预览、应用和取消。支持全局文字明暗阈值、按用途覆盖与长按右键调整单个组件；已有主题存储适配器会保存这些偏好，`locale="zh-CN"` 使用中文调整界面。纯计算接口从 `@a1knla/cakeui/theme` 导入；[配置、存储适配器和迁移说明](docs/ai.md#6-主题变量与动效)。组件支持原生 HTML 属性，通过 JSX children 组合。
 
 HTML 幻灯片使用独立入口 `@a1knla/cakeui/presentation` 和样式 `@a1knla/cakeui/presentation/style.css`，支持固定比例、连续阅读、键盘翻页、全屏和打印。参见[示例](https://gallery.vanillacake.cn/?page=presentation)与[API / 完整代码](docs/ai.md#41-html-幻灯片组件)。
 

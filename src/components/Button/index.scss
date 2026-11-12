@@ -1,6 +1,11 @@
 @use '../../styles/mixins' as *;
 .cake-button {
   @include control;
+  --cake-control-disabled-bg: var(--cake-button);
+  --cake-control-disabled-ink: var(--cake-button-text);
+  background: var(--cake-button);
+  color: var(--cake-button-text);
+  box-shadow: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -10,12 +15,12 @@
   font-weight: var(--cake-button-weight);
   cursor: pointer;
   &:hover:not(:disabled) {
-    background: var(--cake-control-hover);
-    color: var(--cake-control-hover-text);
+    background: var(--cake-button-hover);
+    color: var(--cake-button-hover-text);
   }
   &:active:not(:disabled) {
-    background: var(--cake-accent-soft);
-    color: var(--cake-accent-ink);
+    background: var(--cake-button-active);
+    color: var(--cake-button-active-text);
     transform: translateY(1px);
   }
   &[data-variant='primary'] {

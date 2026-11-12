@@ -6,7 +6,16 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--cake-tone);
+  background: var(--cake-base-muted);
+  &[data-tone='success'] {
+    background: var(--cake-base-success);
+  }
+  &[data-tone='warning'] {
+    background: var(--cake-base-warning);
+  }
+  &[data-tone='danger'] {
+    background: var(--cake-base-danger);
+  }
   &[data-tone='accent'] {
     background: var(--cake-accent);
   }

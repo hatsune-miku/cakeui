@@ -1,0 +1,46 @@
+@use '../../styles/mixins' as *;
+.cake-theme [data-cake-text-override] {
+  color: var(--cake-user-foreground) !important;
+}
+.cake-text-menu {
+  @include theme-editor;
+  position: fixed;
+  inset: auto;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 10px;
+  width: min(260px, calc(100vw - 16px));
+  max-height: calc(100dvh - 16px);
+  overflow: auto;
+  border: 0;
+  border-radius: var(--cake-radius-medium);
+  background: var(--cake-popup);
+  color: var(--cake-popup-text);
+  box-shadow: var(--cake-shadow);
+  font: inherit;
+  &:popover-open {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .cake-button {
+    justify-content: space-between;
+  }
+  .cake-text-menu-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    padding-left: 8px;
+  }
+  .cake-text-menu-target {
+    padding: 0 8px 6px;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+  .cake-text-menu-message {
+    margin: 4px 8px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}

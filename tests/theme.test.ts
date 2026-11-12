@@ -40,12 +40,12 @@ describe('theme colors and semantics', () => {
     expect(themeContrast('#000', '#fff')).toBe(21)
   })
 
-  it('keeps legacy defaults and reports their real exceptions', () => {
+  it('keeps legacy backgrounds and chooses readable foregrounds automatically', () => {
     const pink = generateTheme(createThemeConfig({ scheme: 'pink', mode: 'light' }))
     expect(pink.variables['--cake-primary']).toBe('var(--cake-accent)')
     expect(pink.variables['--cake-accent']).toBe('#d15776')
     expect(pink.variables['--cake-surface']).toBe('rgba(255, 255, 255, 0.66)')
-    expect(pink.contrastIssues.some((issue) => issue.pair === 'accent' && issue.ratio < 4.5)).toBe(true)
+    expect(pink.contrastIssues).toEqual([])
     const blue = generateTheme(createThemeConfig({ scheme: 'blue', mode: 'light' }))
     expect(blue.variables['--cake-accent-soft']).toBe('#d6e7f7')
   })
@@ -74,7 +74,7 @@ describe('theme colors and semantics', () => {
     // Pink's surface is translucent and must never become the mark on its accent fill.
     for (const mode of ['light', 'dark'] as const)
       expect(generateTheme(createThemeConfig({ scheme: 'pink', mode })).variables['--cake-switch-thumb']).toBe(
-        'var(--cake-primary-ink)'
+        '#ffffff'
       )
   })
 
@@ -103,7 +103,7 @@ describe('theme colors and semantics', () => {
           const legacy = ['blue', 'pink', 'gold'].includes(preset.id)
           if (!legacy && foreground === 'auto')
             expect(result.contrastIssues, preset.id + '/' + mode + '/' + foreground).toEqual([])
-          if (foreground !== 'auto' || preset.id === 'dousha-classic') {
+          if (foreground !== 'auto') {
             for (const name of [
               'accent',
               'accentHover',
@@ -116,7 +116,7 @@ describe('theme colors and semantics', () => {
             }
           }
           const original = generateTheme(createThemeConfig({ scheme: preset.id, mode }))
-          expect(result.pairs.canvas).toEqual(original.pairs.canvas)
+          expect(result.pairs.canvas.background).toBe(original.pairs.canvas.background)
           for (const name of Object.keys(result.pairs) as (keyof typeof result.pairs)[])
             expect(result.pairs[name].background, `${preset.id}/${mode}/${foreground}/${name}`).toBe(
               original.pairs[name].background
@@ -135,6 +135,23 @@ describe('theme colors and semantics', () => {
       '--cake-accent-soft-hover-ink',
       '--cake-selected-ink',
       '--cake-switch-thumb',
+      '--cake-text',
+      '--cake-surface-text',
+      '--cake-popup-text',
+      '--cake-muted',
+      '--cake-control-text',
+      '--cake-control-hover-text',
+      '--cake-control-active-text',
+      '--cake-button-text',
+      '--cake-button-hover-text',
+      '--cake-button-active-text',
+      '--cake-disabled-ink',
+      '--cake-success',
+      '--cake-success-hover-ink',
+      '--cake-warning',
+      '--cake-warning-hover-ink',
+      '--cake-danger',
+      '--cake-danger-hover-ink',
     ])
     for (const scheme of [...themePresets.map((preset) => preset.id), 'custom'] as const)
       for (const mode of ['light', 'dark'] as const) {
@@ -182,9 +199,9 @@ describe('theme colors and semantics', () => {
             if (foreground === 'auto')
               expect(themeContrast(pair.background, pair.foreground)).toBeGreaterThanOrEqual(4.5)
           }
-          expect(new Set(['success', 'warning', 'danger'].map((name) => result.variables[`--cake-${name}`])).size).toBe(
-            3
-          )
+          expect(
+            new Set(['success', 'warning', 'danger'].map((name) => result.variables[`--cake-${name}-soft`])).size
+          ).toBe(3)
         }
   })
 
@@ -323,5 +340,63 @@ describe('theme application and storage adapters', () => {
       throw new Error('Quota')
     })
     expect(() => adapter.save(createThemeConfig())).toThrow('Quota')
+  })
+})
+
+describe('foreground preferences', () => {
+  it('keeps role overrides per scheme and mode, and threshold global', () => {
+    let config = createThemeConfig({
+      scheme: 'dousha',
+      mode: 'light',
+      foreground: 'light',
+      foregroundThreshold: 18,
+      textRoles: { light: { button: 'auto', primary: 'dark' } },
+      components: { light: { 'key:save': { foreground: 'dark', label: 'Save' } } },
+    })
+    const theme = generateTheme(config)
+    expect(theme.pairs.canvas.foreground).toBe('#ffffff')
+    expect(theme.pairs.button.foreground).not.toBe('#ffffff')
+    expect(theme.pairs.accent.foreground).toBe('#161b22')
+    config = updateThemeConfig(config, { scheme: 'grape' })
+    expect(resolveThemeOptions(config).textRoles).toBeUndefined()
+    config = updateThemeConfig(config, { scheme: 'dousha', mode: 'dark' })
+    expect(generateTheme(config).pairs.button.foreground).toBe('#ffffff')
+    expect(
+      resolveThemeOptions(migrateThemeConfig(serializeThemeConfig(config))).components?.light?.['key:save'].label
+    ).toBe('Save')
+    expect(resetThemeScheme(config).foregroundThreshold).toBe(18)
+  })
+
+  it('moves the threshold without changing any background', () => {
+    const base = createThemeConfig({ scheme: 'custom', customColor: '#888888', mode: 'light' })
+    const low = generateTheme(updateThemeConfig(base, { foregroundThreshold: 0 }))
+    const high = generateTheme(updateThemeConfig(base, { foregroundThreshold: 100 }))
+    expect(low.pairs.accent.foreground).toBe('#161b22')
+    expect(high.pairs.accent.foreground).toBe('#ffffff')
+    for (const name of Object.keys(low.pairs) as (keyof typeof low.pairs)[])
+      expect(high.pairs[name].background).toBe(low.pairs[name].background)
+    for (const name of [
+      '--cake-switch-thumb',
+      '--cake-base-muted',
+      '--cake-base-success',
+      '--cake-base-warning',
+      '--cake-base-danger',
+    ] as const)
+      expect(high.variables[name]).toBe(low.variables[name])
+    expect(high.contrastIssues.length).toBeGreaterThan(0)
+  })
+
+  it('rejects malformed overrides and unsafe identities instead of dropping preferences', () => {
+    const base = createThemeConfig()
+    for (const foregroundThreshold of [-1, 101, NaN, Infinity, '20'])
+      expect(validateThemeConfig({ ...base, foregroundThreshold }).valid).toBe(false)
+    for (const textRoles of [{ sepia: { body: 'auto' } }, { light: { unknown: 'auto' } }, { light: { body: 'red' } }])
+      expect(
+        validateThemeConfig({ ...base, options: { blue: { mode: 'light', foreground: 'auto', textRoles } } }).valid
+      ).toBe(false)
+    const components = JSON.parse('{"light":{"__proto__":{"foreground":"light","label":"x"}}}')
+    expect(
+      validateThemeConfig({ ...base, options: { blue: { mode: 'light', foreground: 'auto', components } } }).valid
+    ).toBe(false)
   })
 })

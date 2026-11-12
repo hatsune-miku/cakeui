@@ -1,6 +1,15 @@
 import { normalizeThemeColor, themeContrast } from './color'
 import { schemes } from './presets'
-import type { ThemeConfig, ThemeConfigInput, ThemePairName, ThemeSchemeOptions, ThemeValidation } from './types'
+import type {
+  ThemeConfig,
+  ThemeConfigInput,
+  ThemePairName,
+  ThemeSchemeOptions,
+  ThemeTextRole,
+  ThemeValidation,
+} from './types'
+
+export const textRoles: readonly ThemeTextRole[] = ['body', 'button', 'primary', 'selected', 'input', 'status']
 
 export const pairNames: readonly ThemePairName[] = [
   'canvas',
@@ -10,6 +19,9 @@ export const pairNames: readonly ThemePairName[] = [
   'input',
   'inputHover',
   'inputActive',
+  'button',
+  'buttonHover',
+  'buttonActive',
   'accent',
   'accentHover',
   'accentActive',
@@ -34,6 +46,12 @@ function validate(value: unknown): ThemeConfig {
   const customColor = normalizeThemeColor(value.customColor)
   if (!customColor) throw new TypeError('customColor must be an opaque HEX or RGB color.')
   if (!record(value.options)) throw new TypeError('options must be a scheme map.')
+  const threshold = value.foregroundThreshold
+  if (
+    threshold !== undefined &&
+    (typeof threshold !== 'number' || !Number.isFinite(threshold) || threshold < 0 || threshold > 100)
+  )
+    throw new TypeError('foregroundThreshold must be between 0 and 100.')
   const options: ThemeConfig['options'] = {}
   for (const [scheme, raw] of Object.entries(value.options)) {
     if (!schemes.includes(scheme as ThemeConfig['scheme']) || !record(raw))
@@ -43,6 +61,36 @@ function validate(value: unknown): ThemeConfig {
     const entry: ThemeSchemeOptions = {
       mode: raw.mode as ThemeSchemeOptions['mode'],
       foreground: raw.foreground as ThemeSchemeOptions['foreground'],
+    }
+    for (const name of ['textRoles', 'components'] as const) {
+      const source = raw[name]
+      if (source === undefined) continue
+      if (!record(source)) throw new TypeError(name + ' must be a light/dark map.')
+      const target: Record<string, Record<string, unknown>> = {}
+      for (const [mode, rules] of Object.entries(source)) {
+        if (!['light', 'dark'].includes(mode) || !record(rules) || Object.keys(rules).length > 500)
+          throw new TypeError('Invalid foreground override map.')
+        target[mode] = {}
+        for (const [key, rule] of Object.entries(rules)) {
+          if (!key || key.length > 8192 || ['__proto__', 'constructor', 'prototype'].includes(key))
+            throw new TypeError('Invalid component identity.')
+          if (name === 'textRoles') {
+            if (!textRoles.includes(key as ThemeTextRole) || !['auto', 'light', 'dark'].includes(String(rule)))
+              throw new TypeError('Invalid text role.')
+            target[mode][key] = rule
+          } else {
+            if (
+              !record(rule) ||
+              !['auto', 'light', 'dark'].includes(String(rule.foreground)) ||
+              typeof rule.label !== 'string' ||
+              rule.label.length > 200
+            )
+              throw new TypeError('Invalid component foreground.')
+            target[mode][key] = { foreground: rule.foreground, label: rule.label }
+          }
+        }
+      }
+      Object.assign(entry, { [name]: target })
     }
     if (raw.pairs !== undefined) {
       if (!record(raw.pairs)) throw new TypeError('pairs must be a light/dark map.')
@@ -64,7 +112,13 @@ function validate(value: unknown): ThemeConfig {
     }
     options[scheme as ThemeConfig['scheme']] = entry
   }
-  return { version: 2, scheme: value.scheme as ThemeConfig['scheme'], customColor, options }
+  return {
+    version: 2,
+    scheme: value.scheme as ThemeConfig['scheme'],
+    customColor,
+    ...(threshold === undefined ? {} : { foregroundThreshold: threshold }),
+    options,
+  }
 }
 export function validateThemeConfig(value: unknown): ThemeValidation {
   try {
@@ -79,10 +133,13 @@ export function createThemeConfig(input: ThemeConfigInput = {}): ThemeConfig {
     version: 2,
     scheme,
     customColor: input.customColor ?? defaultColor,
+    foregroundThreshold: input.foregroundThreshold,
     options: {
       [scheme]: {
         mode: input.mode ?? 'system',
         foreground: input.foreground ?? 'auto',
+        textRoles: input.textRoles,
+        components: input.components,
         ...(input.pairs ? { pairs: input.pairs } : {}),
       },
     },
@@ -100,12 +157,15 @@ export function updateThemeConfig(config: ThemeConfig, patch: ThemeConfigInput):
     ...current,
     scheme,
     customColor: patch.customColor ?? current.customColor,
+    foregroundThreshold: patch.foregroundThreshold ?? current.foregroundThreshold,
     options: {
       ...current.options,
       [scheme]: {
         ...previous,
         mode: patch.mode ?? previous.mode,
         foreground: patch.foreground ?? previous.foreground,
+        textRoles: patch.textRoles ?? previous.textRoles,
+        components: patch.components ?? previous.components,
         pairs: patch.pairs ?? previous.pairs,
       },
     },

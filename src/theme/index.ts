@@ -9,6 +9,7 @@ export {
   updateThemeConfig,
   resetThemeScheme,
   resolveThemeOptions,
+  textRoles,
 } from './config'
 export { generateTheme } from './generate'
 export { applyTheme, createThemeStorage } from './dom'

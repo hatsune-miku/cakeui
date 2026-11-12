@@ -3,6 +3,11 @@ export type ThemeScheme = ThemePreset | 'custom'
 export type ThemeMode = 'system' | 'light' | 'dark'
 export type ResolvedThemeMode = 'light' | 'dark'
 export type ThemeForeground = 'auto' | 'light' | 'dark'
+export type ThemeTextRole = 'body' | 'button' | 'primary' | 'selected' | 'input' | 'status'
+export interface ThemeComponentForeground {
+  foreground: ThemeForeground
+  label: string
+}
 export type ThemePairName =
   | 'canvas'
   | 'surface'
@@ -11,6 +16,9 @@ export type ThemePairName =
   | 'input'
   | 'inputHover'
   | 'inputActive'
+  | 'button'
+  | 'buttonHover'
+  | 'buttonActive'
   | 'accent'
   | 'accentHover'
   | 'accentActive'
@@ -32,6 +40,8 @@ export interface ThemeColorPair {
 export interface ThemeSchemeOptions {
   mode: ThemeMode
   foreground: ThemeForeground
+  textRoles?: Partial<Record<ResolvedThemeMode, Partial<Record<ThemeTextRole, ThemeForeground>>>>
+  components?: Partial<Record<ResolvedThemeMode, Record<string, ThemeComponentForeground>>>
   /** Both members are required. Overrides are opaque colors with contrast >= 4.5. */
   pairs?: Partial<Record<ResolvedThemeMode, Partial<Record<ThemePairName, ThemeColorPair>>>>
 }
@@ -39,6 +49,8 @@ export interface ThemeConfig {
   version: 2
   scheme: ThemeScheme
   customColor: string
+  /** Relative luminance percent, 0–100. Default 18; larger values prefer light text. */
+  foregroundThreshold?: number
   options: Partial<Record<ThemeScheme, ThemeSchemeOptions>>
 }
 export interface ThemeConfigInput {
@@ -46,6 +58,9 @@ export interface ThemeConfigInput {
   customColor?: string
   mode?: ThemeMode
   foreground?: ThemeForeground
+  foregroundThreshold?: number
+  textRoles?: ThemeSchemeOptions['textRoles']
+  components?: ThemeSchemeOptions['components']
   pairs?: ThemeSchemeOptions['pairs']
 }
 export interface ThemePresetInfo {

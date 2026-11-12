@@ -1,6 +1,8 @@
 import AxeBuilder from '@axe-core/playwright'
 import { type Locator, expect, test } from '@playwright/test'
 
+import { themeContrast } from '../../src/theme'
+
 test('themes, search, code samples and task composition work', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
@@ -290,17 +292,11 @@ for (const mode of ['light', 'dark'] as const) {
     expect(result.violations).toEqual([])
     await page.getByRole('button', { name: '设计变量', exact: true }).click()
     const tokens = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
-    // The accent color is fixed by the palette, so white on pink stays below 4.5:1. Keep this
-    // narrow audit explicit: new rules, targets or color regressions must still fail.
     await test.info().attach('theme-accessibility.json', {
       body: JSON.stringify(tokens.violations, null, 2),
       contentType: 'application/json',
     })
-    expect(tokens.violations.map((violation) => violation.id)).toEqual(['color-contrast'])
-    expect(tokens.violations[0].nodes.map((node) => node.target.join(' ')).sort()).toEqual([
-      '.demo-token-theme[data-theme="pink"][data-mode="dark"] > .cake-button[data-variant="primary"][data-size="medium"]',
-      '.demo-token-theme[data-theme="pink"][data-mode="light"] > .cake-button[data-variant="primary"][data-size="medium"]',
-    ])
+    expect(tokens.violations).toEqual([])
   })
 }
 
@@ -330,9 +326,11 @@ test('selection controls paint visibly on pink dark and slider fill tracks its v
   await page.getByRole('button', { name: '切换深色模式' }).click()
   const autosave = page.getByRole('switch', { name: '自动保存' })
   await expect(autosave).toBeChecked()
-  expect(await autosave.evaluate((element) => getComputedStyle(element, '::after').backgroundColor)).toBe(
-    'rgb(255, 255, 255)'
-  )
+  const switchColors = await autosave.evaluate((element) => [
+    getComputedStyle(element).backgroundColor,
+    getComputedStyle(element, '::after').backgroundColor,
+  ])
+  expect(themeContrast(switchColors[0], switchColors[1])).toBeGreaterThanOrEqual(3)
   const unchecked = page.getByRole('checkbox', { name: '启动时打开' })
   await expect(unchecked).toHaveCSS('appearance', 'none')
   expect(await unchecked.evaluate((element) => getComputedStyle(element).backgroundColor)).not.toBe(

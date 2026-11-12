@@ -268,21 +268,31 @@ TextBox / TextArea / NumberBox、ComboBox 的搜索输入和 LogView 允许选�
 
 ### CakeProvider
 
-原生 div，ref 指向该 div。可选 `theme='blue'`、`mode='system'`、`density='comfortable'`。theme 为六种 ThemePreset；mode 为 light / dark / system；density 为 comfortable / compact。`accentColor?: string` 启用单色自定义，接受不透明 HEX / RGB；`foreground='auto'` 可取 auto / light / dark，仅控制强调区域文字与图标，不改变任何填充背景。无效颜色抛出 TypeError，表单应先用 normalizeThemeColor 校验。
+原生 div，ref 指向该 div。可选 `theme='blue'`、`mode='system'`、`density='comfortable'`。theme 为六种 ThemePreset；mode 为 light / dark / system；density 为 comfortable / compact。`accentColor?: string` 启用单色自定义，接受不透明 HEX / RGB；`foreground='auto'` 可取 auto / light / dark，控制全局语义文字与继承文字色的图标，不改变填充背景。`locale='en'` 可设 zh-CN，控制内置局部调整与组件菜单的文案。无效颜色抛出 TypeError，表单应先用 normalizeThemeColor 校验。
 
 Provider 是可嵌套的 CSS 容器，产生实际 DOM，设置背景、文字色、字体、字号与行高。内部 context 为 ThemeSettings 提供已应用配置和临时预览，不创建全局服务或 body portal。嵌套 Provider 按自己的 Props 和默认值重新确定主题，不自动继承外层 Props。system 用 CSS 媒体查询响应系统明暗；SSR 同时输出两套变量，首屏不依赖客户端检测。不使用 Provider 时根变量默认蓝色浅色，不跟随系统变暗。
 
 `config?: ThemeConfig` 是受控配置，优先于快捷属性；`onThemeChange?: (config: ThemeConfig) => void` 请求应用或加载配置，受控方必须回写。`defaultConfig?: ThemeConfig` 提供非受控基准；未提供时由 theme / mode / accentColor / foreground 建立。非受控设置保存在当前 Provider，基准配置改变时重新采用新基准。预览不触发 onThemeChange，取消后恢复当前已应用配置。style 中显式设置的 CSS 变量优先，不会被配置切换清除。
 
-默认舒适密度字号 14px、控件高度变量 38px，圆角 small / medium / large / dialog 为 10 / 16 / 28 / 32px。紧凑密度以 AnyDrop 尺寸为基准：字号 13px、1.45 行高、控件高度变量 32px，圆角 8 / 12 / 24 / 32px；按钮常规字重 400、水平 padding 12px，输入 padding 5px 8px。紧凑卡片间距为 10px，复选框与单选框为 16px，进度条为 5px；日志使用 12px / 1.55 行高。两种密度使用同一字体栈。个别组件有固定尺寸、padding、最小高度或触屏规则，不保证最终高度等于该变量。Provider 不访问持久化存储。
+默认舒适密度字号 14px、控件高度变量 38px，圆角 small / medium / large / dialog 为 10 / 16 / 28 / 32px。紧凑密度以 AnyDrop 尺寸为基准：字号 13px、1.45 行高、控件高度变量 32px，圆角 8 / 12 / 24 / 32px；按钮常规字重 400、水平 padding 12px，输入 padding 5px 8px。紧凑卡片间距为 10px，复选框与单选框为 16px，进度条为 5px；日志使用 12px / 1.55 行高。两种密度使用同一字体栈。个别组件有固定尺寸、padding、最小高度或触屏规则，不保证最终高度等于该变量。Provider 不直接访问浏览器存储，组件菜单复用 ThemeSettings 注册的 adapter。挂载期间按文档共享一组捕获阶段的 pointerdown / keydown 监听，在 documentElement 的 data-cake-input 上记录最近输入方式；支持 macOS 的 Option+Tab，最后一个 Provider 卸载时清理监听并恢复原属性。这组焦点监听不拦截事件或改变焦点。
 
 ### ThemeSettings
 
 必须放在 CakeProvider 内；输出一个原生 Button 入口、可选存储错误 status 和一个 Dialog，ref 指向入口按钮。透传 ButtonProps（除 onClick），children 默认 Theme；disabled / loading 状态不可打开。`labels?: Partial<ThemeSettingsLabels>` 覆盖入口、标题、分组、操作、错误和加载文案；内置预设名称为蓝、粉、金、豆沙、绿豆沙、葡萄。`onOpenChange?: (open: boolean) => void` 通知打开和关闭。
 
-弹窗包含六预设、自定义颜色选择器与 HEX / RGB 文本框、system / light / dark 背景、auto / light / dark 强调前景。模式和前景按方案分别记忆；切换预设不清除自定义颜色。每次打开从已应用配置建立草稿，修改立即在当前 Provider 预览。应用提交；取消、Esc、关闭按钮、遮罩和卸载撤销预览；恢复默认只重置当前方案，仍需应用才提交。无效输入显示错误，保留最后有效预览并禁用应用。打开聚焦当前方案，原生 radio 支持方向键，Dialog 约束 Tab 并在关闭时恢复入口焦点；弹窗高度固定为 min(640px, 100dvh - 48px)，切换配色、明暗和自定义颜色时尺寸与位置不变；空间不足时只有正文滚动，标题与底部操作始终可见。默认圆角 32px，继承可覆盖的 --cake-radius-dialog。
+弹窗的三个单选分组使用带 aria-labelledby 的 div role=radiogroup，内部保留原生 radio 与同名分组，避免系统 WebKit 在首次交互时重新计算 fieldset / legend 高度。弹窗包含六预设、自定义颜色选择器与 HEX / RGB 文本框、system / light / dark 背景、auto / light / dark 全局文字、明暗阈值以及折叠的局部调整。模式和前景按方案分别记忆；切换预设不清除自定义颜色。每次打开从已应用配置建立草稿，修改立即在当前 Provider 预览。应用提交；取消、Esc、关闭按钮、遮罩和卸载撤销预览；恢复默认只重置当前方案，仍需应用才提交。无效输入显示错误，保留最后有效预览并禁用应用。打开聚焦当前方案，原生 radio 支持方向键，Dialog 约束 Tab 并在关闭时恢复入口焦点；弹窗高度固定为 min(640px, 100dvh - 48px)，切换配色、明暗和自定义颜色时尺寸与位置不变；空间不足时只有正文滚动，标题与底部操作始终可见。默认圆角 32px，继承可覆盖的 --cake-radius-dialog。
 
 `storage?: ThemeStorageAdapter` 可同步或异步，load 返回配置、JSON 字符串、旧配置或 null，save 接收规范化 ThemeConfig。挂载及 adapter 更换时读取并迁移；加载期间禁用入口，读取尚未完成而宿主已更换配置时忽略旧结果。只有应用调用 save；没有适配器就只在内存中使用。保存期间入口用 aria-disabled 阻止再次打开并保留焦点停靠，失败保留已应用效果并显示 status，文字由 labels.storageError 与原始错误信息组成；保存失败时附带重试按钮（labels.retry），重试只再次调用 save。通过 `onStorageError?: (error: unknown, operation: 'load' | 'save') => void` 通知原始错误。读取失败不改变当前配置。适配器应保持引用稳定，避免重复加载；建议同一 Provider 使用一个设置入口。
+
+文字设置按“单个组件 → 当前模式的用途规则 → 全局文字”解析。用途包括 body / button / primary / selected / input / status；显式 auto 使用当前背景和阈值，清除覆盖才回到上一级。用途与组件覆盖分别保存在当前配色的 light / dark 分支，跟随系统时编辑当前实际模式。恢复当前配色不改变全局阈值；阈值有独立恢复入口。设置弹窗与文字菜单自身始终使用默认自动文字，避免把恢复入口变得不可读。
+
+CakeProvider 自动识别 Button、Tab、MenuItem、Tag、TextBox、TextArea、NumberBox、ComboBox、CheckBox、RadioButton、Switch、Card 的根元素。按住右键 600ms 且移动不超过 8px 打开文字菜单；短右键在松开时交回原 ContextMenu，长按不会执行业务点击。原生浏览器菜单无法通过重放恢复。键盘聚焦组件后 Alt+Shift+C 打开；菜单支持上下键、Home / End、Escape / Tab 关闭并恢复焦点。组件卸载、窗口失焦、外部点击、祖先滚动和 resize 关闭菜单。
+
+单个组件修改立即生效，并复用同一 Provider 内第一个已挂载 ThemeSettings 的 storage.save；保存失败保留效果并提供重试，同时通知 onStorageError。没有 adapter 时仅在 Provider 内保存；受控 Provider 仍须回写 onThemeChange。设置弹窗有草稿时，组件菜单修改进入草稿，应用才保存、取消撤销。建议每个 Provider 常驻一个 ThemeSettings，勿只在弹窗打开时才挂载它。
+
+普通页面不需逐组件配置。身份优先用 data-cake-theme-key 或业务 id，自动模式组合组件类型、可访问名称和具名区域；同区域重名组件再按结构位置与同名数量区分。同名数量变化时旧位置覆盖不套给新组件。名称在同一次挂载中改变会保留身份，区域改变则重新识别。完全同构但业务实体不同的列表、跨语言名称变化或版本重排无法仅凭 DOM 保证语义对应，接入方可给这些少数控件指定稳定 data-cake-theme-key；它不是 React key。重复显式标识时不猜测持久化归属，只对当前 DOM 实例临时生效。局部调整列表可清除不再使用的保存项。
+
+逐组件 auto 合成自身及祖先的纯色 / 半透明 CSS background-color，再计算前景；渐变和背景图片不取样。覆盖写入组件自己的 color，子图标按 currentColor 继承，不修改背景或其他组件；有独立文字色的后代可单独调整。嵌套 Provider 各自识别与保存，不跨作用域匹配。
 
 ```tsx example=theme-settings
 import { useMemo, useState } from 'react'
@@ -318,7 +328,7 @@ export function ThemedApp() {
 
 原生 button，ref 指向按钮。`variant='default'` 可取 default / primary / ghost / danger；`size='medium'` 使用 Size；`loading=false`；默认 `type='button'`。
 
-默认按钮常态为中性背景，按下时染上 accent-soft 并下移 1px；各 variant 均保留 1px 下移反馈。primary 使用 primary / primary-ink，粉色主题为 AnyDrop 的玫红底白字，悬停与按下使用 accent-hover；ghost 透明；danger 用危险色，悬停和按下保持危险色。动画使用 fast / ease 变量，默认 150ms 与 cubic-bezier(0.29, 0, 0, 1)。loading 显示小 Spinner、保留 children、设置 aria-busy 并禁用按钮。图标由应用传 children；纯图标按钮必须有可访问名称。
+默认按钮常态无边框或阴影，使用 control 背景与 5% control-text 混合后的中性底色，悬停对 control-hover 做同样处理；输入框仍保留自己的边线。按下时染上 accent-soft 并下移 1px；各 variant 均保留 1px 下移反馈。primary 使用 primary / primary-ink，粉色主题保持 AnyDrop 的玫红底，auto 文字按背景计算，悬停与按下使用 accent-hover；ghost 透明；danger 用危险色，悬停和按下保持危险色。动画使用 fast / ease 变量，默认 150ms 与 cubic-bezier(0.29, 0, 0, 1)。loading 显示小 Spinner、保留 children、设置 aria-busy 并禁用按钮。图标由应用传 children；纯图标按钮必须有可访问名称。
 
 ### Card
 
@@ -1279,22 +1289,22 @@ export function ActivityLog() {
 
 六种预设分别有 light / dark 变体，背景模式独立于配色。可以在同页使用多个 Provider，菜单与 Dialog 保留在所属 DOM 作用域中。全量变量与十二套预设的精确值见自动生成附录。
 
-| 方案           | 参考色  | 特征                                        |
-| -------------- | ------- | ------------------------------------------- |
-| blue           | #CFE2F5 | 保留原有蓝色配色                            |
-| pink           | #F0D4E1 | 保留 AnyDrop 柔和基底和玫红强调             |
-| gold           | #F3D3B9 | 保留原有暖金配色                            |
-| dousha         | #B37D87 | 暖粉基底、红豆沙强调，不使用绿色页面背景    |
-| dousha-classic | #ADC89E | 暖粉基底、绿色强调，auto 默认浅色文字和图标 |
-| grape          | #D6C8E5 | 柔和粉色基底、葡萄色强调                    |
+| 方案           | 参考色  | 特征                                     |
+| -------------- | ------- | ---------------------------------------- |
+| blue           | #CFE2F5 | 保留原有蓝色配色                         |
+| pink           | #F0D4E1 | 保留 AnyDrop 柔和基底和玫红强调          |
+| gold           | #F3D3B9 | 保留原有暖金配色                         |
+| dousha         | #B37D87 | 暖粉基底、红豆沙强调，不使用绿色页面背景 |
+| dousha-classic | #ADC89E | 暖粉基底、绿色强调，文字按背景选择       |
+| grape          | #D6C8E5 | 柔和粉色基底、葡萄色强调                 |
 
 新配色与自定义颜色的 `--cake-hairline` 独立于控件 `--cake-line`：按当前卡片表面合成浅色 6% / 深色 5% 的前景色，供显式需要细线的业务布局使用；表面色对覆盖同样参与合成。Card 默认不绘制这条细线。控件边线、焦点环与文字色对保持各自语义。
 
-参考色是生成种子，不直接填满所有控件。新配色与单色推导生成不透明语义色对，覆盖页面、分层表面、输入、强调、柔和强调、选中、禁用和 hover / active；成功、警告、危险保留独立色相。auto 根据背景选择前景；手动 light / dark 只调整强调区域的文字和图标，所有背景、透明度、边线和正文模式保持不变。绿豆沙的基础配色按默认浅文字预先生成较深绿色填充，该填充在前景选择之间保持一致。手动选择可能降低对比度，不会为了补偿而修改背景。
+参考色是生成种子，不直接填满所有控件。新配色与单色推导生成不透明语义色对，覆盖页面、分层表面、输入、强调、柔和强调、选中、禁用和 hover / active；成功、警告、危险保留独立色相。auto 根据每个背景选择前景；手动 light / dark 调整语义文字和继承文字色的图标，所有背景、透明度、边线和背景模式保持不变。绿豆沙的基础配色按默认浅文字预先生成较深绿色填充，该填充在前景选择之间保持一致。手动选择可能降低对比度，不会为了补偿而修改背景。
 
 #### 纯计算与配置 API
 
-从 `@a1knla/cakeui/theme` 导入，不依赖 React，也不在导入或计算时访问 DOM / localStorage。浏览器构建对应 `CakeUI.theme`。`ThemeConfig` 当前 version=2，保存 scheme、规范化 customColor，以及按方案记忆的 options；每项含 mode、foreground、可选 light / dark 语义色对覆盖。
+从 `@a1knla/cakeui/theme` 导入，不依赖 React，也不在导入或计算时访问 DOM / localStorage。浏览器构建对应 `CakeUI.theme`。`ThemeConfig` 当前 version=2，保存 scheme、规范化 customColor，以及按方案记忆的 options；每项含 mode、foreground、可选 light / dark 语义色对覆盖、textRoles 与 components；顶层 foregroundThreshold 为可选 0–100 相对亮度百分比，缺省 18，所有配色共享。旧 version=2 配置无需结构迁移；旧 foreground=light/dark 现在是全局文字选择，原有填充色保持不变。
 
 | API                                             | 行为                                                                                                                   |
 | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -1328,17 +1338,17 @@ export function mountTheme(scope: HTMLElement) {
 
 applyTheme 只管理自己写入的变量；update 用完整语义集合替换旧配置，不能残留旧方案覆盖。destroy 恢复调用前的内联值与优先级，保留其他业务变量以及应用在最后一次更新后自行改写的值。同一元素重新 applyTheme 会替换旧控制器；销毁后 update 抛错。使用 `.cake-theme` 和基础样式提供字体、布局变量、背景与文字规则；也可在自己的容器样式中消费生成变量。不要在同一元素混用 Provider 和命令式控制器。
 
-高级覆盖通过 `pairs: { light: { accent: { background, foreground } }, dark: {...} }` 提交完整色对；仅允许 ThemePairName 中的语义名称，两个颜色均须不透明且至少 4.5:1。覆盖在前景选择之后应用；hover / active / selected 是独立色对，应按需一起配置。直接 CSS 覆盖仍支持，但不会自动校验对比度；同一个前景跨背景使用时由调用者检查。
+高级覆盖通过 `pairs: { light: { accent: { background, foreground } }, dark: {...} }` 提交完整色对；仅允许 ThemePairName 中的语义名称（包括 button / buttonHover / buttonActive），两个颜色均须不透明且至少 4.5:1。覆盖在前景选择之后应用；hover / active / selected 是独立色对，应按需一起配置。直接 CSS 覆盖仍支持，但不会自动校验对比度；同一个前景跨背景使用时由调用者检查。
 
 #### 迁移与对比度边界
 
 旧 `theme` / `mode` 用法无需修改。migrateThemeConfig 接受裸预设字符串、JSON 字符串、无 version 的 `{ theme, mode }` 或 `{ scheme, mode, foreground, customColor }`、version=1 的同名字段及 `overrides[scheme].mode/foreground`，转为 version=2 的 options。null 表示初始默认值；未知方案、非法值、未来版本和损坏 JSON 抛错，调用者决定恢复默认或提示。只提取主题字段，不迁入顶栏、工具、登录或更新逻辑。Gallery 另按旧 themeChosen 标记迁移历史选择；通用迁移器不解释该业务标记。
 
-新推导方案在 auto 前景下的内置文本色对（含禁用）以至少 4.5:1 为目标，焦点环相对输入背景至少 3:1。计算验证针对明确色对；实际页面、图片、透明叠层和消费方覆盖仍需浏览器检查，不能由此声称整页符合 WCAG。普通文字阈值见 [WCAG 对比度说明](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)。旧三预设 auto 的强调色固定不变，并保留半透明表面和禁用透明度；辅助文字、危险色和选中文字已校正到至少 4.5:1。generateTheme.contrastIssues 列出当前配置中低于阈值的色对；reason 为 legacy-palette 或手动前景产生的 foreground-choice，详细基线见设计记录。
+默认阈值 18、auto 下，生成器对内置明确背景计算文字，必要时只校正文字以达到 4.5:1；旧预设也使用此规则，因此粉色按钮不再强制白字。改变阈值或显式选择浅色 / 深色时尊重用户决定，不再自动纠正，低对比度以 foreground-choice 列在 contrastIssues 中。校验针对明确色对，半透明叠层、图片、消费方 CSS 与整页无障碍仍需浏览器验证。焦点环独立计算。普通文字阈值见 [WCAG 对比度说明](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)。
 
 所有主题下 CheckBox / RadioButton 仍是原生 input，使用 CSS 绘制底色与配对的勾选标记，避免浏览器自行选择相反的图标色或在深色模式下显示浅色方块。forced-colors 恢复系统控件绘制。SlideDeck 的新主题反色页内面板使用不透明交互色对，避免叠加固定透明度后降低文字对比度。
 
-粉色主题以 AnyDrop 为最终样式基准：强调色 #d15776、悬停 #be476a、浅色背景 #f4f1ee、深色背景 #16151a。卡片是半透明表面，弹层使用独立的不透明 `--cake-popup`；不要把卡片直接当浮层底色。发生参考项目间的样式冲突时优先修正 CakeUI，使其与 AnyDrop 一致。蓝 / 金仍保留各自配色；默认 theme 仍为 blue。粉色主按钮白字由固定强调色决定，存在小字号对比度低于 WCAG AA 的已知边界，见 `docs/design.md`；不要宣称该主题通过完整 AA。
+粉色主题以 AnyDrop 为最终样式基准：强调色 #d15776、悬停 #be476a、浅色背景 #f4f1ee、深色背景 #16151a。卡片是半透明表面，弹层使用独立的不透明 `--cake-popup`；不要把卡片直接当浮层底色。发生参考项目间的样式冲突时优先修正 CakeUI，使其与 AnyDrop 一致。蓝 / 金仍保留各自配色；默认 theme 仍为 blue。粉色强调填充保持原色，auto 文字逐状态计算；手动浅色文字仍可能形成低对比度。
 
 | 变量组                                                                       | 用途                                                       |
 | ---------------------------------------------------------------------------- | ---------------------------------------------------------- |
@@ -1359,7 +1369,7 @@ applyTheme 只管理自己写入的变量；update 用完整语义集合替换�
 
 新增的 `--cake-surface-strong`、`--cake-hover-subtle`、`--cake-accent-subtle`、`--cake-hairline`、`--cake-atmosphere` / `-strong` 和 `--cake-shadow-strong` 为业务布局提供同源颜色与阴影。`--cake-primary` / `--cake-primary-ink` 将主按钮填充与淡色强调背景分开。控件细节通过 button / input / card / checkbox / progress / log / tip / help 前缀变量控制；精确默认值见附录。
 
-`.cake-theme` 作用域内移除浏览器默认 outline，交互组件用内描边表示键盘焦点，可通过 --cake-focus-color 覆盖颜色（默认 --cake-focus，primary 按钮使用 --cake-on-accent），forced-colors 下使用系统 Highlight。Dialog、TabPanel 等结构容器不绘制整框焦点外边线；可聚焦的 LogView 使用滚动条颜色提示。应用自定义交互控件可提供自己的 focus-visible 样式。
+`.cake-theme` 作用域内移除浏览器默认 outline，交互组件用内描边表示键盘焦点；Provider 记录指针输入后隐藏非输入控件的焦点描边，包括弹窗关闭恢复到入口的焦点，下次普通键盘操作恢复。文本输入仍在聚焦时显示内描边；没有 Provider 时使用浏览器的 focus-visible 判断。可通过 --cake-focus-color 覆盖颜色（默认 --cake-focus，primary 按钮使用 --cake-on-accent），forced-colors 下使用系统 Highlight。Dialog、TabPanel 等结构容器不绘制整框焦点外边线；可聚焦的 LogView 使用滚动条颜色提示。应用自定义交互控件可提供自己的 focus-visible 样式。
 
 Chromium / WebKit 使用原生滚动条与原生滚动行为，通过轨道 margin 避开圆角，不增加容器 padding 或改变可视高度。Card、LogView、TextArea 和浮层分别按圆角预设轨道内缩；正文内部滚动的 Dialog 使用 2px。可在实际滚动元素设置以下变量，覆盖所继承的值；Firefox 等不支持 WebKit 滚动条伪元素的浏览器保留系统滚动条，轨道内缩不生效：
 
@@ -1389,7 +1399,7 @@ Chromium / WebKit 使用原生滚动条与原生滚动行为，通过轨道 marg
 
 字体按本机已安装字体回退，不下载远程字体。两种密度共用一个字体栈：拉丁字形优先 Segoe UI Variable Text、Segoe UI、-apple-system、SF Pro Text、Inter Variable，中文依次为 PingFang SC、HarmonyOS Sans SC、MiSans、Noto Sans SC、Noto Sans CJK SC、Source Han Sans SC、DengXian，最后是 system-ui；中文字体列在 system-ui 之前，避免 Windows 回退到矮字形的微软雅黑。等宽字体使用 Cascadia Mono / Cascadia Code / Consolas / JetBrains Mono / Menlo / monospace，并关闭连字。使用 `font` 简写的业务样式会重置连字设置，需要时补上 `font-variant-ligatures: none`。
 
-默认 Button 的按压与 Interactive 区域下陷幅度均为 1px，不能为了加重效果给它们再叠加独立 transform 而不检查命中与定位。输入 focus 和 focus-visible 显式取消浏览器 outline，只保留一圈内描边；按钮保留单圈键盘 outline。forced-colors 下输入用系统 Highlight outline 替代阴影，避免失去焦点指示。如果集成后出现双边框，检查消费项目更高优先级的 focus / outline / box-shadow 规则。
+默认 Button 的按压与 Interactive 区域下陷幅度均为 1px，不能为了加重效果给它们再叠加独立 transform 而不检查命中与定位。输入 focus 和 focus-visible 显式取消浏览器 outline，只保留一圈内描边；按钮保留单圈键盘内描边。forced-colors 下输入用系统 Highlight outline 替代阴影，避免失去焦点指示。如果集成后出现双边框，检查消费项目更高优先级的 focus / outline / box-shadow 规则。
 
 动效只使用 cubic-bezier(0.29, 0, 0, 1) 与 linear 两种曲线和 150 / 200 / 250ms 三档时长；Spinner、Skeleton 和不确定进度条是循环动画，使用 linear。阴影只有两种形式：模拟实线描边的 1px 扩散，以及大半径的氛围阴影。
 
@@ -1435,7 +1445,7 @@ src/components/Foo/index.scss    对应样式
 src/components/CakeProvider/      主题与设计变量
 src/styles/_mixins.scss           输入、控件、菜单表面、状态色共享规则
 src/hooks/useControllable.ts      内部受控状态辅助，不公开导出
-src/focus.ts                      内部焦点停靠点查询
+src/focus.ts                      内部焦点停靠点查询与输入方式追踪
 demo/App/components/              Gallery 专用展示与组合示例
 docs/ai.md                        本文人工维护源
 scripts/docs.mjs                  纯文本生成与一致性检查

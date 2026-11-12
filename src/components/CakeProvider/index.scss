@@ -22,8 +22,8 @@
     'HarmonyOS Sans SC', 'MiSans', 'Noto Sans SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'DengXian', system-ui,
     sans-serif;
   --cake-mono: 'Cascadia Mono', 'Cascadia Code', 'Consolas', 'JetBrains Mono', 'Menlo', monospace;
-  --cake-item-hover: color-mix(in srgb, var(--cake-text) 8%, transparent);
-  --cake-track: color-mix(in srgb, var(--cake-muted) 28%, transparent);
+  --cake-item-hover: color-mix(in srgb, var(--cake-base-text) 8%, transparent);
+  --cake-track: color-mix(in srgb, var(--cake-base-muted) 28%, transparent);
   --cake-button-gap: 7px;
   --cake-button-padding: 7px 14px;
   --cake-button-weight: 500;
@@ -109,7 +109,7 @@
     --cake-tip-offset: 6px;
     --cake-help-size: 14px;
     --cake-help-font-size: 11px;
-    --cake-help-background: color-mix(in srgb, var(--cake-muted) 24%, transparent);
+    --cake-help-background: color-mix(in srgb, var(--cake-base-muted) 24%, transparent);
     font-size: 13px;
     line-height: 1.45;
     font-synthesis: none;

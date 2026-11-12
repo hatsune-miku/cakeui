@@ -1,11 +1,23 @@
+// Appearance controls remain readable even when the preview deliberately uses low contrast text.
+@mixin theme-editor {
+  @each $name in text, surface-text, popup-text, muted, control-text, control-hover-text, control-active-text,
+    button-text, button-hover-text, button-active-text, primary-ink, primary-hover-ink, primary-active-ink, accent-ink,
+    accent-soft-hover-ink, selected-ink, disabled-ink, success, success-hover-ink, warning, warning-hover-ink, danger,
+    danger-hover-ink
+  {
+    --cake-#{$name}: var(--cake-editor-#{$name});
+  }
+  --cake-switch-thumb: var(--cake-editor-primary-ink);
+}
+
 @mixin focus {
   outline: none;
   outline-offset: 0;
-  &:focus-visible:not(:disabled) {
+  &:focus-visible:not(:disabled):not(:where([data-cake-input='pointer'] *)) {
     box-shadow: inset 0 0 0 var(--cake-input-focus-width, 1.5px) var(--cake-focus-color, var(--cake-focus));
   }
   @media (forced-colors: active) {
-    &:focus-visible:not(:disabled) {
+    &:focus-visible:not(:disabled):not(:where([data-cake-input='pointer'] *)) {
       outline: 2px solid Highlight;
       outline-offset: -2px;
       box-shadow: none;

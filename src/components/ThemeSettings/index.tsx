@@ -8,15 +8,20 @@ import {
   resetThemeScheme,
   resolveThemeOptions,
   serializeThemeConfig,
+  textRoles,
   themePresets,
   updateThemeConfig,
 } from '../../theme'
-import type { ThemeConfig, ThemePreset, ThemeStorageAdapter } from '../../theme'
+import type { ThemeConfig, ThemeForeground, ThemePreset, ThemeStorageAdapter } from '../../theme'
 import { ThemeContext } from '../../theme/context'
+import { useThemeMode } from '../../theme/useMode'
 import { Button, type ButtonProps } from '../Button'
+import { ComboBox } from '../ComboBox'
 import { Dialog } from '../Dialog'
 import { RadioButton } from '../RadioButton'
+import { Slider } from '../Slider'
 import { TextBox } from '../TextBox'
+import { textCopy } from '../ThemePersonalization/copy'
 
 export interface ThemeSettingsLabels {
   open: string
@@ -58,7 +63,7 @@ const defaultLabels: ThemeSettingsLabels = {
   system: 'System',
   light: 'Light',
   dark: 'Dark',
-  foreground: 'Accent foreground',
+  foreground: 'Text color',
   auto: 'Auto',
   lightForeground: 'Light text',
   darkForeground: 'Dark text',
@@ -109,8 +114,24 @@ export function ThemeSettings({
   const mounted = useRef(true)
   const copy = { ...defaultLabels, ...labels }
   const options = resolveThemeOptions(draft)
+  const resolvedMode = useThemeMode(draft)
+  const textLabels = textCopy(scope.locale)
   const invalid = draft.scheme === 'custom' && !normalizeThemeColor(colorText)
 
+  useEffect(() => {
+    if (storage)
+      return scope.registerStorage(id, {
+        load: storage.load,
+        save: async (value) => {
+          try {
+            await storage.save(value)
+          } catch (error) {
+            live.current.onStorageError?.(error, 'save')
+            throw error
+          }
+        },
+      })
+  }, [id, storage])
   useEffect(() => {
     mounted.current = true
     return () => {
@@ -145,7 +166,7 @@ export function ThemeSettings({
 
   function change(next: ThemeConfig) {
     setDraft(next)
-    scope!.preview(id, next)
+    scope!.preview(id, next, change)
   }
   function close() {
     scope!.preview(id, null)
@@ -184,6 +205,7 @@ export function ThemeSettings({
           if (saving) return
           const next = migrateThemeConfig(scope.config)
           setDraft(next)
+          scope.preview(id, next, change)
           setColorText(next.customColor)
           setOpen(true)
           onOpenChange?.(true)
@@ -229,8 +251,10 @@ export function ThemeSettings({
           </>
         }
       >
-        <fieldset className="cake-theme-settings-group">
-          <legend className="cake-theme-settings-legend">{copy.scheme}</legend>
+        <div className="cake-theme-settings-group" role="radiogroup" aria-labelledby={id + '-scheme-label'}>
+          <div className="cake-theme-settings-legend" id={id + '-scheme-label'}>
+            {copy.scheme}
+          </div>
           <div className="cake-theme-settings-presets">
             {themePresets.map((preset) => (
               <RadioButton
@@ -261,7 +285,7 @@ export function ThemeSettings({
               {copy.custom}
             </RadioButton>
           </div>
-        </fieldset>
+        </div>
         {draft.scheme === 'custom' && (
           <div className="cake-theme-settings-colors">
             <TextBox
@@ -302,8 +326,10 @@ export function ThemeSettings({
             )}
           </div>
         )}
-        <fieldset className="cake-theme-settings-group">
-          <legend className="cake-theme-settings-legend">{copy.mode}</legend>
+        <div className="cake-theme-settings-group" role="radiogroup" aria-labelledby={id + '-mode-label'}>
+          <div className="cake-theme-settings-legend" id={id + '-mode-label'}>
+            {copy.mode}
+          </div>
           <div className="cake-theme-settings-options">
             {(['system', 'light', 'dark'] as const).map((mode) => (
               <RadioButton
@@ -316,9 +342,11 @@ export function ThemeSettings({
               </RadioButton>
             ))}
           </div>
-        </fieldset>
-        <fieldset className="cake-theme-settings-group">
-          <legend className="cake-theme-settings-legend">{copy.foreground}</legend>
+        </div>
+        <div className="cake-theme-settings-group" role="radiogroup" aria-labelledby={id + '-foreground-label'}>
+          <div className="cake-theme-settings-legend" id={id + '-foreground-label'}>
+            {copy.foreground}
+          </div>
           <div className="cake-theme-settings-options">
             {(['auto', 'light', 'dark'] as const).map((foreground) => (
               <RadioButton
@@ -331,7 +359,88 @@ export function ThemeSettings({
               </RadioButton>
             ))}
           </div>
-        </fieldset>
+        </div>
+        <div className="cake-theme-settings-threshold">
+          <label className="cake-theme-settings-threshold-label" htmlFor={id + '-threshold'}>
+            {textLabels.threshold}
+            <output>{draft.foregroundThreshold ?? 18}</output>
+          </label>
+          <Slider
+            id={id + '-threshold'}
+            min={0}
+            max={100}
+            step={1}
+            value={draft.foregroundThreshold ?? 18}
+            onChange={(event) =>
+              change(updateThemeConfig(draft, { foregroundThreshold: Number(event.currentTarget.value) }))
+            }
+          />
+          <div className="cake-theme-settings-threshold-actions">
+            <span>{textLabels.thresholdHelp}</span>
+            <Button
+              size="small"
+              variant="ghost"
+              onClick={() => change(updateThemeConfig(draft, { foregroundThreshold: 18 }))}
+            >
+              {textLabels.resetThreshold}
+            </Button>
+          </div>
+        </div>
+        <details className="cake-theme-settings-details">
+          <summary className="cake-theme-settings-summary">
+            {textLabels.adjustments}
+            <span>{copy[resolvedMode]}</span>
+          </summary>
+          <div className="cake-theme-settings-adjustments">
+            {textRoles.map((role) => (
+              <div className="cake-theme-settings-adjustment" key={role}>
+                <label htmlFor={id + '-role-' + role}>{textLabels[role]}</label>
+                <ComboBox
+                  id={id + '-role-' + role}
+                  value={options.textRoles?.[resolvedMode]?.[role] ?? 'inherit'}
+                  onChange={(event) => {
+                    const value = event.currentTarget.value
+                    const next = { ...options.textRoles, [resolvedMode]: { ...options.textRoles?.[resolvedMode] } }
+                    if (value === 'inherit') delete next[resolvedMode]![role]
+                    else next[resolvedMode]![role] = value as ThemeForeground
+                    change(updateThemeConfig(draft, { textRoles: next }))
+                  }}
+                >
+                  <option value="inherit">{textLabels.followGlobal}</option>
+                  {(['auto', 'light', 'dark'] as const).map((value) => (
+                    <option value={value} key={value}>
+                      {textLabels[value]}
+                    </option>
+                  ))}
+                </ComboBox>
+              </div>
+            ))}
+            <p className="cake-theme-settings-adjustment-hint">{textLabels.gesture}</p>
+            {Object.entries(options.components?.[resolvedMode] ?? {}).map(([key, rule]) => (
+              <div className="cake-theme-settings-adjustment" key={key}>
+                <span className="cake-theme-settings-component-label">{rule.label}</span>
+                <ComboBox
+                  aria-label={rule.label + ' — ' + textLabels.title}
+                  value={rule.foreground}
+                  onChange={(event) => {
+                    const value = event.currentTarget.value
+                    const next = { ...options.components, [resolvedMode]: { ...options.components?.[resolvedMode] } }
+                    if (value === 'inherit') delete next[resolvedMode]![key]
+                    else next[resolvedMode]![key] = { ...rule, foreground: value as ThemeForeground }
+                    change(updateThemeConfig(draft, { components: next }))
+                  }}
+                >
+                  <option value="inherit">{textLabels.clear}</option>
+                  {(['auto', 'light', 'dark'] as const).map((value) => (
+                    <option value={value} key={value}>
+                      {textLabels[value]}
+                    </option>
+                  ))}
+                </ComboBox>
+              </div>
+            ))}
+          </div>
+        </details>
       </Dialog>
     </>
   )

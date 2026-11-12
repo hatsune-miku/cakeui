@@ -11,7 +11,7 @@ export const themeLabels: ThemeSettingsLabels = {
   system: '跟随系统',
   light: '浅色',
   dark: '深色',
-  foreground: '强调区前景',
+  foreground: '文字颜色',
   auto: '自动',
   lightForeground: '亮色文字与图标',
   darkForeground: '暗色文字与图标',

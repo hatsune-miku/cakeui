@@ -1,8 +1,15 @@
-import { compositeLegacy, foregroundFor, mix, readable, themeContrast } from './color'
+import { compositeLegacy, foregroundFor, mix, readable, textForeground, themeContrast } from './color'
 import { resolveThemeOptions, validateThemeConfig } from './config'
 import { legacyPalettes } from './legacy'
 import { resolveThemePreset } from './presets'
-import type { GeneratedTheme, ResolvedThemeMode, ThemeColorPair, ThemeConfig, ThemePairName } from './types'
+import type {
+  GeneratedTheme,
+  ResolvedThemeMode,
+  ThemeColorPair,
+  ThemeConfig,
+  ThemePairName,
+  ThemeTextRole,
+} from './types'
 
 type Pairs = GeneratedTheme['pairs']
 type Variables = GeneratedTheme['variables']
@@ -47,6 +54,9 @@ function derivedPairs(seed: string, mode: ResolvedThemeMode, scheme: ThemeConfig
     input: pair(input, readable(text, input)),
     inputHover: pair(inputHover, readable(text, inputHover)),
     inputActive: pair(input, readable(text, input)),
+    button: pair(mix(input, text, 0.05), text),
+    buttonHover: pair(mix(inputHover, text, 0.05), text),
+    buttonActive: pair(soft, readable(seed, soft)),
     accent: accessiblePair(fill, ink),
     accentHover: accessiblePair(hover, ink),
     accentActive: accessiblePair(active, ink),
@@ -96,6 +106,9 @@ function legacyPairs(variables: Variables): Pairs {
     input: pair(color('control'), text),
     inputHover: pair(color('control-hover'), text),
     inputActive: pair(color('control'), text),
+    button: pair(mix(color('control'), text, 0.05), text),
+    buttonHover: pair(mix(color('control-hover'), text, 0.05), text),
+    buttonActive: pair(color('accent-soft'), accentInk),
     accent: pair(color('primary'), primaryInk),
     accentHover: pair(color('accent-hover'), primaryInk),
     accentActive: pair(color('accent-hover'), primaryInk),
@@ -121,6 +134,9 @@ const mapping: Record<ThemePairName, [string, string]> = {
   input: ['control', 'control-text'],
   inputHover: ['control-hover', 'control-hover-text'],
   inputActive: ['control-active', 'control-active-text'],
+  button: ['button', 'button-text'],
+  buttonHover: ['button-hover', 'button-hover-text'],
+  buttonActive: ['button-active', 'button-active-text'],
   accent: ['primary', 'primary-ink'],
   accentHover: ['primary-hover', 'primary-hover-ink'],
   accentActive: ['primary-active', 'primary-active-ink'],
@@ -152,10 +168,18 @@ export function generateTheme(config: ThemeConfig, systemMode: ResolvedThemeMode
   const seed = current.scheme === 'custom' ? current.customColor : resolveThemePreset(current.scheme).reference
   const old: Variables = legacy ? { ...legacyPalettes[current.scheme as keyof typeof legacyPalettes][mode] } : {}
   const pairs = legacy ? legacyPairs(old) : derivedPairs(seed, mode, current.scheme)
+  const baseText = pairs.canvas.foreground
+  const baseSurfaceText = pairs.surface.foreground
+  const baseMuted = pairs.muted.foreground
   const dark = mode === 'dark'
   const variables: Variables = {}
   for (const name of Object.keys(mapping) as ThemePairName[]) setPair(variables, name, pairs[name])
   Object.assign(variables, {
+    '--cake-base-text': baseText,
+    '--cake-base-muted': baseMuted,
+    '--cake-base-success': pairs.success.foreground,
+    '--cake-base-warning': pairs.warning.foreground,
+    '--cake-base-danger': pairs.danger.foreground,
     '--cake-accent': readable(seed, pairs.surface.background),
     '--cake-accent-hover': pairs.accentHover.background,
     '--cake-surface-strong': pairs.surfaceRaised.background,
@@ -211,13 +235,23 @@ export function generateTheme(config: ThemeConfig, systemMode: ResolvedThemeMode
       pairs[name] = accessiblePair(pairs[name].background, '#ffffff')
       setPair(variables, name, pairs[name])
     }
+  // Switch thumbs and selection marks are control graphics, not customizable text.
+  variables['--cake-switch-thumb'] = pairs.accent.foreground
   const foreground = options.foreground
-  if (foreground !== 'auto') {
-    const ink = foreground === 'light' ? '#ffffff' : '#161b22'
-    variables['--cake-switch-thumb'] = ink
-    for (const name of foregroundPairs) {
+  const roles: Record<ThemeTextRole, readonly ThemePairName[]> = {
+    body: ['canvas', 'surface', 'surfaceRaised', 'muted', 'disabled'],
+    button: ['button', 'buttonHover', 'buttonActive'],
+    primary: ['accent', 'accentHover', 'accentActive'],
+    selected: ['accentSoft', 'accentSoftHover', 'selected'],
+    input: ['input', 'inputHover', 'inputActive'],
+    status: ['success', 'successHover', 'warning', 'warningHover', 'danger', 'dangerHover'],
+  }
+  for (const [role, names] of Object.entries(roles)) {
+    const preference = options.textRoles?.[mode]?.[role as ThemeTextRole] ?? foreground
+    for (const name of names) {
+      const ink = textForeground(pairs[name].background, preference, current.foregroundThreshold ?? 18)
       pairs[name] = pair(pairs[name].background, ink)
-      // Preserve legacy translucent fills and aliases as well as generated colors.
+      // Never rewrite fills, including translucent legacy values and aliases.
       variables[`--cake-${mapping[name][1]}`] = ink
     }
   }
@@ -228,17 +262,17 @@ export function generateTheme(config: ThemeConfig, systemMode: ResolvedThemeMode
   if (!legacy) {
     // Compact cards need the quiet edge used by AnyDrop, separately from the
     // stronger control outline. Composite against the final surface, including overrides.
-    const hairline = mix(pairs.surface.foreground, pairs.surface.background, dark ? 0.95 : 0.94)
+    const hairline = mix(baseSurfaceText, pairs.surface.background, dark ? 0.95 : 0.94)
     variables['--cake-hairline'] = `inset 0 0 0 1px ${hairline}`
   }
   // Every theme paints its own selection controls: a native control ignores the palette, and on
   // dark schemes it can fall back to a bright white box. The off state needs a visible thumb too.
-  const offThumb = dark ? pairs.canvas.foreground : '#ffffff'
+  const offThumb = dark ? baseText : '#ffffff'
   Object.assign(variables, {
-    '--cake-switch-off-fill': readable(mix(pairs.surface.background, pairs.muted.foreground, 0.55), offThumb, 3),
+    '--cake-switch-off-fill': readable(mix(pairs.surface.background, baseMuted, 0.55), offThumb, 3),
     '--cake-switch-off-thumb': offThumb,
     '--cake-choice-appearance': 'none',
-    '--cake-choice-border': '1px solid color-mix(in srgb, var(--cake-muted) 70%, transparent)',
+    '--cake-choice-border': '1px solid color-mix(in srgb, var(--cake-base-muted) 70%, transparent)',
     '--cake-choice-background': 'var(--cake-control)',
     '--cake-choice-fill': 'var(--cake-switch-fill)',
     '--cake-choice-ink': 'var(--cake-switch-thumb)',
@@ -258,6 +292,8 @@ export function generateTheme(config: ThemeConfig, systemMode: ResolvedThemeMode
     ),
   })
   const contrastIssues: GeneratedTheme['contrastIssues'] = []
+  for (const [name, [, foregroundName]] of Object.entries(mapping))
+    variables[`--cake-editor-${foregroundName}`] = textForeground(pairs[name as ThemePairName].background)
   for (const [name, colors] of Object.entries(pairs)) {
     const ratio = themeContrast(colors.background, colors.foreground)
     if (ratio < 4.5)
@@ -265,10 +301,7 @@ export function generateTheme(config: ThemeConfig, systemMode: ResolvedThemeMode
         pair: name as ThemePairName,
         ratio,
         minimum: 4.5,
-        reason:
-          foreground !== 'auto' && foregroundPairs.some((value) => value === name)
-            ? 'foreground-choice'
-            : 'legacy-palette',
+        reason: 'foreground-choice',
       })
   }
   return { scheme: current.scheme, mode, pairs, variables, contrastIssues }

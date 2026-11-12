@@ -16,11 +16,11 @@
   margin-inline: var(--cake-scrollbar-inset-inline, 0px);
 }
 :where(.cake-theme, .cake-theme *)::-webkit-scrollbar-thumb {
-  background: var(--cake-scrollbar-thumb, color-mix(in srgb, var(--cake-muted) 35%, transparent));
+  background: var(--cake-scrollbar-thumb, color-mix(in srgb, var(--cake-base-muted) 35%, transparent));
   border-radius: 99px;
 }
 :where(.cake-theme, .cake-theme *)::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--cake-muted) 60%, transparent);
+  background: color-mix(in srgb, var(--cake-base-muted) 60%, transparent);
 }
 :where(.cake-theme, .cake-theme *)::-webkit-scrollbar-button {
   display: none;

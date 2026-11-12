@@ -2,7 +2,7 @@
   display: block;
   min-height: 14px;
   border-radius: 6px;
-  background: color-mix(in srgb, var(--cake-muted) 14%, transparent);
+  background: color-mix(in srgb, var(--cake-base-muted) 14%, transparent);
   animation: cake-skeleton-pulse 1.4s linear infinite alternate;
   @media (prefers-reduced-motion: reduce) {
     animation: none;

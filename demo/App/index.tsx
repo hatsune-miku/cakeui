@@ -257,6 +257,7 @@ export function App() {
   return (
     <CakeProvider
       ref={app}
+      locale="zh-CN"
       config={themeConfig}
       onThemeChange={setThemeConfig}
       density={compact ? 'compact' : 'comfortable'}

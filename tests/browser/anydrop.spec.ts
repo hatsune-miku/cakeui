@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
 
+import { themeContrast } from '../../src/theme'
+
 test('AnyDrop compact composition preserves source colors, geometry and native interactions', async ({ page }) => {
   await page.goto('/tests/browser/fixtures/anydrop/')
   for (const card of await page.locator('.cake-card').all()) {
@@ -12,7 +14,11 @@ test('AnyDrop compact composition preserves source colors, geometry and native i
   await expect(page.getByTestId('dark')).toHaveCSS('background-color', 'rgb(22, 21, 26)')
   const send = page.getByRole('button', { name: '发送文件' })
   await expect(send).toHaveCSS('background-color', 'rgb(209, 87, 118)')
-  await expect(send).toHaveCSS('color', 'rgb(255, 255, 255)')
+  const sendColors = await send.evaluate((element) => [
+    getComputedStyle(element).color,
+    getComputedStyle(element).backgroundColor,
+  ])
+  expect(themeContrast(sendColors[0], sendColors[1])).toBeGreaterThanOrEqual(4.5)
   await expect(send).toHaveCSS('border-radius', '8px')
   await expect(send).toHaveCSS('font-weight', '400')
   expect((await send.boundingBox())!.height).toBe(32)

@@ -33,7 +33,7 @@ export function mix(first: string, second: string, amount: number): string {
     b = channels(second)
   return hex(a.map((value, index) => value * (1 - amount) + b[index] * amount))
 }
-function luminance(color: string): number {
+export function luminance(color: string): number {
   const c = channels(color).map((value) => {
     const v = value / 255
     return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
@@ -64,6 +64,13 @@ export function readable(adjustable: string, fixed: string, minimum = 4.6): stri
 }
 export function foregroundFor(background: string): string {
   return themeContrast(background, '#ffffff') >= themeContrast(background, '#161b22') ? '#ffffff' : '#161b22'
+}
+
+/** Foreground-only decision; custom thresholds and explicit choices are never silently corrected. */
+export function textForeground(background: string, preference = 'auto', threshold = 18): string {
+  const ink =
+    preference === 'light' || (preference === 'auto' && luminance(background) * 100 < threshold) ? '#ffffff' : '#161b22'
+  return preference === 'auto' && threshold === 18 ? readable(ink, background, 4.5) : ink
 }
 
 // Only for the fixed, audited compatibility snapshots, never for user input.

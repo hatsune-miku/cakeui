@@ -1,4 +1,6 @@
+@use '../../styles/mixins' as *;
 .cake-theme-settings-dialog {
+  @include theme-editor;
   width: min(560px, calc(100vw - 24px));
   height: min(640px, calc(100dvh - 48px));
   .cake-dialog-body {
@@ -8,6 +10,9 @@
 }
 .cake-theme-settings-group {
   flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -15,7 +20,6 @@
 }
 .cake-theme-settings-legend {
   padding: 0;
-  margin-bottom: 12px;
   font-weight: 600;
 }
 .cake-theme-settings-presets {
@@ -108,4 +112,59 @@
   .cake-theme-settings-reset {
     flex-basis: 100%;
   }
+}
+.cake-theme-settings-threshold {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 8px;
+}
+.cake-theme-settings-threshold-label {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+}
+.cake-theme-settings-threshold-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.cake-theme-settings-details {
+  flex: none;
+}
+.cake-theme-settings-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 8px 0;
+  &::before {
+    content: '›';
+    transition: transform var(--cake-fast) var(--cake-ease);
+  }
+}
+.cake-theme-settings-details[open] .cake-theme-settings-summary::before {
+  transform: rotate(90deg);
+}
+.cake-theme-settings-adjustments {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+.cake-theme-settings-adjustment {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(110px, 45%);
+  gap: 12px;
+  align-items: center;
+}
+.cake-theme-settings-component-label {
+  overflow-wrap: anywhere;
+}
+.cake-theme-settings-adjustment-hint {
+  margin: 4px 0;
+  font-size: 12px;
 }

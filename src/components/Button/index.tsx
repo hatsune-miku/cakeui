@@ -16,6 +16,7 @@ export function Button({
   type = 'button',
   className,
   children,
+  onClickCapture,
   ...props
 }: ButtonProps) {
   return (
@@ -27,6 +28,11 @@ export function Button({
       data-variant={variant}
       data-size={size}
       className={cx('cake-button', className)}
+      onClickCapture={(event) => {
+        onClickCapture?.(event)
+        // WebKit does not focus pointer-clicked buttons, so native dialogs otherwise lose their opener.
+        if (!event.defaultPrevented) event.currentTarget.focus({ preventScroll: true })
+      }}
     >
       {loading && <Spinner size="small" aria-hidden="true" />}
       {children}
